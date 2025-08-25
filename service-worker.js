@@ -1,5 +1,5 @@
 // --- service-worker.js ---
-const CACHE_VERSION = 'v1.1.3'; // ⬅️ bump this when you ship changes
+const CACHE_VERSION = 'v1.1.4';
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
