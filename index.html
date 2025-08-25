@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apa"</title>
+  <title>Taquería "El Chino" — Admin por Mesa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -17,25 +17,20 @@
     input[type="number"] { -moz-appearance: textfield; }
 
     /* collapse animation (max-height trick) */
-    .collapse-wrap {
-      overflow: hidden;
-      transition: max-height 300ms ease;
-    }
-    .collapse-wrap.collapsed {
-      max-height: 0 !important;
-    }
+    .collapse-wrap { overflow: hidden; transition: max-height 300ms ease; }
+    .collapse-wrap.collapsed { max-height: 0 !important; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
   <div class="container mx-auto max-w-7xl p-4 md:p-8">
-    <header class="mb-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apa"</h1>
+    <header class="mb-6 md:mb-8 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Chino"</h1>
       <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
     </header>
 
     <!-- Top controls -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <!-- Prices & promo (now collapsible) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 md:mb-8">
+      <!-- Prices & promo (collapsible) -->
       <section class="bg-white p-6 rounded-xl shadow relative overflow-hidden">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-gray-700">Precios</h2>
@@ -87,7 +82,7 @@
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Crear Mesa</h2>
         <div class="flex flex-col sm:flex-row gap-3">
           <input id="table-name" type="text" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
-                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" inputmode="text">
           <input id="table-note" type="text" placeholder="Nota (opcional)"
                  class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
           <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg">Agregar</button>
@@ -107,9 +102,14 @@
       </div>
       <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
+
+    <!-- Version badge -->
+    <footer class="mt-8 text-center text-xs text-gray-400">
+      <span>Versión: </span><span id="app-version">cargando…</span>
+    </footer>
   </div>
 
-  <!-- Drawer (raised z) -->
+  <!-- Drawer (above everything) -->
   <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]">
     <div class="h-[100svh] flex flex-col">
       <div class="p-5 border-b flex items-center justify-between">
@@ -132,15 +132,16 @@
           <span class="font-bold">Total</span>
           <span id="table-total" class="text-xl font-extrabold">$0.00</span>
         </div>
-        <div id="drawer-actions" class="flex gap-3">
-          <!-- buttons injected dynamically per status -->
-        </div>
+        <div id="drawer-actions" class="flex gap-3"></div>
       </div>
     </div>
   </div>
 
   <!-- Backdrop -->
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
+
+  <!-- Toast container -->
+  <div id="toast-wrap" class="fixed inset-x-0 bottom-4 flex justify-center z-[10000] pointer-events-none"></div>
 
   <script>
     // ---------------- Utilities ----------------
@@ -149,6 +150,31 @@
     const money = n => '$' + (n || 0).toFixed(2);
     const uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
     const isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
+
+    // Toasts
+    function showToast(msg, type = 'success') {
+      const wrap = $('#toast-wrap');
+      const base =
+        'pointer-events-auto max-w-[92%] sm:max-w-md px-4 py-3 rounded-xl shadow-lg border text-sm ' +
+        'transition-all duration-300 will-change-transform';
+      const theme = {
+        success: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+        info: 'bg-blue-50 border-blue-200 text-blue-900',
+        error: 'bg-red-50 border-red-200 text-red-900'
+      }[type] || 'bg-gray-50 border-gray-200 text-gray-900';
+
+      const el = document.createElement('div');
+      el.className = `${base} ${theme} translate-y-6 opacity-0`;
+      el.textContent = msg;
+      wrap.appendChild(el);
+      // animate in
+      requestAnimationFrame(() => { el.classList.remove('translate-y-6','opacity-0'); el.classList.add('translate-y-0','opacity-100'); });
+      // auto-remove
+      setTimeout(() => {
+        el.classList.add('translate-y-6','opacity-0');
+        setTimeout(() => el.remove(), 250);
+      }, 1800);
+    }
 
     // ---------------- Storage ----------------
     const BASE_ITEMS = [
@@ -172,8 +198,9 @@
     if (promoEnabled === null) promoEnabled = isMonOrWed();
     let tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
 
-    // Collapsible state
-    let pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') || 'false');
+    // Collapsible state: default to collapsed on small screens if unset
+    let pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') ?? 'null');
+    if (pricesCollapsed === null) pricesCollapsed = window.matchMedia('(max-width: 1024px)').matches;
 
     function persist() {
       localStorage.setItem('tacos_items', JSON.stringify(items));
@@ -237,6 +264,7 @@
           renderPriceEditor();
           renderTables();
           if (currentTableId) openDrawer(currentTableId);
+          showToast('Producto eliminado', 'info');
         });
       });
     }
@@ -245,8 +273,8 @@
     function addNewItem() {
       const name = ($('#new-item-name').value || '').trim();
       const price = Number($('#new-item-price').value || 0);
-      if (!name) return alert('Ponle nombre al producto.');
-      if (!(price > 0)) return alert('Ponle un precio mayor a 0.');
+      if (!name) return showToast('Ponle nombre al producto', 'error');
+      if (!(price > 0)) return showToast('El precio debe ser mayor a 0', 'error');
       const id = 'custom_' + uid();
       items.push({ id, label: name, base: false });
       prices[id] = price;
@@ -256,6 +284,7 @@
       renderPriceEditor();
       renderTables();
       if (currentTableId) openDrawer(currentTableId);
+      showToast('Producto agregado', 'success');
     }
 
     // ---------------- Tables grid ----------------
@@ -307,21 +336,19 @@
       $('#table-total').textContent = money(computeTableTotal(t));
       renderDrawerActions(t);
 
-      const drawer = $('#drawer');
-      const backdrop = $('#backdrop');
+      const drawer = $('#drawer'), backdrop = $('#backdrop');
       drawer.classList.remove('translate-x-full');
       backdrop.classList.remove('pointer-events-none');
       backdrop.classList.add('opacity-100');
-      document.documentElement.classList.add('overflow-hidden'); // lock page scroll
+      document.documentElement.classList.add('overflow-hidden');
     }
 
     function closeDrawer() {
-      const drawer = $('#drawer');
-      const backdrop = $('#backdrop');
+      const drawer = $('#drawer'), backdrop = $('#backdrop');
       drawer.classList.add('translate-x-full');
       backdrop.classList.add('pointer-events-none');
       backdrop.classList.remove('opacity-100');
-      document.documentElement.classList.remove('overflow-hidden'); // unlock
+      document.documentElement.classList.remove('overflow-hidden');
       currentTableId = null;
     }
 
@@ -351,23 +378,10 @@
       });
 
       if (!table.charged) {
-        menu.querySelectorAll('[data-plus]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-plus');
-            changeQty(table.id, id, +1);
-          });
-        });
-        menu.querySelectorAll('[data-minus]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-minus');
-            changeQty(table.id, id, -1);
-          });
-        });
+        menu.querySelectorAll('[data-plus]').forEach(btn => btn.addEventListener('click', () => changeQty(table.id, btn.getAttribute('data-plus'), +1)));
+        menu.querySelectorAll('[data-minus]').forEach(btn => btn.addEventListener('click', () => changeQty(table.id, btn.getAttribute('data-minus'), -1)));
         menu.querySelectorAll('[data-qty]').forEach(inp => {
-          inp.addEventListener('input', () => {
-            const id = inp.getAttribute('data-qty');
-            setQty(table.id, id, Math.max(0, Number(inp.value || 0)));
-          });
+          inp.addEventListener('input', () => setQty(table.id, inp.getAttribute('data-qty'), Math.max(0, Number(inp.value || 0))));
         });
       }
     }
@@ -386,10 +400,7 @@
         const { chargedQty, total } = computeLine(itemId, qty);
         const li = document.createElement('li');
         li.className = 'flex items-center justify-between';
-        li.innerHTML = `
-          <span>${qty} × ${label} ${itemId==='taco_pastor' && promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
-          <span class="font-semibold">${money(total)}</span>
-        `;
+        li.innerHTML = `<span>${qty} × ${label} ${itemId==='taco_pastor' && promoEnabled ? `(Pagas ${chargedQty})` : ''}</span><span class="font-semibold">${money(total)}</span>`;
         ul.appendChild(li);
       }
       box.appendChild(ul);
@@ -401,19 +412,17 @@
       if (table.charged) {
         wrap.innerHTML = `
           <button id="reopen-table" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg">Reabrir</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
-        `;
-        $('#reopen-table').addEventListener('click', () => reopenTable(table.id));
-        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
+          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>`;
+        $('#reopen-table').addEventListener('click', () => { reopenTable(table.id); showToast('Mesa reabierta', 'info'); });
+        $('#delete-table').addEventListener('click', () => { deleteTable(table.id); showToast('Mesa eliminada', 'info'); });
       } else {
         wrap.innerHTML = `
           <button id="clear-table" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg">Limpiar</button>
           <button id="close-table" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Cobrar & Cerrar</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
-        `;
-        $('#clear-table').addEventListener('click', () => clearTable(table.id));
-        $('#close-table').addEventListener('click', () => closeTable(table.id));
-        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
+          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>`;
+        $('#clear-table').addEventListener('click', () => { clearTable(table.id); showToast('Mesa limpiada', 'info'); });
+        $('#close-table').addEventListener('click', () => { closeTable(table.id); showToast('Mesa cobrada', 'success'); });
+        $('#delete-table').addEventListener('click', () => { deleteTable(table.id); showToast('Mesa eliminada', 'info'); });
       }
     }
 
@@ -441,12 +450,13 @@
     function addTable() {
       const name = ($('#table-name').value || '').trim();
       const note = ($('#table-note').value || '').trim();
-      if (!name) return alert('Escribe un nombre o número de mesa.');
+      if (!name) return showToast('Escribe un nombre o número de mesa', 'error');
       tables.push({ id: uid(), name, note, order: {}, charged: false, paidAt: null });
       $('#table-name').value = '';
       $('#table-note').value = '';
       persist();
       renderTables();
+      showToast('Mesa creada', 'success');
     }
     function clearTable(tableId) {
       const t = tables.find(x => x.id === tableId);
@@ -462,8 +472,7 @@
       if (!t || t.charged) return;
       const total = computeTableTotal(t);
       if (!confirm(`Cobrar ${t.name} por ${money(total)} y marcar como COBRADA?`)) return;
-      t.charged = true;
-      t.paidAt = Date.now();
+      t.charged = true; t.paidAt = Date.now();
       persist();
       if (currentTableId === tableId) openDrawer(tableId);
       renderTables();
@@ -472,8 +481,7 @@
       const t = tables.find(x => x.id === tableId);
       if (!t || !t.charged) return;
       if (!confirm(`Reabrir ${t.name} para seguir editando?`)) return;
-      t.charged = false;
-      t.paidAt = null;
+      t.charged = false; t.paidAt = null;
       persist();
       if (currentTableId === tableId) openDrawer(tableId);
       renderTables();
@@ -491,12 +499,13 @@
       if (tables.length === 0) return;
       const active = tables.filter(t => !t.charged);
       const total = active.reduce((a, t) => a + computeTableTotal(t), 0);
-      if (!active.length) return alert('No hay mesas activas.');
+      if (!active.length) return showToast('No hay mesas activas', 'info');
       if (!confirm(`Cobrar & Cerrar TODAS las mesas activas por ${money(total)}?`)) return;
       active.forEach(t => { t.charged = true; t.paidAt = Date.now(); });
       persist();
       if (currentTableId) openDrawer(currentTableId);
       renderTables();
+      showToast('Todas las mesas activas cobradas', 'success');
     }
 
     // ---------------- Collapsible logic ----------------
@@ -507,30 +516,26 @@
       const icon = $('#prices-toggle-icon');
 
       if (pricesCollapsed) {
-        // collapse
         label.textContent = 'Mostrar';
         btn.setAttribute('aria-expanded', 'false');
         body.classList.add('collapsed');
         icon.style.transform = 'rotate(-90deg)';
-        if (!immediate) body.style.maxHeight = body.scrollHeight + 'px'; // ensure starting height for transition
-        // next frame to animate to 0
-        requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
+        if (!immediate) {
+          body.style.maxHeight = body.scrollHeight + 'px';
+          requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
+        } else {
+          body.style.maxHeight = '0px';
+        }
       } else {
-        // expand
         label.textContent = 'Ocultar';
         btn.setAttribute('aria-expanded', 'true');
         body.classList.remove('collapsed');
         icon.style.transform = 'rotate(0deg)';
-        // set height to content then remove to allow future transitions
         body.style.maxHeight = body.scrollHeight + 'px';
-        if (!immediate) {
-          setTimeout(() => { body.style.maxHeight = '1000px'; }, 10);
-        } else {
-          body.style.maxHeight = '1000px';
-        }
+        if (!immediate) setTimeout(() => { body.style.maxHeight = '1000px'; }, 10);
+        else body.style.maxHeight = '1000px';
       }
     }
-
     function togglePrices() {
       pricesCollapsed = !pricesCollapsed;
       persist();
@@ -539,26 +544,26 @@
 
     // ---------------- Wire events ----------------
     function wireEvents() {
-      // Collapsible
       $('#prices-toggle').addEventListener('click', togglePrices);
 
-      // promo toggle
       $('#promo-enabled').addEventListener('change', (e) => {
         promoEnabled = !!e.target.checked;
         persist();
         renderPriceEditor();
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
+        showToast(`2×1 en Pastor ${promoEnabled ? 'activado' : 'desactivado'}`, 'info');
       });
 
       $('#add-item').addEventListener('click', addNewItem);
       $('#add-table').addEventListener('click', addTable);
       $('#close-all').addEventListener('click', closeAllTables);
 
-      // Close buttons
+      // Drawer
       $('#drawer-close').addEventListener('click', closeDrawer);
       $('#backdrop').addEventListener('click', closeDrawer);
 
+      // Save prices
       $('#save-prices').addEventListener('click', () => {
         items.forEach(it => {
           const el = document.getElementById(`price_${it.id}`);
@@ -569,12 +574,32 @@
         persist();
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
+        showToast('Precios guardados', 'success');
+      });
+    }
+
+    // ---------------- Version from SW ----------------
+    function requestSwVersion() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg && reg.active) {
+          // Listen once for response
+          const handler = (ev) => {
+            const msg = ev.data || {};
+            if (msg.type === 'VERSION') {
+              $('#app-version').textContent = msg.value;
+              navigator.serviceWorker.removeEventListener('message', handler);
+            }
+          };
+          navigator.serviceWorker.addEventListener('message', handler);
+          reg.active.postMessage({ type: 'GET_VERSION' });
+        }
       });
     }
 
     // ---------------- Init ----------------
     function init() {
-      // Ensure base items exist (in case of old storage)
+      // Ensure base items exist
       BASE_ITEMS.forEach(b => {
         if (!items.find(x => x.id === b.id)) items.unshift(b);
         if (!(b.id in prices)) prices[b.id] = DEFAULT_PRICES[b.id] || 0;
@@ -586,22 +611,45 @@
       renderTables();
       wireEvents();
 
-      // Apply initial collapsed state (no animation on first paint)
+      // Apply initial collapsed state
       applyPricesCollapsed(true);
 
-      // Optional midnight refresh (manual promo control kept)
+      // Midnight refresh (visual)
       const msToMidnight = (() => {
-        const now = new Date();
-        const then = new Date(now); then.setHours(24,0,0,0);
+        const now = new Date(); const then = new Date(now); then.setHours(24,0,0,0);
         return then - now;
       })();
       setTimeout(() => {
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
       }, msToMidnight + 1000);
+
+      // Ask SW for version
+      requestSwVersion();
     }
     init();
   </script>
+
+  <!-- Register Service Worker (PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(() => {
+            // after registration we can request the version
+            setTimeout(() => { 
+              // slight delay ensures SW is active
+              if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' });
+              } else {
+                // fallback attempt
+                (navigator.serviceWorker.getRegistration()).then(r => r?.active?.postMessage({ type: 'GET_VERSION' }));
+              }
+            }, 300);
+          })
+          .catch(err => console.warn('SW registration failed', err));
+      });
+    }
+  </script>
 </body>
 </html>
-
