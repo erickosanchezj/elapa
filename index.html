@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apa"</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#f59e0b">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Taquería "El Chino" — Admin por Mesa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -18,52 +15,71 @@
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
+
+    /* collapse animation (max-height trick) */
+    .collapse-wrap {
+      overflow: hidden;
+      transition: max-height 300ms ease;
+    }
+    .collapse-wrap.collapsed {
+      max-height: 0 !important;
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
   <div class="container mx-auto max-w-7xl p-4 md:p-8">
     <header class="mb-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apa"</h1>
+      <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Chino"</h1>
       <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
     </header>
 
     <!-- Top controls -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <!-- Prices & promo -->
+      <!-- Prices & promo (now collapsible) -->
       <section class="bg-white p-6 rounded-xl shadow relative overflow-hidden">
-        <h2 class="text-2xl font-bold text-gray-700 mb-4">Precios</h2>
-
-        <!-- Promo switch -->
-        <label class="flex items-center gap-3 mb-4 select-none cursor-pointer">
-          <input id="promo-enabled" type="checkbox" class="w-5 h-5">
-          <span class="font-medium">2×1 en <strong>Pastor</strong> disponible</span>
-        </label>
-        <p class="text-xs text-gray-500 -mt-2 mb-4">
-          Si está activo, <em>Taco de Pastor</em> cobra <code>ceil(q/2)</code>. Úsalo para apagar la promo aun en lunes/miércoles.
-        </p>
-
-        <div id="price-editor" class="space-y-3"></div>
-
-        <!-- Add item -->
-        <div class="mt-5 border-t pt-5">
-          <h3 class="font-semibold mb-2">Agregar producto</h3>
-          <div class="flex flex-col gap-3">
-            <input id="new-item-name" type="text" placeholder="Nombre del producto"
-                   class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-              <input id="new-item-price" type="number" min="0" step="0.50" placeholder="Precio"
-                     class="w-full pl-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-            </div>
-            <button id="add-item" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-lg">
-              Agregar
-            </button>
-          </div>
-          <p class="text-xs text-gray-500 mt-2">Los productos agregados no tienen promo; la promo es solo para “Taco de Pastor”.</p>
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-700">Precios</h2>
+          <button id="prices-toggle"
+                  class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border hover:bg-gray-50"
+                  aria-expanded="true" aria-controls="prices-body">
+            <span id="prices-toggle-label">Ocultar</span>
+            <span id="prices-toggle-icon" class="transition-transform">▾</span>
+          </button>
         </div>
 
-        <!-- Save prices -->
-        <button id="save-prices" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Guardar Cambios</button>
+        <div id="prices-body" class="collapse-wrap mt-4" style="max-height:1000px;">
+          <!-- Promo switch -->
+          <label class="flex items-center gap-3 mb-4 select-none cursor-pointer">
+            <input id="promo-enabled" type="checkbox" class="w-5 h-5">
+            <span class="font-medium">2×1 en <strong>Pastor</strong> disponible</span>
+          </label>
+          <p class="text-xs text-gray-500 -mt-2 mb-4">
+            Si está activo, <em>Taco de Pastor</em> cobra <code>ceil(q/2)</code>. Úsalo para apagar la promo aun en lunes/miércoles.
+          </p>
+
+          <div id="price-editor" class="space-y-3"></div>
+
+          <!-- Add item -->
+          <div class="mt-5 border-t pt-5">
+            <h3 class="font-semibold mb-2">Agregar producto</h3>
+            <div class="flex flex-col gap-3">
+              <input id="new-item-name" type="text" placeholder="Nombre del producto"
+                     class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input id="new-item-price" type="number" min="0" step="0.50" placeholder="Precio"
+                       class="w-full pl-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+              </div>
+              <button id="add-item" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-lg">
+                Agregar
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Los productos agregados no tienen promo; la promo es solo para “Taco de Pastor”.</p>
+          </div>
+
+          <!-- Save prices -->
+          <button id="save-prices" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Guardar Cambios</button>
+        </div>
       </section>
 
       <!-- Create table -->
@@ -94,7 +110,7 @@
   </div>
 
   <!-- Drawer (raised z) -->
-  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-50">
+  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]">
     <div class="h-[100svh] flex flex-col">
       <div class="p-5 border-b flex items-center justify-between">
         <div>
@@ -124,7 +140,7 @@
   </div>
 
   <!-- Backdrop -->
-  <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-40"></div>
+  <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
 
   <script>
     // ---------------- Utilities ----------------
@@ -156,11 +172,15 @@
     if (promoEnabled === null) promoEnabled = isMonOrWed();
     let tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
 
+    // Collapsible state
+    let pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') || 'false');
+
     function persist() {
       localStorage.setItem('tacos_items', JSON.stringify(items));
       localStorage.setItem('tacos_prices', JSON.stringify(prices));
       localStorage.setItem('tacos_promo_enabled', JSON.stringify(promoEnabled));
       localStorage.setItem('tacos_tables_v2', JSON.stringify(tables));
+      localStorage.setItem('tacos_prices_collapsed', JSON.stringify(pricesCollapsed));
     }
 
     // ---------------- Totals ----------------
@@ -479,8 +499,50 @@
       renderTables();
     }
 
+    // ---------------- Collapsible logic ----------------
+    function applyPricesCollapsed(immediate = false) {
+      const body = $('#prices-body');
+      const btn = $('#prices-toggle');
+      const label = $('#prices-toggle-label');
+      const icon = $('#prices-toggle-icon');
+
+      if (pricesCollapsed) {
+        // collapse
+        label.textContent = 'Mostrar';
+        btn.setAttribute('aria-expanded', 'false');
+        body.classList.add('collapsed');
+        icon.style.transform = 'rotate(-90deg)';
+        if (!immediate) body.style.maxHeight = body.scrollHeight + 'px'; // ensure starting height for transition
+        // next frame to animate to 0
+        requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
+      } else {
+        // expand
+        label.textContent = 'Ocultar';
+        btn.setAttribute('aria-expanded', 'true');
+        body.classList.remove('collapsed');
+        icon.style.transform = 'rotate(0deg)';
+        // set height to content then remove to allow future transitions
+        body.style.maxHeight = body.scrollHeight + 'px';
+        if (!immediate) {
+          setTimeout(() => { body.style.maxHeight = '1000px'; }, 10);
+        } else {
+          body.style.maxHeight = '1000px';
+        }
+      }
+    }
+
+    function togglePrices() {
+      pricesCollapsed = !pricesCollapsed;
+      persist();
+      applyPricesCollapsed();
+    }
+
     // ---------------- Wire events ----------------
     function wireEvents() {
+      // Collapsible
+      $('#prices-toggle').addEventListener('click', togglePrices);
+
+      // promo toggle
       $('#promo-enabled').addEventListener('change', (e) => {
         promoEnabled = !!e.target.checked;
         persist();
@@ -524,6 +586,9 @@
       renderTables();
       wireEvents();
 
+      // Apply initial collapsed state (no animation on first paint)
+      applyPricesCollapsed(true);
+
       // Optional midnight refresh (manual promo control kept)
       const msToMidnight = (() => {
         const now = new Date();
@@ -537,14 +602,5 @@
     }
     init();
   </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-        .catch(err => console.warn('SW registration failed', err));
-      });
-    }
-  </script>
 </body>
 </html>
-
