@@ -1,5 +1,5 @@
 // --- service-worker.js ---
-const CACHE_VERSION = 'v1.1.4';
+const CACHE_VERSION = 'v1.0.4'; // ⬅️ bump this when you ship changes
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -11,18 +11,14 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(k => (k.startsWith('taqueria-admin-') && k !== CACHE_NAME) ? caches.delete(k) : null)
-      )
+      Promise.all(keys.map(k => (k.startsWith('taqueria-admin-') && k !== CACHE_NAME) ? caches.delete(k) : null))
     )
   );
   self.clients.claim();
@@ -52,20 +48,17 @@ self.addEventListener('fetch', (event) => {
 });
 
 // —— Version handshake ——
-// Replies to page asking for version. Works with MessageChannel (port) and fallback.
 self.addEventListener('message', (event) => {
   if (!event.data) return;
   if (event.data.type === 'GET_VERSION') {
     const msg = { type: 'VERSION', version: CACHE_VERSION };
-    // Prefer reply via the provided port (Safari/iOS friendly)
     if (event.ports && event.ports[0]) {
-      event.ports[0].postMessage(msg);
+      event.ports[0].postMessage(msg);         // reply via port (best)
     } else if (event.source && event.source.postMessage) {
-      event.source.postMessage(msg);
+      event.source.postMessage(msg);           // fallback
     } else {
-      // Last resort: broadcast to all clients
       self.clients.matchAll({ includeUncontrolled: true, type: 'window' })
-        .then(clients => clients.forEach(c => c.postMessage(msg)));
+        .then(clients => clients.forEach(c => c.postMessage(msg))); // broadcast
     }
   }
 });

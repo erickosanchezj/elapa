@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apa"</title>
+  <title>Taquería "El Apa" — Admin por Mesa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#f59e0b">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .card { transition: transform .2s ease, box-shadow .2s ease; }
@@ -23,13 +26,13 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
   <div class="container mx-auto max-w-7xl p-4 md:p-8">
-    <header class="mb-6 md:mb-8 text-center">
+    <header class="mb-8 text-center">
       <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apa"</h1>
       <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
     </header>
 
     <!-- Top controls -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 md:mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <!-- Prices & promo (collapsible) -->
       <section class="bg-white p-6 rounded-xl shadow relative overflow-hidden">
         <div class="flex items-center justify-between">
@@ -82,7 +85,7 @@
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Crear Mesa</h2>
         <div class="flex flex-col sm:flex-row gap-3">
           <input id="table-name" type="text" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
-                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" inputmode="text">
+                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
           <input id="table-note" type="text" placeholder="Nota (opcional)"
                  class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
           <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg">Agregar</button>
@@ -103,7 +106,7 @@
       <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <!-- Version badge -->
+    <!-- Footer version -->
     <footer class="mt-8 text-center text-xs text-gray-500">
       <span>Versión: </span>
       <span id="app-version" class="font-medium">cargando…</span>
@@ -111,7 +114,7 @@
     </footer>
   </div>
 
-  <!-- Drawer (above everything) -->
+  <!-- Drawer (raised z) -->
   <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]">
     <div class="h-[100svh] flex flex-col">
       <div class="p-5 border-b flex items-center justify-between">
@@ -143,7 +146,7 @@
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
 
   <!-- Toast container -->
-  <div id="toast-wrap" class="fixed inset-x-0 bottom-4 flex justify-center z-[10000] pointer-events-none"></div>
+  <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
 
   <script>
     // ---------------- Utilities ----------------
@@ -152,31 +155,6 @@
     const money = n => '$' + (n || 0).toFixed(2);
     const uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
     const isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
-
-    // Toasts
-    function showToast(msg, type = 'success') {
-      const wrap = $('#toast-wrap');
-      const base =
-        'pointer-events-auto max-w-[92%] sm:max-w-md px-4 py-3 rounded-xl shadow-lg border text-sm ' +
-        'transition-all duration-300 will-change-transform';
-      const theme = {
-        success: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-        info: 'bg-blue-50 border-blue-200 text-blue-900',
-        error: 'bg-red-50 border-red-200 text-red-900'
-      }[type] || 'bg-gray-50 border-gray-200 text-gray-900';
-
-      const el = document.createElement('div');
-      el.className = `${base} ${theme} translate-y-6 opacity-0`;
-      el.textContent = msg;
-      wrap.appendChild(el);
-      // animate in
-      requestAnimationFrame(() => { el.classList.remove('translate-y-6','opacity-0'); el.classList.add('translate-y-0','opacity-100'); });
-      // auto-remove
-      setTimeout(() => {
-        el.classList.add('translate-y-6','opacity-0');
-        setTimeout(() => el.remove(), 250);
-      }, 1800);
-    }
 
     // ---------------- Storage ----------------
     const BASE_ITEMS = [
@@ -200,9 +178,9 @@
     if (promoEnabled === null) promoEnabled = isMonOrWed();
     let tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
 
-    // Collapsible state: default to collapsed on small screens if unset
+    // Collapsible state: auto-collapse first visit on small screens
     let pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') ?? 'null');
-    if (pricesCollapsed === null) pricesCollapsed = window.matchMedia('(max-width: 1024px)').matches;
+    if (pricesCollapsed === null) pricesCollapsed = window.innerWidth < 1024;
 
     function persist() {
       localStorage.setItem('tacos_items', JSON.stringify(items));
@@ -226,6 +204,24 @@
     }
     function computeGrandTotalActive() {
       return tables.filter(t => !t.charged).reduce((a, t) => a + computeTableTotal(t), 0);
+    }
+
+    // ---------------- Toasts ----------------
+    function toast(message, type = 'success', timeout = 2000) {
+      const wrap = document.getElementById('toast-wrap');
+      const el = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-600'
+              : type === 'error'   ? 'bg-red-600'
+              : 'bg-gray-800';
+      el.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm
+                      opacity-0 translate-y-2 transition-all duration-200`;
+      el.textContent = message;
+      wrap.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+      setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => el.remove(), 200);
+      }, timeout);
     }
 
     // ---------------- Price editor ----------------
@@ -266,7 +262,7 @@
           renderPriceEditor();
           renderTables();
           if (currentTableId) openDrawer(currentTableId);
-          showToast('Producto eliminado', 'info');
+          toast('Producto eliminado', 'info');
         });
       });
     }
@@ -275,8 +271,8 @@
     function addNewItem() {
       const name = ($('#new-item-name').value || '').trim();
       const price = Number($('#new-item-price').value || 0);
-      if (!name) return showToast('Ponle nombre al producto', 'error');
-      if (!(price > 0)) return showToast('El precio debe ser mayor a 0', 'error');
+      if (!name) return alert('Ponle nombre al producto.');
+      if (!(price > 0)) return alert('Ponle un precio mayor a 0.');
       const id = 'custom_' + uid();
       items.push({ id, label: name, base: false });
       prices[id] = price;
@@ -286,7 +282,7 @@
       renderPriceEditor();
       renderTables();
       if (currentTableId) openDrawer(currentTableId);
-      showToast('Producto agregado', 'success');
+      toast('Producto agregado', 'success');
     }
 
     // ---------------- Tables grid ----------------
@@ -338,19 +334,21 @@
       $('#table-total').textContent = money(computeTableTotal(t));
       renderDrawerActions(t);
 
-      const drawer = $('#drawer'), backdrop = $('#backdrop');
+      const drawer = $('#drawer');
+      const backdrop = $('#backdrop');
       drawer.classList.remove('translate-x-full');
       backdrop.classList.remove('pointer-events-none');
       backdrop.classList.add('opacity-100');
-      document.documentElement.classList.add('overflow-hidden');
+      document.documentElement.classList.add('overflow-hidden'); // lock page scroll
     }
 
     function closeDrawer() {
-      const drawer = $('#drawer'), backdrop = $('#backdrop');
+      const drawer = $('#drawer');
+      const backdrop = $('#backdrop');
       drawer.classList.add('translate-x-full');
       backdrop.classList.add('pointer-events-none');
       backdrop.classList.remove('opacity-100');
-      document.documentElement.classList.remove('overflow-hidden');
+      document.documentElement.classList.remove('overflow-hidden'); // unlock
       currentTableId = null;
     }
 
@@ -380,10 +378,23 @@
       });
 
       if (!table.charged) {
-        menu.querySelectorAll('[data-plus]').forEach(btn => btn.addEventListener('click', () => changeQty(table.id, btn.getAttribute('data-plus'), +1)));
-        menu.querySelectorAll('[data-minus]').forEach(btn => btn.addEventListener('click', () => changeQty(table.id, btn.getAttribute('data-minus'), -1)));
+        menu.querySelectorAll('[data-plus]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-plus');
+            changeQty(table.id, id, +1);
+          });
+        });
+        menu.querySelectorAll('[data-minus]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-minus');
+            changeQty(table.id, id, -1);
+          });
+        });
         menu.querySelectorAll('[data-qty]').forEach(inp => {
-          inp.addEventListener('input', () => setQty(table.id, inp.getAttribute('data-qty'), Math.max(0, Number(inp.value || 0))));
+          inp.addEventListener('input', () => {
+            const id = inp.getAttribute('data-qty');
+            setQty(table.id, id, Math.max(0, Number(inp.value || 0)));
+          });
         });
       }
     }
@@ -402,7 +413,10 @@
         const { chargedQty, total } = computeLine(itemId, qty);
         const li = document.createElement('li');
         li.className = 'flex items-center justify-between';
-        li.innerHTML = `<span>${qty} × ${label} ${itemId==='taco_pastor' && promoEnabled ? `(Pagas ${chargedQty})` : ''}</span><span class="font-semibold">${money(total)}</span>`;
+        li.innerHTML = `
+          <span>${qty} × ${label} ${itemId==='taco_pastor' && promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
+          <span class="font-semibold">${money(total)}</span>
+        `;
         ul.appendChild(li);
       }
       box.appendChild(ul);
@@ -414,17 +428,19 @@
       if (table.charged) {
         wrap.innerHTML = `
           <button id="reopen-table" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg">Reabrir</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>`;
-        $('#reopen-table').addEventListener('click', () => { reopenTable(table.id); showToast('Mesa reabierta', 'info'); });
-        $('#delete-table').addEventListener('click', () => { deleteTable(table.id); showToast('Mesa eliminada', 'info'); });
+          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
+        `;
+        $('#reopen-table').addEventListener('click', () => { reopenTable(table.id); toast('Mesa reabierta', 'info'); });
+        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
       } else {
         wrap.innerHTML = `
           <button id="clear-table" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg">Limpiar</button>
           <button id="close-table" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Cobrar & Cerrar</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>`;
-        $('#clear-table').addEventListener('click', () => { clearTable(table.id); showToast('Mesa limpiada', 'info'); });
-        $('#close-table').addEventListener('click', () => { closeTable(table.id); showToast('Mesa cobrada', 'success'); });
-        $('#delete-table').addEventListener('click', () => { deleteTable(table.id); showToast('Mesa eliminada', 'info'); });
+          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
+        `;
+        $('#clear-table').addEventListener('click', () => { clearTable(table.id); toast('Mesa limpiada', 'info'); });
+        $('#close-table').addEventListener('click', () => closeTable(table.id));
+        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
       }
     }
 
@@ -452,13 +468,13 @@
     function addTable() {
       const name = ($('#table-name').value || '').trim();
       const note = ($('#table-note').value || '').trim();
-      if (!name) return showToast('Escribe un nombre o número de mesa', 'error');
+      if (!name) return alert('Escribe un nombre o número de mesa.');
       tables.push({ id: uid(), name, note, order: {}, charged: false, paidAt: null });
       $('#table-name').value = '';
       $('#table-note').value = '';
       persist();
       renderTables();
-      showToast('Mesa creada', 'success');
+      toast('Mesa creada', 'success');
     }
     function clearTable(tableId) {
       const t = tables.find(x => x.id === tableId);
@@ -474,16 +490,19 @@
       if (!t || t.charged) return;
       const total = computeTableTotal(t);
       if (!confirm(`Cobrar ${t.name} por ${money(total)} y marcar como COBRADA?`)) return;
-      t.charged = true; t.paidAt = Date.now();
+      t.charged = true;
+      t.paidAt = Date.now();
       persist();
       if (currentTableId === tableId) openDrawer(tableId);
       renderTables();
+      toast(`Mesa ${t.name} cobrada`, 'success');
     }
     function reopenTable(tableId) {
       const t = tables.find(x => x.id === tableId);
       if (!t || !t.charged) return;
       if (!confirm(`Reabrir ${t.name} para seguir editando?`)) return;
-      t.charged = false; t.paidAt = null;
+      t.charged = false;
+      t.paidAt = null;
       persist();
       if (currentTableId === tableId) openDrawer(tableId);
       renderTables();
@@ -496,18 +515,19 @@
       persist();
       closeDrawer();
       renderTables();
+      toast('Mesa eliminada', 'info');
     }
     function closeAllTables() {
       if (tables.length === 0) return;
       const active = tables.filter(t => !t.charged);
       const total = active.reduce((a, t) => a + computeTableTotal(t), 0);
-      if (!active.length) return showToast('No hay mesas activas', 'info');
+      if (!active.length) return alert('No hay mesas activas.');
       if (!confirm(`Cobrar & Cerrar TODAS las mesas activas por ${money(total)}?`)) return;
       active.forEach(t => { t.charged = true; t.paidAt = Date.now(); });
       persist();
       if (currentTableId) openDrawer(currentTableId);
       renderTables();
-      showToast('Todas las mesas activas cobradas', 'success');
+      toast('Mesas activas cobradas', 'success');
     }
 
     // ---------------- Collapsible logic ----------------
@@ -522,12 +542,8 @@
         btn.setAttribute('aria-expanded', 'false');
         body.classList.add('collapsed');
         icon.style.transform = 'rotate(-90deg)';
-        if (!immediate) {
-          body.style.maxHeight = body.scrollHeight + 'px';
-          requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
-        } else {
-          body.style.maxHeight = '0px';
-        }
+        if (!immediate) body.style.maxHeight = body.scrollHeight + 'px';
+        requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
       } else {
         label.textContent = 'Ocultar';
         btn.setAttribute('aria-expanded', 'true');
@@ -538,30 +554,63 @@
         else body.style.maxHeight = '1000px';
       }
     }
-    function togglePrices() {
-      pricesCollapsed = !pricesCollapsed;
-      persist();
-      applyPricesCollapsed();
+    function togglePrices() { pricesCollapsed = !pricesCollapsed; persist(); applyPricesCollapsed(); }
+
+    // ---------------- Version + SW ----------------
+    async function requestSwVersion({ timeoutMs = 2000 } = {}) {
+      if (!('serviceWorker' in navigator)) throw new Error('SW not supported');
+      const reg = await navigator.serviceWorker.ready;
+      const sw = reg.active || reg.waiting || reg.installing;
+      if (!sw) throw new Error('No active SW');
+      const channel = new MessageChannel();
+      const p = new Promise((resolve, reject) => {
+        const to = setTimeout(() => reject(new Error('SW version timeout')), timeoutMs);
+        channel.port1.onmessage = (event) => {
+          clearTimeout(to);
+          if (event.data && event.data.type === 'VERSION') resolve(event.data.version);
+          else reject(new Error('Bad SW version response'));
+        };
+      });
+      sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+      return p;
+    }
+    async function showVersion() {
+      const el = document.getElementById('app-version');
+      try {
+        const version = await requestSwVersion({ timeoutMs: 2500 });
+        el.textContent = version;
+        localStorage.setItem('tacos_sw_version', version);
+      } catch {
+        const cached = localStorage.getItem('tacos_sw_version');
+        el.textContent = cached ? `${cached} (cache)` : 'desconocida';
+      }
+    }
+    function updateNetStatus() {
+      const s = document.getElementById('net-status');
+      s.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
+      s.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
     }
 
     // ---------------- Wire events ----------------
     function wireEvents() {
+      // Collapsible
       $('#prices-toggle').addEventListener('click', togglePrices);
 
+      // Promo toggle
       $('#promo-enabled').addEventListener('change', (e) => {
         promoEnabled = !!e.target.checked;
         persist();
         renderPriceEditor();
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
-        showToast(`2×1 en Pastor ${promoEnabled ? 'activado' : 'desactivado'}`, 'info');
+        toast(`Promo 2×1 ${promoEnabled ? 'activada' : 'desactivada'}`, 'info');
       });
 
       $('#add-item').addEventListener('click', addNewItem);
       $('#add-table').addEventListener('click', addTable);
       $('#close-all').addEventListener('click', closeAllTables);
 
-      // Drawer
+      // Close drawer
       $('#drawer-close').addEventListener('click', closeDrawer);
       $('#backdrop').addEventListener('click', closeDrawer);
 
@@ -576,32 +625,17 @@
         persist();
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
-        showToast('Precios guardados', 'success');
+        toast('Precios guardados', 'success');
       });
-    }
 
-    // ---------------- Version from SW ----------------
-    function requestSwVersion() {
-      if (!('serviceWorker' in navigator)) return;
-      navigator.serviceWorker.getRegistration().then(reg => {
-        if (reg && reg.active) {
-          // Listen once for response
-          const handler = (ev) => {
-            const msg = ev.data || {};
-            if (msg.type === 'VERSION') {
-              $('#app-version').textContent = msg.value;
-              navigator.serviceWorker.removeEventListener('message', handler);
-            }
-          };
-          navigator.serviceWorker.addEventListener('message', handler);
-          reg.active.postMessage({ type: 'GET_VERSION' });
-        }
-      });
+      // Network status
+      window.addEventListener('online', updateNetStatus);
+      window.addEventListener('offline', updateNetStatus);
     }
 
     // ---------------- Init ----------------
     function init() {
-      // Ensure base items exist
+      // Ensure base items exist (in case of old storage)
       BASE_ITEMS.forEach(b => {
         if (!items.find(x => x.id === b.id)) items.unshift(b);
         if (!(b.id in prices)) prices[b.id] = DEFAULT_PRICES[b.id] || 0;
@@ -613,45 +647,38 @@
       renderTables();
       wireEvents();
 
-      // Apply initial collapsed state
+      // Apply initial collapsed state (no animation on first paint)
       applyPricesCollapsed(true);
 
-      // Midnight refresh (visual)
+      // SW registration + version display
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(() => navigator.serviceWorker.ready)
+            .then(() => { updateNetStatus(); showVersion(); })
+            .catch(() => { document.getElementById('app-version').textContent = 'sin SW'; updateNetStatus(); });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          toast('Actualizando versión…', 'info', 1500);
+          setTimeout(showVersion, 400);
+        });
+      } else {
+        document.getElementById('app-version').textContent = 'no compatible';
+        updateNetStatus();
+      }
+
+      // Optional midnight refresh (manual promo control kept)
       const msToMidnight = (() => {
-        const now = new Date(); const then = new Date(now); then.setHours(24,0,0,0);
+        const now = new Date();
+        const then = new Date(now); then.setHours(24,0,0,0);
         return then - now;
       })();
       setTimeout(() => {
         renderTables();
         if (currentTableId) openDrawer(currentTableId);
       }, msToMidnight + 1000);
-
-      // Ask SW for version
-      requestSwVersion();
     }
     init();
-  </script>
-
-  <!-- Register Service Worker (PWA) -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(() => {
-            // after registration we can request the version
-            setTimeout(() => { 
-              // slight delay ensures SW is active
-              if (navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' });
-              } else {
-                // fallback attempt
-                (navigator.serviceWorker.getRegistration()).then(r => r?.active?.postMessage({ type: 'GET_VERSION' }));
-              }
-            }, 300);
-          })
-          .catch(err => console.warn('SW registration failed', err));
-      });
-    }
   </script>
 </body>
 </html>
