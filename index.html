@@ -14,14 +14,17 @@
     .card { transition: transform .2s ease, box-shadow .2s ease; }
     .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
     .badge { font-size:.7rem; padding:.2rem .5rem; border-radius:9999px; }
-    /* optional: hide number steppers */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
-
-    /* collapse animation (max-height trick) */
     .collapse-wrap { overflow: hidden; transition: max-height 300ms ease; }
     .collapse-wrap.collapsed { max-height: 0 !important; }
+    
+    /* Styles for new modal */
+    .modal { transition: opacity .2s ease, transform .2s ease; }
+    .modal.hidden { opacity: 0; transform: scale(.95); pointer-events: none; }
+    .modal-content { transition: transform .2s ease; }
+    .modal.hidden .modal-content { transform: translateY(1rem); }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -31,9 +34,7 @@
       <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
     </header>
 
-    <!-- Top controls -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <!-- Prices & promo (collapsible) -->
       <section class="bg-white p-6 rounded-xl shadow relative overflow-hidden">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-gray-700">Precios</h2>
@@ -46,7 +47,6 @@
         </div>
 
         <div id="prices-body" class="collapse-wrap mt-4" style="max-height:1000px;">
-          <!-- Promo switch -->
           <label class="flex items-center gap-3 mb-4 select-none cursor-pointer">
             <input id="promo-enabled" type="checkbox" class="w-5 h-5">
             <span class="font-medium">2×1 en <strong>Pastor</strong> disponible</span>
@@ -54,10 +54,7 @@
           <p class="text-xs text-gray-500 -mt-2 mb-4">
             Si está activo, <em>Taco de Pastor</em> cobra <code>ceil(q/2)</code>. Úsalo para apagar la promo aun en lunes/miércoles.
           </p>
-
           <div id="price-editor" class="space-y-3"></div>
-
-          <!-- Add item -->
           <div class="mt-5 border-t pt-5">
             <h3 class="font-semibold mb-2">Agregar producto</h3>
             <div class="flex flex-col gap-3">
@@ -74,13 +71,10 @@
             </div>
             <p class="text-xs text-gray-500 mt-2">Los productos agregados no tienen promo; la promo es solo para “Taco de Pastor”.</p>
           </div>
-
-          <!-- Save prices -->
           <button id="save-prices" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Guardar Cambios</button>
         </div>
       </section>
 
-      <!-- Create table -->
       <section class="bg-white p-6 rounded-xl shadow lg:col-span-2">
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Crear Mesa</h2>
         <div class="flex flex-col sm:flex-row gap-3">
@@ -94,19 +88,20 @@
       </section>
     </div>
 
-    <!-- Tables grid -->
     <section class="relative z-0">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-2xl font-bold text-gray-700">Mesas</h2>
         <div class="text-right">
           <div id="grand-total" class="text-xl font-extrabold">TOTAL (activas): $0.00</div>
-          <button id="close-all" class="mt-2 text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg">Cobrar & Cerrar todas</button>
+          <div class="flex gap-2 justify-end mt-2">
+            <button id="show-report" class="text-sm bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg">Reporte del Día</button>
+            <button id="close-all" class="text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg">Cobrar & Cerrar todas</button>
+          </div>
         </div>
       </div>
       <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <!-- Footer version -->
     <footer class="mt-8 text-center text-xs text-gray-500">
       <span>Versión: </span>
       <span id="app-version" class="font-medium">cargando…</span>
@@ -114,7 +109,31 @@
     </footer>
   </div>
 
-  <!-- Drawer (raised z) -->
+  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="p-5 border-b flex items-center justify-between">
+            <h3 class="text-2xl font-bold text-gray-800">Reporte del Día</h3>
+            <button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+        </div>
+        <div class="p-5 overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-sm text-green-700">Ventas Totales del Día</div>
+                    <div id="report-total" class="text-3xl font-extrabold text-green-800">$0.00</div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="text-sm text-blue-700">Mesas Cobradas Hoy</div>
+                    <div id="report-tables-count" class="text-3xl font-extrabold text-blue-800">0</div>
+                </div>
+            </div>
+            <h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4>
+            <div id="report-items-breakdown" class="space-y-2">
+                <div class="text-gray-500 italic">No hay ventas registradas hoy.</div>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]">
     <div class="h-[100svh] flex flex-col">
       <div class="p-5 border-b flex items-center justify-between">
@@ -128,7 +147,6 @@
       <div class="p-5 overflow-y-auto flex-1">
         <h4 class="text-lg font-semibold mb-3">Agregar productos</h4>
         <div id="menu-list" class="space-y-3 mb-6"></div>
-
         <h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4>
         <div id="table-summary" class="bg-gray-50 border rounded-lg p-4"></div>
       </div>
@@ -142,13 +160,24 @@
     </div>
   </div>
 
-  <!-- Backdrop -->
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
 
-  <!-- Toast container -->
   <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
 
   <script>
+  (function() {
+    'use strict';
+
+    // ---------------- App State ----------------
+    const AppState = {
+        items: [],
+        prices: {},
+        promoEnabled: null,
+        tables: [],
+        pricesCollapsed: null,
+        currentTableId: null,
+    };
+
     // ---------------- Utilities ----------------
     const $ = sel => document.querySelector(sel);
     const $$ = sel => document.querySelectorAll(sel);
@@ -165,84 +194,76 @@
       { id: 'cerveza', label: 'Cerveza', base: true },
     ];
     const DEFAULT_PRICES = {
-      refresco: 27.00,
-      taco_pastor: 17.00,
-      taco_suadero: 17.00,
-      taco_carbon: 40.00,
-      cerveza: 35.00
+      refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, cerveza: 35.00
     };
 
-    let items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
-    let prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
-    let promoEnabled = JSON.parse(localStorage.getItem('tacos_promo_enabled') || 'null');
-    if (promoEnabled === null) promoEnabled = isMonOrWed();
-    let tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
+    function loadState() {
+        AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
+        AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
+        AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promo_enabled') || 'null');
+        if (AppState.promoEnabled === null) AppState.promoEnabled = isMonOrWed();
+        AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
+        AppState.pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') ?? 'null');
+        if (AppState.pricesCollapsed === null) AppState.pricesCollapsed = window.innerWidth < 1024;
 
-    // Collapsible state: auto-collapse first visit on small screens
-    let pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') ?? 'null');
-    if (pricesCollapsed === null) pricesCollapsed = window.innerWidth < 1024;
-
-    function persist() {
-      localStorage.setItem('tacos_items', JSON.stringify(items));
-      localStorage.setItem('tacos_prices', JSON.stringify(prices));
-      localStorage.setItem('tacos_promo_enabled', JSON.stringify(promoEnabled));
-      localStorage.setItem('tacos_tables_v2', JSON.stringify(tables));
-      localStorage.setItem('tacos_prices_collapsed', JSON.stringify(pricesCollapsed));
+        // Migration/consistency check
+        BASE_ITEMS.forEach(b => {
+            if (!AppState.items.find(x => x.id === b.id)) AppState.items.unshift(b);
+            if (!(b.id in AppState.prices)) AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0;
+        });
     }
 
-    // ---------------- Totals ----------------
+    function persist() {
+      localStorage.setItem('tacos_items', JSON.stringify(AppState.items));
+      localStorage.setItem('tacos_prices', JSON.stringify(AppState.prices));
+      localStorage.setItem('tacos_promo_enabled', JSON.stringify(AppState.promoEnabled));
+      localStorage.setItem('tacos_tables_v2', JSON.stringify(AppState.tables));
+      localStorage.setItem('tacos_prices_collapsed', JSON.stringify(AppState.pricesCollapsed));
+    }
+
+    // ---------------- Calculation Logic ----------------
     function computeLine(itemId, qty) {
-      const p = prices[itemId] || 0;
+      const p = AppState.prices[itemId] || 0;
       let chargedQty = qty;
-      if (itemId === 'taco_pastor' && promoEnabled) chargedQty = Math.ceil(qty / 2);
+      if (itemId === 'taco_pastor' && AppState.promoEnabled) chargedQty = Math.ceil(qty / 2);
       return { unit: p, chargedQty, total: chargedQty * p };
     }
     function computeTableTotal(table) {
-      let sum = 0;
-      for (const [itemId, qty] of Object.entries(table.order)) sum += computeLine(itemId, qty).total;
-      return sum;
+      return Object.entries(table.order).reduce((sum, [itemId, qty]) => sum + computeLine(itemId, qty).total, 0);
     }
     function computeGrandTotalActive() {
-      return tables.filter(t => !t.charged).reduce((a, t) => a + computeTableTotal(t), 0);
+      return AppState.tables.filter(t => !t.charged).reduce((a, t) => a + computeTableTotal(t), 0);
     }
 
-    // ---------------- Toasts ----------------
-    function toast(message, type = 'success', timeout = 2000) {
-      const wrap = document.getElementById('toast-wrap');
-      const el = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-600'
-              : type === 'error'   ? 'bg-red-600'
-              : 'bg-gray-800';
-      el.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm
-                      opacity-0 translate-y-2 transition-all duration-200`;
-      el.textContent = message;
-      wrap.appendChild(el);
-      requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
-      setTimeout(() => {
-        el.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => el.remove(), 200);
-      }, timeout);
+    // ---------------- Rendering Engine ----------------
+    // Central render function, calls all individual renderers
+    function render() {
+        renderPriceEditor();
+        renderTables();
+        const currentTable = AppState.tables.find(t => t.id === AppState.currentTableId);
+        if (currentTable) {
+            openDrawer(currentTable, false); // Open without animation/state change
+        }
     }
-
-    // ---------------- Price editor ----------------
+    
     function renderPriceEditor() {
       const container = $('#price-editor');
       container.innerHTML = '';
-
-      items.forEach(it => {
+      $('#promo-enabled').checked = !!AppState.promoEnabled;
+      AppState.items.forEach(it => {
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3 gap-3';
         row.innerHTML = `
           <div class="min-w-0 flex items-center gap-2">
             <span class="font-medium text-gray-700 truncate">${it.label}</span>
             ${it.id === 'taco_pastor'
-              ? `<span class="inline-flex items-center justify-center h-5 px-2 rounded-full text-[10px] leading-none ${promoEnabled ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">2×1</span>`
+              ? `<span class="inline-flex items-center justify-center h-5 px-2 rounded-full text-[10px] leading-none ${AppState.promoEnabled ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">2×1</span>`
               : (it.base ? '' : '<span class="inline-flex items-center justify-center h-5 px-2 rounded-full text-[10px] leading-none bg-blue-100 text-blue-700">custom</span>')}
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <div class="relative">
               <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 select-none">$</span>
-              <input type="number" step="0.50" id="price_${it.id}" value="${(prices[it.id]||0).toFixed(2)}"
+              <input type="number" step="0.50" id="price_${it.id}" value="${(AppState.prices[it.id]||0).toFixed(2)}"
                      class="w-28 sm:w-24 pl-5 p-2 border rounded-md text-right focus:ring-2 focus:ring-yellow-500">
             </div>
             ${it.base ? '' : `<button data-del="${it.id}" class="text-red-600 hover:text-red-700 text-sm">Eliminar</button>`}
@@ -250,56 +271,22 @@
         `;
         container.appendChild(row);
       });
-
-      container.querySelectorAll('[data-del]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-del');
-          if (!confirm('¿Eliminar este producto?')) return;
-          items = items.filter(x => x.id !== id);
-          delete prices[id];
-          tables.forEach(t => { delete t.order[id]; });
-          persist();
-          renderPriceEditor();
-          renderTables();
-          if (currentTableId) openDrawer(currentTableId);
-          toast('Producto eliminado', 'info');
-        });
-      });
     }
 
-    // ---------------- Items add ----------------
-    function addNewItem() {
-      const name = ($('#new-item-name').value || '').trim();
-      const price = Number($('#new-item-price').value || 0);
-      if (!name) return alert('Ponle nombre al producto.');
-      if (!(price > 0)) return alert('Ponle un precio mayor a 0.');
-      const id = 'custom_' + uid();
-      items.push({ id, label: name, base: false });
-      prices[id] = price;
-      $('#new-item-name').value = '';
-      $('#new-item-price').value = '';
-      persist();
-      renderPriceEditor();
-      renderTables();
-      if (currentTableId) openDrawer(currentTableId);
-      toast('Producto agregado', 'success');
-    }
-
-    // ---------------- Tables grid ----------------
     function renderTables() {
-      $('#promo-enabled').checked = !!promoEnabled;
       const grid = $('#tables-grid');
       grid.innerHTML = '';
-      if (tables.length === 0) {
+      if (AppState.tables.length === 0) {
         grid.innerHTML = `<div class="text-gray-500 italic">No hay mesas.</div>`;
       } else {
-        tables.forEach(t => {
+        AppState.tables.forEach(t => {
           const total = computeTableTotal(t);
           const card = document.createElement('div');
           card.className = 'card bg-white rounded-xl shadow p-5 cursor-pointer relative';
+          card.dataset.tableId = t.id;
           card.innerHTML = `
             <div class="absolute top-3 right-3 flex gap-2">
-              <span class="badge ${promoEnabled ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">2×1 Pastor ${promoEnabled ? 'ON' : 'OFF'}</span>
+              <span class="badge ${AppState.promoEnabled ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">2×1 Pastor ${AppState.promoEnabled ? 'ON' : 'OFF'}</span>
               ${t.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span>` : ''}
             </div>
             <h3 class="text-xl font-bold">${t.name}</h3>
@@ -309,376 +296,469 @@
               <span class="text-xl font-extrabold">${money(total)}</span>
             </div>
           `;
-          card.addEventListener('click', () => openDrawer(t.id));
           grid.appendChild(card);
         });
       }
       $('#grand-total').textContent = 'TOTAL (activas): ' + money(computeGrandTotalActive());
     }
-
-    // ---------------- Drawer ----------------
-    let currentTableId = null;
-
-    function openDrawer(tableId) {
-      currentTableId = tableId;
-      const t = tables.find(x => x.id === tableId);
-      if (!t) return;
-
-      $('#drawer-title').textContent = t.name;
-      $('#drawer-note').textContent = t.note || '';
-      $('#drawer-status').innerHTML = t.charged
-        ? `<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500">— ${new Date(t.paidAt||Date.now()).toLocaleString()}</span>`
-        : `<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>`;
-      renderMenuList(t);
-      renderTableSummary(t);
-      $('#table-total').textContent = money(computeTableTotal(t));
-      renderDrawerActions(t);
-
-      const drawer = $('#drawer');
-      const backdrop = $('#backdrop');
-      drawer.classList.remove('translate-x-full');
-      backdrop.classList.remove('pointer-events-none');
-      backdrop.classList.add('opacity-100');
-      document.documentElement.classList.add('overflow-hidden'); // lock page scroll
-    }
-
-    function closeDrawer() {
-      const drawer = $('#drawer');
-      const backdrop = $('#backdrop');
-      drawer.classList.add('translate-x-full');
-      backdrop.classList.add('pointer-events-none');
-      backdrop.classList.remove('opacity-100');
-      document.documentElement.classList.remove('overflow-hidden'); // unlock
-      currentTableId = null;
-    }
-
+    
     function renderMenuList(table) {
-      const menu = $('#menu-list');
-      menu.innerHTML = '';
-
-      items.forEach(it => {
-        const qty = table.order[it.id] || 0;
+        const menu = $('#menu-list');
+        menu.innerHTML = '';
         const disabled = table.charged ? 'opacity-50 pointer-events-none' : '';
-        const isPastor = it.id === 'taco_pastor';
-        const promoBadge = (isPastor && promoEnabled) ? '<span class="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">2x1</span>' : '';
-        const row = document.createElement('div');
-        row.className = `flex items-center justify-between bg-white border rounded-lg p-3 ${disabled}`;
-        row.innerHTML = `
-          <div>
-            <div class="font-semibold">${it.label} ${promoBadge}</div>
-            <div class="text-gray-600 text-sm">${money(prices[it.id] || 0)} c/u</div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold">−</button>
-            <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1">
-            <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
-          </div>
-        `;
-        menu.appendChild(row);
-      });
-
-      if (!table.charged) {
-        menu.querySelectorAll('[data-plus]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-plus');
-            changeQty(table.id, id, +1);
-          });
+        AppState.items.forEach(it => {
+            const qty = table.order[it.id] || 0;
+            const promoBadge = (it.id === 'taco_pastor' && AppState.promoEnabled) ? '<span class="ml-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">2x1</span>' : '';
+            const row = document.createElement('div');
+            row.className = `flex items-center justify-between bg-white border rounded-lg p-3 ${disabled}`;
+            row.innerHTML = `
+            <div>
+                <div class="font-semibold">${it.label} ${promoBadge}</div>
+                <div class="text-gray-600 text-sm">${money(AppState.prices[it.id] || 0)} c/u</div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold">−</button>
+                <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1">
+                <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
+            </div>
+            `;
+            menu.appendChild(row);
         });
-        menu.querySelectorAll('[data-minus]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-minus');
-            changeQty(table.id, id, -1);
-          });
-        });
-        menu.querySelectorAll('[data-qty]').forEach(inp => {
-          inp.addEventListener('input', () => {
-            const id = inp.getAttribute('data-qty');
-            setQty(table.id, id, Math.max(0, Number(inp.value || 0)));
-          });
-        });
-      }
     }
 
     function renderTableSummary(table) {
-      const box = $('#table-summary');
-      box.innerHTML = '';
-      if (Object.keys(table.order).length === 0) {
-        box.innerHTML = '<div class="text-gray-500">Sin productos aún.</div>';
-        return;
-      }
-      const ul = document.createElement('ul');
-      ul.className = 'space-y-1';
-      for (const [itemId, qty] of Object.entries(table.order)) {
-        const label = (items.find(i => i.id === itemId)?.label) || itemId;
-        const { chargedQty, total } = computeLine(itemId, qty);
-        const li = document.createElement('li');
-        li.className = 'flex items-center justify-between';
-        li.innerHTML = `
-          <span>${qty} × ${label} ${itemId==='taco_pastor' && promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
-          <span class="font-semibold">${money(total)}</span>
-        `;
-        ul.appendChild(li);
-      }
-      box.appendChild(ul);
+        const box = $('#table-summary');
+        box.innerHTML = '';
+        if (Object.keys(table.order).length === 0) {
+            box.innerHTML = '<div class="text-gray-500">Sin productos aún.</div>';
+            return;
+        }
+        const ul = document.createElement('ul');
+        ul.className = 'space-y-1';
+        for (const [itemId, qty] of Object.entries(table.order)) {
+            const label = (AppState.items.find(i => i.id === itemId)?.label) || itemId;
+            const { chargedQty, total } = computeLine(itemId, qty);
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between';
+            li.innerHTML = `
+            <span>${qty} × ${label} ${itemId==='taco_pastor' && AppState.promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
+            <span class="font-semibold">${money(total)}</span>
+            `;
+            ul.appendChild(li);
+        }
+        box.appendChild(ul);
     }
 
     function renderDrawerActions(table) {
-      const wrap = $('#drawer-actions');
-      wrap.innerHTML = '';
-      if (table.charged) {
-        wrap.innerHTML = `
-          <button id="reopen-table" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg">Reabrir</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
-        `;
-        $('#reopen-table').addEventListener('click', () => { reopenTable(table.id); toast('Mesa reabierta', 'info'); });
-        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
-      } else {
-        wrap.innerHTML = `
-          <button id="clear-table" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg">Limpiar</button>
-          <button id="close-table" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Cobrar & Cerrar</button>
-          <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
-        `;
-        $('#clear-table').addEventListener('click', () => { clearTable(table.id); toast('Mesa limpiada', 'info'); });
-        $('#close-table').addEventListener('click', () => closeTable(table.id));
-        $('#delete-table').addEventListener('click', () => deleteTable(table.id));
-      }
+        const wrap = $('#drawer-actions');
+        wrap.innerHTML = '';
+        if (table.charged) {
+            wrap.innerHTML = `
+            <button id="reopen-table" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg">Reabrir</button>
+            <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
+            `;
+        } else {
+            wrap.innerHTML = `
+            <button id="clear-table" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg">Limpiar</button>
+            <button id="close-table" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Cobrar & Cerrar</button>
+            <button id="delete-table" class="px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg">Eliminar</button>
+            `;
+        }
+    }
+    
+    // ---------------- Actions & State Changers ----------------
+    function addNewItem() {
+      const name = ($('#new-item-name').value || '').trim();
+      const price = Number($('#new-item-price').value || 0);
+      if (!name) return alert('Ponle nombre al producto.');
+      if (!(price > 0)) return alert('Ponle un precio mayor a 0.');
+      const id = 'custom_' + uid();
+      AppState.items.push({ id, label: name, base: false });
+      AppState.prices[id] = price;
+      $('#new-item-name').value = '';
+      $('#new-item-price').value = '';
+      persist();
+      render();
+      toast('Producto agregado', 'success');
     }
 
-    // ---------------- Qty updates ----------------
-    function changeQty(tableId, itemId, delta) {
-      const t = tables.find(x => x.id === tableId);
-      if (!t || t.charged) return;
-      const cur = t.order[itemId] || 0;
-      const next = Math.max(0, cur + delta);
-      if (next === 0) delete t.order[itemId]; else t.order[itemId] = next;
-      persist();
-      if (currentTableId === tableId) openDrawer(tableId);
-      renderTables();
+    function deleteItem(itemId) {
+        if (!confirm('¿Eliminar este producto?')) return;
+        AppState.items = AppState.items.filter(x => x.id !== itemId);
+        delete AppState.prices[itemId];
+        AppState.tables.forEach(t => { delete t.order[itemId]; });
+        persist();
+        render();
+        toast('Producto eliminado', 'info');
     }
-    function setQty(tableId, itemId, qty) {
-      const t = tables.find(x => x.id === tableId);
-      if (!t || t.charged) return;
-      if (qty === 0) delete t.order[itemId]; else t.order[itemId] = qty;
-      persist();
-      if (currentTableId === tableId) openDrawer(tableId);
-      renderTables();
-    }
-
-    // ---------------- Table actions ----------------
+    
     function addTable() {
       const name = ($('#table-name').value || '').trim();
       const note = ($('#table-note').value || '').trim();
       if (!name) return alert('Escribe un nombre o número de mesa.');
-      tables.push({ id: uid(), name, note, order: {}, charged: false, paidAt: null });
+      AppState.tables.push({ id: uid(), name, note, order: {}, charged: false, paidAt: null });
       $('#table-name').value = '';
       $('#table-note').value = '';
       persist();
-      renderTables();
+      render();
       toast('Mesa creada', 'success');
     }
+
     function clearTable(tableId) {
-      const t = tables.find(x => x.id === tableId);
+      const t = AppState.tables.find(x => x.id === tableId);
       if (!t || t.charged) return;
       if (!confirm(`Limpiar orden de ${t.name}?`)) return;
       t.order = {};
       persist();
-      if (currentTableId === tableId) openDrawer(tableId);
-      renderTables();
+      render();
+      toast('Mesa limpiada', 'info');
     }
+
     function closeTable(tableId) {
-      const t = tables.find(x => x.id === tableId);
+      const t = AppState.tables.find(x => x.id === tableId);
       if (!t || t.charged) return;
       const total = computeTableTotal(t);
       if (!confirm(`Cobrar ${t.name} por ${money(total)} y marcar como COBRADA?`)) return;
       t.charged = true;
       t.paidAt = Date.now();
       persist();
-      if (currentTableId === tableId) openDrawer(tableId);
-      renderTables();
+      render();
       toast(`Mesa ${t.name} cobrada`, 'success');
     }
+    
     function reopenTable(tableId) {
-      const t = tables.find(x => x.id === tableId);
+      const t = AppState.tables.find(x => x.id === tableId);
       if (!t || !t.charged) return;
       if (!confirm(`Reabrir ${t.name} para seguir editando?`)) return;
       t.charged = false;
       t.paidAt = null;
       persist();
-      if (currentTableId === tableId) openDrawer(tableId);
-      renderTables();
+      render();
+      toast('Mesa reabierta', 'info');
     }
+
     function deleteTable(tableId) {
-      const t = tables.find(x => x.id === tableId);
+      const t = AppState.tables.find(x => x.id === tableId);
       if (!t) return;
       if (!confirm(`Eliminar ${t.name}? Esta acción no se puede deshacer.`)) return;
-      tables = tables.filter(x => x.id !== tableId);
+      AppState.tables = AppState.tables.filter(x => x.id !== tableId);
       persist();
-      closeDrawer();
-      renderTables();
+      closeDrawer(); // Close drawer if it was this table
+      render();
       toast('Mesa eliminada', 'info');
     }
+
     function closeAllTables() {
-      if (tables.length === 0) return;
-      const active = tables.filter(t => !t.charged);
-      const total = active.reduce((a, t) => a + computeTableTotal(t), 0);
+      if (AppState.tables.length === 0) return;
+      const active = AppState.tables.filter(t => !t.charged);
       if (!active.length) return alert('No hay mesas activas.');
+      const total = active.reduce((a, t) => a + computeTableTotal(t), 0);
       if (!confirm(`Cobrar & Cerrar TODAS las mesas activas por ${money(total)}?`)) return;
       active.forEach(t => { t.charged = true; t.paidAt = Date.now(); });
       persist();
-      if (currentTableId) openDrawer(currentTableId);
-      renderTables();
+      render();
       toast('Mesas activas cobradas', 'success');
     }
 
-    // ---------------- Collapsible logic ----------------
+    function changeQty(tableId, itemId, delta) {
+        const t = AppState.tables.find(x => x.id === tableId);
+        if (!t || t.charged) return;
+        const cur = t.order[itemId] || 0;
+        const next = Math.max(0, cur + delta);
+        if (next === 0) delete t.order[itemId]; else t.order[itemId] = next;
+        persist();
+        render();
+    }
+    function setQty(tableId, itemId, qty) {
+        const t = AppState.tables.find(x => x.id === tableId);
+        if (!t || t.charged) return;
+        if (qty === 0) delete t.order[itemId]; else t.order[itemId] = qty;
+        persist();
+        render();
+    }
+    
+    // ---------------- UI Controllers ----------------
+    function openDrawer(table, shouldAnimate=true) {
+        if (!table) return;
+        AppState.currentTableId = table.id;
+
+        $('#drawer-title').textContent = table.name;
+        $('#drawer-note').textContent = table.note || '';
+        $('#drawer-status').innerHTML = table.charged
+            ? `<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500">— ${new Date(table.paidAt||Date.now()).toLocaleString()}</span>`
+            : `<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>`;
+        $('#table-total').textContent = money(computeTableTotal(table));
+        
+        renderMenuList(table);
+        renderTableSummary(table);
+        renderDrawerActions(table);
+
+        if (shouldAnimate) {
+            $('#drawer').classList.remove('translate-x-full');
+            $('#backdrop').classList.remove('pointer-events-none', 'opacity-0');
+            document.documentElement.classList.add('overflow-hidden');
+        }
+    }
+
+    function closeDrawer() {
+      AppState.currentTableId = null;
+      $('#drawer').classList.add('translate-x-full');
+      $('#backdrop').classList.add('pointer-events-none', 'opacity-0');
+      document.documentElement.classList.remove('overflow-hidden');
+    }
+
     function applyPricesCollapsed(immediate = false) {
       const body = $('#prices-body');
-      const btn = $('#prices-toggle');
-      const label = $('#prices-toggle-label');
       const icon = $('#prices-toggle-icon');
-
-      if (pricesCollapsed) {
-        label.textContent = 'Mostrar';
-        btn.setAttribute('aria-expanded', 'false');
-        body.classList.add('collapsed');
+      if (AppState.pricesCollapsed) {
+        $('#prices-toggle-label').textContent = 'Mostrar';
+        $('#prices-toggle').setAttribute('aria-expanded', 'false');
         icon.style.transform = 'rotate(-90deg)';
         if (!immediate) body.style.maxHeight = body.scrollHeight + 'px';
         requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
       } else {
-        label.textContent = 'Ocultar';
-        btn.setAttribute('aria-expanded', 'true');
-        body.classList.remove('collapsed');
+        $('#prices-toggle-label').textContent = 'Ocultar';
+        $('#prices-toggle').setAttribute('aria-expanded', 'true');
         icon.style.transform = 'rotate(0deg)';
         body.style.maxHeight = body.scrollHeight + 'px';
-        if (!immediate) setTimeout(() => { body.style.maxHeight = '1000px'; }, 10);
-        else body.style.maxHeight = '1000px';
+        setTimeout(() => { body.style.maxHeight = '1000px'; }, immediate ? 0 : 10);
       }
     }
-    function togglePrices() { pricesCollapsed = !pricesCollapsed; persist(); applyPricesCollapsed(); }
+    
+    // --- Daily Report Modal ---
+    function computeDailyReport() {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
 
-    // ---------------- Version + SW ----------------
-    async function requestSwVersion({ timeoutMs = 2000 } = {}) {
-      if (!('serviceWorker' in navigator)) throw new Error('SW not supported');
-      const reg = await navigator.serviceWorker.ready;
-      const sw = reg.active || reg.waiting || reg.installing;
-      if (!sw) throw new Error('No active SW');
-      const channel = new MessageChannel();
-      const p = new Promise((resolve, reject) => {
-        const to = setTimeout(() => reject(new Error('SW version timeout')), timeoutMs);
-        channel.port1.onmessage = (event) => {
-          clearTimeout(to);
-          if (event.data && event.data.type === 'VERSION') resolve(event.data.version);
-          else reject(new Error('Bad SW version response'));
+        const todaysTables = AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStart.getTime());
+        const totalSales = todaysTables.reduce((sum, t) => sum + computeTableTotal(t), 0);
+        
+        const itemCounts = {};
+        const itemRevenue = {};
+        todaysTables.forEach(table => {
+            for (const [itemId, qty] of Object.entries(table.order)) {
+                itemCounts[itemId] = (itemCounts[itemId] || 0) + qty;
+                const line = computeLine(itemId, qty);
+                itemRevenue[itemId] = (itemRevenue[itemId] || 0) + line.total;
+            }
+        });
+        
+        return {
+            totalSales,
+            tablesCount: todaysTables.length,
+            itemCounts,
+            itemRevenue
         };
-      });
-      sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
-      return p;
+    }
+    
+    function renderDailyReport() {
+        const report = computeDailyReport();
+        $('#report-total').textContent = money(report.totalSales);
+        $('#report-tables-count').textContent = report.tablesCount;
+        
+        const breakdownContainer = $('#report-items-breakdown');
+        breakdownContainer.innerHTML = '';
+        const sortedItems = Object.entries(report.itemCounts).sort((a, b) => b[1] - a[1]);
+        
+        if (sortedItems.length === 0) {
+            breakdownContainer.innerHTML = '<div class="text-gray-500 italic">No hay ventas registradas hoy.</div>';
+            return;
+        }
+
+        sortedItems.forEach(([itemId, count]) => {
+            const itemInfo = AppState.items.find(i => i.id === itemId);
+            const label = itemInfo ? itemInfo.label : itemId;
+            const revenue = report.itemRevenue[itemId] || 0;
+            const el = document.createElement('div');
+            el.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg';
+            el.innerHTML = `
+                <span class="font-medium text-gray-800">${label}</span>
+                <div class="text-right">
+                    <span class="font-bold text-lg">${count}</span>
+                    <span class="ml-2 text-sm text-gray-600">${money(revenue)}</span>
+                </div>
+            `;
+            breakdownContainer.appendChild(el);
+        });
+    }
+    
+    function openReportModal() {
+        renderDailyReport();
+        $('#report-modal').classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+        $('#report-modal').classList.add('hidden');
+    }
+
+    // ---------------- Toasts & Misc UI ----------------
+    function toast(message, type = 'success', timeout = 2000) {
+      const wrap = $('#toast-wrap');
+      const el = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
+      el.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
+      el.textContent = message;
+      wrap.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+      setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => el.remove(), 200);
+      }, timeout);
+    }
+    
+    // ---------------- Event Wiring ----------------
+    function wireEvents() {
+        // Top-level controls
+        $('#prices-toggle').addEventListener('click', () => {
+            AppState.pricesCollapsed = !AppState.pricesCollapsed;
+            persist();
+            applyPricesCollapsed();
+        });
+        $('#promo-enabled').addEventListener('change', (e) => {
+            AppState.promoEnabled = !!e.target.checked;
+            persist();
+            render();
+            toast(`Promo 2×1 ${AppState.promoEnabled ? 'activada' : 'desactivada'}`, 'info');
+        });
+        $('#add-item').addEventListener('click', addNewItem);
+        $('#add-table').addEventListener('click', addTable);
+        $('#close-all').addEventListener('click', closeAllTables);
+        $('#show-report').addEventListener('click', openReportModal);
+        
+        // Report Modal Close
+        $('#report-close').addEventListener('click', closeReportModal);
+        $('#report-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'report-modal') closeReportModal();
+        });
+
+        // Price editor (delegated)
+        $('#price-editor').addEventListener('click', e => {
+            const delId = e.target.closest('[data-del]')?.dataset.del;
+            if (delId) deleteItem(delId);
+        });
+
+        $('#save-prices').addEventListener('click', () => {
+            AppState.items.forEach(it => {
+                const el = $(`#price_${it.id}`);
+                if (el) {
+                    const v = Number(el.value);
+                    if (isFinite(v)) AppState.prices[it.id] = v;
+                }
+            });
+            persist();
+            render();
+            toast('Precios guardados', 'success');
+        });
+
+        // Tables grid (delegated)
+        $('#tables-grid').addEventListener('click', (e) => {
+            const tableId = e.target.closest('[data-table-id]')?.dataset.tableId;
+            if (tableId) {
+                const table = AppState.tables.find(t => t.id === tableId);
+                openDrawer(table);
+            }
+        });
+        
+        // Drawer
+        $('#drawer-close').addEventListener('click', closeDrawer);
+        $('#backdrop').addEventListener('click', closeDrawer);
+
+        // Drawer actions (delegated)
+        $('#drawer-actions').addEventListener('click', (e) => {
+            const tableId = AppState.currentTableId;
+            if (!tableId) return;
+
+            const targetId = e.target.id;
+            if (targetId === 'reopen-table') reopenTable(tableId);
+            else if (targetId === 'delete-table') deleteTable(tableId);
+            else if (targetId === 'clear-table') clearTable(tableId);
+            else if (targetId === 'close-table') closeTable(tableId);
+        });
+        
+        // Drawer menu list (delegated for +/-/qty)
+        const menuList = $('#menu-list');
+        menuList.addEventListener('click', (e) => {
+            const tableId = AppState.currentTableId;
+            if (!tableId) return;
+            const plusId = e.target.closest('[data-plus]')?.dataset.plus;
+            if (plusId) changeQty(tableId, plusId, +1);
+            const minusId = e.target.closest('[data-minus]')?.dataset.minus;
+            if (minusId) changeQty(tableId, minusId, -1);
+        });
+        menuList.addEventListener('input', (e) => {
+            const tableId = AppState.currentTableId;
+            if (!tableId) return;
+            const qtyId = e.target.closest('[data-qty]')?.dataset.qty;
+            if (qtyId) setQty(tableId, qtyId, Math.max(0, Number(e.target.value || 0)));
+        });
+
+        // Network status
+        window.addEventListener('online', updateNetStatus);
+        window.addEventListener('offline', updateNetStatus);
+    }
+    
+    // ---------------- SW & Versioning ----------------
+    async function requestSwVersion({ timeoutMs = 2000 } = {}) {
+        if (!('serviceWorker' in navigator)) throw new Error('SW not supported');
+        const reg = await navigator.serviceWorker.ready;
+        const sw = reg.active || reg.waiting || reg.installing;
+        if (!sw) throw new Error('No active SW');
+        const channel = new MessageChannel();
+        const p = new Promise((resolve, reject) => {
+            const to = setTimeout(() => reject(new Error('SW version timeout')), timeoutMs);
+            channel.port1.onmessage = (event) => {
+                clearTimeout(to);
+                if (event.data?.type === 'VERSION') resolve(event.data.version);
+                else reject(new Error('Bad SW version response'));
+            };
+        });
+        sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+        return p;
     }
     async function showVersion() {
-      const el = document.getElementById('app-version');
+      const el = $('#app-version');
       try {
         const version = await requestSwVersion({ timeoutMs: 2500 });
         el.textContent = version;
         localStorage.setItem('tacos_sw_version', version);
       } catch {
-        const cached = localStorage.getItem('tacos_sw_version');
-        el.textContent = cached ? `${cached} (cache)` : 'desconocida';
+        el.textContent = localStorage.getItem('tacos_sw_version') ? `${localStorage.getItem('tacos_sw_version')} (cache)` : 'desconocida';
       }
     }
     function updateNetStatus() {
-      const s = document.getElementById('net-status');
+      const s = $('#net-status');
       s.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
       s.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
     }
 
-    // ---------------- Wire events ----------------
-    function wireEvents() {
-      // Collapsible
-      $('#prices-toggle').addEventListener('click', togglePrices);
-
-      // Promo toggle
-      $('#promo-enabled').addEventListener('change', (e) => {
-        promoEnabled = !!e.target.checked;
-        persist();
-        renderPriceEditor();
-        renderTables();
-        if (currentTableId) openDrawer(currentTableId);
-        toast(`Promo 2×1 ${promoEnabled ? 'activada' : 'desactivada'}`, 'info');
-      });
-
-      $('#add-item').addEventListener('click', addNewItem);
-      $('#add-table').addEventListener('click', addTable);
-      $('#close-all').addEventListener('click', closeAllTables);
-
-      // Close drawer
-      $('#drawer-close').addEventListener('click', closeDrawer);
-      $('#backdrop').addEventListener('click', closeDrawer);
-
-      // Save prices
-      $('#save-prices').addEventListener('click', () => {
-        items.forEach(it => {
-          const el = document.getElementById(`price_${it.id}`);
-          if (!el) return;
-          const v = Number((el.value || prices[it.id]).toString());
-          if (isFinite(v)) prices[it.id] = v;
-        });
-        persist();
-        renderTables();
-        if (currentTableId) openDrawer(currentTableId);
-        toast('Precios guardados', 'success');
-      });
-
-      // Network status
-      window.addEventListener('online', updateNetStatus);
-      window.addEventListener('offline', updateNetStatus);
-    }
-
     // ---------------- Init ----------------
     function init() {
-      // Ensure base items exist (in case of old storage)
-      BASE_ITEMS.forEach(b => {
-        if (!items.find(x => x.id === b.id)) items.unshift(b);
-        if (!(b.id in prices)) prices[b.id] = DEFAULT_PRICES[b.id] || 0;
-      });
-      persist();
-
-      $('#promo-enabled').checked = !!promoEnabled;
-      renderPriceEditor();
-      renderTables();
+      loadState();
+      persist(); // Persist once on load to ensure consistency
       wireEvents();
-
-      // Apply initial collapsed state (no animation on first paint)
-      applyPricesCollapsed(true);
-
-      // SW registration + version display
+      render(); // Initial full render
+      applyPricesCollapsed(true); // Initial state without animation
+      
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./service-worker.js')
             .then(() => navigator.serviceWorker.ready)
             .then(() => { updateNetStatus(); showVersion(); })
-            .catch(() => { document.getElementById('app-version').textContent = 'sin SW'; updateNetStatus(); });
+            .catch(() => { $('#app-version').textContent = 'sin SW'; updateNetStatus(); });
         });
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           toast('Actualizando versión…', 'info', 1500);
           setTimeout(showVersion, 400);
         });
       } else {
-        document.getElementById('app-version').textContent = 'no compatible';
+        $('#app-version').textContent = 'no compatible';
         updateNetStatus();
       }
-
-      // Optional midnight refresh (manual promo control kept)
-      const msToMidnight = (() => {
-        const now = new Date();
-        const then = new Date(now); then.setHours(24,0,0,0);
-        return then - now;
-      })();
-      setTimeout(() => {
-        renderTables();
-        if (currentTableId) openDrawer(currentTableId);
-      }, msToMidnight + 1000);
     }
+
+    // Kick it all off
     init();
+  })();
   </script>
 </body>
 </html>
