@@ -1,0 +1,78 @@
+(function() {
+    'use strict';
+    
+    window.TaqueriaApp = {};
+    const App = window.TaqueriaApp;
+
+    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null };
+
+    App.$ = sel => document.querySelector(sel);
+    App.$$ = sel => document.querySelectorAll(sel);
+    App.money = n => '$' + (n || 0).toFixed(2);
+    App.uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
+    App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
+    App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
+    App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
+
+    const BASE_ITEMS = [ { id: 'taco_pastor', label: 'Taco de Pastor', base: true }, { id: 'taco_suadero', label: 'Taco de Suadero', base: true }, { id: 'taco_carbon', label: 'Taco al Carbón', base: true }, { id: 'refresco', label: 'Refresco', base: true }, { id: 'cerveza', label: 'Cerveza', base: true }, ];
+    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, cerveza: 35.00 };
+
+    App.loadState = function() {
+        App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
+        App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
+        App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
+        if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = App.isMonOrWed();
+        App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
+        BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
+        // Compatibilidad con la estructura de datos anterior
+        if(localStorage.getItem('tacos_tables_v2')) {
+            App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2'));
+            localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2'));
+            localStorage.removeItem('tacos_tables_v2');
+        }
+    };
+
+    App.persist = function() {
+        localStorage.setItem('tacos_items', JSON.stringify(App.AppState.items));
+        localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
+        localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
+    };
+
+    App.computeLine = function(itemId, qty) { const p = App.AppState.prices[itemId] || 0; let c = qty; if (itemId === 'taco_pastor' && App.AppState.promoEnabled) c = Math.ceil(qty / 2); return { unit: p, chargedQty: c, total: c * p }; };
+    App.computeTableTotal = function(table) { return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0); };
+    App.computeGrandTotalActive = function() { return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0); };
+    App.computeDailyReport = function(){const t=new Date;t.setHours(0,0,0,0);const n=App.AppState.tables.filter(n=>n.charged&&n.paidAt&&n.paidAt>=t.getTime()),e=n.reduce((t,n)=>t+App.computeTableTotal(n),0),a={},o={};return n.forEach(t=>{for(const[n,e]of Object.entries(t.order)){a[n]=(a[n]||0)+e;const s=App.computeLine(n,e);o[n]=(o[n]||0)+s.total}}),{totalSales:e,tablesCount:n.length,itemCounts:a,itemRevenue:o}};
+
+    App.toast = function(message, type = 'success', timeout = 2000) {
+      const w = App.$('#toast-wrap'); if(!w) return; const e = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
+      e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
+      e.textContent = message; w.appendChild(e);
+      requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
+      setTimeout(() => { e.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => e.remove(), 200); }, timeout);
+    };
+
+    App.handleSW = function() {
+        const versionEl = App.$('#app-version');
+        const statusEl = App.$('#net-status');
+        if (!versionEl || !statusEl) return;
+
+        const updateNetStatus = () => {
+            statusEl.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
+            statusEl.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
+        };
+
+        async function requestSwVersion(t={timeoutMs:2e3}){if(!("serviceWorker"in navigator))throw new Error("SW not supported");const n=await navigator.serviceWorker.ready,e=n.active||n.waiting||n.installing;if(!e)throw new Error("No active SW");const o=new MessageChannel,a=new Promise((n,a)=>{const s=setTimeout(()=>a(new Error("SW version timeout")),t.timeoutMs);o.port1.onmessage=t=>{clearTimeout(s),t.data&&"VERSION"===t.data.type?n(t.data.version):a(new Error("Bad SW version response"))}});return e.postMessage({type:"GET_VERSION"},[o.port2]),a}
+        async function showVersion(){try{const n=await requestSwVersion({timeoutMs:2500});versionEl.textContent=n,localStorage.setItem("tacos_sw_version",n)}catch{const n=localStorage.getItem("tacos_sw_version");versionEl.textContent=n?`${n} (cache)`:"desconocida"}}
+        
+        if('serviceWorker' in navigator){
+            window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').then(()=>navigator.serviceWorker.ready).then(()=>{updateNetStatus();showVersion()}).catch(()=>{versionEl.textContent='sin SW';updateNetStatus()})});
+            navigator.serviceWorker.addEventListener('controllerchange',()=>{App.toast('Actualizando versión…','info',1500);setTimeout(showVersion,400)});
+        } else {
+            versionEl.textContent='no compatible';
+            updateNetStatus();
+        }
+        window.addEventListener('online',updateNetStatus);window.addEventListener('offline',updateNetStatus);
+    };
+})();

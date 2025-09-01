@@ -3,46 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apá" — Admin por Mesa</title>
+  <title>Taquería "El Apá" — Órdenes por Mesa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="js/styles.css">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#f59e0b">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .card { transition: transform .2s ease, box-shadow .2s ease, border-color .3s ease; }
-    .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
-    .badge { font-size:.7rem; padding:.2rem .5rem; border-radius:9999px; }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type="number"] { -moz-appearance: textfield; }
-    .collapse-wrap { overflow: hidden; transition: max-height 300ms ease; }
-    .collapse-wrap.collapsed { max-height: 0 !important; }
-    .modal { transition: opacity .2s ease, transform .2s ease; }
-    .modal.hidden { opacity: 0; transform: scale(.95); pointer-events: none; }
-    .modal-content { transition: transform .2s ease; }
-    .modal.hidden .modal-content { transform: translateY(1rem); }
-
-    /* Print-specific styles for the ticket */
-    @media print {
-      body * { visibility: hidden; }
-      #print-area, #print-area * { visibility: visible; }
-      #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 10pt;
-      }
-      h1, h2, h3, p { margin: 0; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 4px 2px; text-align: left; }
-      .text-right { text-align: right; }
-      hr { border-top: 1px dashed black; }
-    }
-  </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
   <div class="container mx-auto max-w-7xl p-4 md:p-8">
@@ -51,58 +18,22 @@
       <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <section class="bg-white p-6 rounded-xl shadow relative overflow-hidden">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-700">Precios</h2>
-          <button id="prices-toggle"
-                  class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border hover:bg-gray-50"
-                  aria-expanded="true" aria-controls="prices-body">
-            <span id="prices-toggle-label">Ocultar</span>
-            <span id="prices-toggle-icon" class="transition-transform">▾</span>
-          </button>
+    <section class="bg-white p-6 rounded-xl shadow mb-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h2 class="text-2xl font-bold text-gray-700">Crear Mesa</h2>
+            <a href="precios.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100">
+                <span>⚙️</span>
+                Administrar Precios y Menú
+            </a>
         </div>
-        <div id="prices-body" class="collapse-wrap mt-4" style="max-height:1000px;">
-          <label class="flex items-center gap-3 mb-4 select-none cursor-pointer">
-            <input id="promo-enabled" type="checkbox" class="w-5 h-5">
-            <span class="font-medium">2×1 en <strong>Pastor</strong> disponible</span>
-          </label>
-          <p class="text-xs text-gray-500 -mt-2 mb-4">
-            Si está activo, <em>Taco de Pastor</em> cobra <code>ceil(q/2)</code>. Úsalo para apagar la promo aun en lunes/miércoles.
-          </p>
-          <div id="price-editor" class="space-y-3"></div>
-          <div class="mt-5 border-t pt-5">
-            <h3 class="font-semibold mb-2">Agregar producto</h3>
-            <div class="flex flex-col gap-3">
-              <input id="new-item-name" type="text" placeholder="Nombre del producto"
-                     class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input id="new-item-price" type="number" min="0" step="0.50" placeholder="Precio"
-                       class="w-full pl-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-              </div>
-              <button id="add-item" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-lg">
-                Agregar
-              </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">Los productos agregados no tienen promo; la promo es solo para “Taco de Pastor”.</p>
-          </div>
-          <button id="save-prices" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg">Guardar Cambios</button>
+        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+            <input id="table-name" type="text" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
+                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+            <input id="table-note" type="text" placeholder="Nota (opcional)"
+                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+            <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg">Agregar</button>
         </div>
-      </section>
-
-      <section class="bg-white p-6 rounded-xl shadow lg:col-span-2">
-        <h2 class="text-2xl font-bold text-gray-700 mb-4">Crear Mesa</h2>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input id="table-name" type="text" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
-                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-          <input id="table-note" type="text" placeholder="Nota (opcional)"
-                 class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-          <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg">Agregar</button>
-        </div>
-        <p class="text-sm text-gray-500 mt-2">Crea una mesa y registra su orden desde el panel.</p>
-      </section>
-    </div>
+    </section>
 
     <section class="relative z-0">
       <div class="flex items-center justify-between mb-3">
@@ -119,483 +50,109 @@
     </section>
 
     <footer class="mt-8 text-center text-xs text-gray-500">
-      <span>Versión: </span>
-      <span id="app-version" class="font-medium">cargando…</span>
-      <span id="net-status" class="ml-2"></span>
+      <span>Versión: </span><span id="app-version" class="font-medium">cargando…</span><span id="net-status" class="ml-2"></span>
     </footer>
   </div>
 
-  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
-    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div class="p-5 border-b flex items-center justify-between">
-            <h3 class="text-2xl font-bold text-gray-800">Reporte del Día</h3>
-            <button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
-        </div>
-        <div class="p-5 overflow-y-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <div class="text-sm text-green-700">Ventas Totales del Día</div>
-                    <div id="report-total" class="text-3xl font-extrabold text-green-800">$0.00</div>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <div class="text-sm text-blue-700">Mesas Cobradas Hoy</div>
-                    <div id="report-tables-count" class="text-3xl font-extrabold text-blue-800">0</div>
-                </div>
-            </div>
-            <h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4>
-            <div id="report-items-breakdown" class="space-y-2">
-                <div class="text-gray-500 italic">No hay ventas registradas hoy.</div>
-            </div>
-        </div>
-    </div>
-  </div>
+  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]"><div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><h3 class="text-2xl font-bold text-gray-800">Reporte del Día</h3><button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button></div><div class="p-5 overflow-y-auto"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center"><div class="bg-green-50 p-4 rounded-lg"><div class="text-sm text-green-700">Ventas Totales del Día</div><div id="report-total" class="text-3xl font-extrabold text-green-800">$0.00</div></div><div class="bg-blue-50 p-4 rounded-lg"><div class="text-sm text-blue-700">Mesas Cobradas Hoy</div><div id="report-tables-count" class="text-3xl font-extrabold text-blue-800">0</div></div></div><h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4><div id="report-items-breakdown" class="space-y-2"><div class="text-gray-500 italic">No hay ventas registradas hoy.</div></div></div></div></div>
 
-  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]">
-    <div class="h-[100svh] flex flex-col">
-      <div class="p-5 border-b flex items-center justify-between">
-        <div>
-          <h3 id="drawer-title" class="text-2xl font-bold text-gray-800">Mesa</h3>
-          <p id="drawer-note" class="text-sm text-gray-500"></p>
-          <div id="drawer-status" class="mt-1 text-xs"></div>
-        </div>
-        <button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
-      </div>
-      <div class="p-5 overflow-y-auto flex-1">
-        <h4 class="text-lg font-semibold mb-3">Agregar productos</h4>
-        <div id="menu-list" class="space-y-3 mb-6"></div>
-        <h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4>
-        <div id="table-summary" class="bg-gray-50 border rounded-lg p-4"></div>
-      </div>
-      <div class="p-5 border-t bg-gray-50 pb-[env(safe-area-inset-bottom)]">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-bold">Total</span>
-          <span id="table-total" class="text-xl font-extrabold">$0.00</span>
-        </div>
-        <div id="drawer-actions" class="grid grid-cols-2 gap-3"></div>
-      </div>
-    </div>
-  </div>
+  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]"><div class="h-[100svh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><div><h3 id="drawer-title" class="text-2xl font-bold text-gray-800">Mesa</h3><p id="drawer-note" class="text-sm text-gray-500"></p><div id="drawer-status" class="mt-1 text-xs"></div></div><button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button></div><div class="p-5 overflow-y-auto flex-1"><h4 class="text-lg font-semibold mb-3">Agregar productos</h4><div id="menu-list" class="space-y-3 mb-6"></div><h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4><div id="table-summary" class="bg-gray-50 border rounded-lg p-4"></div></div><div class="p-5 border-t bg-gray-50 pb-[env(safe-area-inset-bottom)]"><div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div><div id="drawer-actions" class="grid grid-cols-2 gap-3"></div></div></div></div>
 
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
-
   <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
 
+  <script src="js/app.js"></script>
   <script>
-  (function() {
-    'use strict';
-
-    // ---------------- App State ----------------
-    const AppState = {
-        items: [], prices: {}, promoEnabled: null, tables: [],
-        pricesCollapsed: null, currentTableId: null,
-    };
-
-    // ---------------- Utilities ----------------
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => document.querySelectorAll(sel);
-    const money = n => '$' + (n || 0).toFixed(2);
-    const uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
-    const isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
-    const formatElapsedTime = (ms) => {
-        const minutes = Math.floor(ms / 60000);
-        if (minutes < 1) return 'hace un momento';
-        if (minutes === 1) return 'hace 1 min';
-        return `hace ${minutes} min`;
-    };
-
-    // ---------------- Storage ----------------
-    const BASE_ITEMS = [
-      { id: 'taco_pastor', label: 'Taco de Pastor', base: true }, { id: 'taco_suadero', label: 'Taco de Suadero', base: true },
-      { id: 'taco_carbon', label: 'Taco al Carbón', base: true }, { id: 'refresco', label: 'Refresco', base: true },
-      { id: 'cerveza', label: 'Cerveza', base: true },
-    ];
-    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, cerveza: 35.00 };
-
-    function loadState() {
-        AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
-        AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
-        AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promo_enabled') || 'null');
-        if (AppState.promoEnabled === null) AppState.promoEnabled = isMonOrWed();
-        AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2') || '[]');
-        AppState.pricesCollapsed = JSON.parse(localStorage.getItem('tacos_prices_collapsed') ?? 'null');
-        if (AppState.pricesCollapsed === null) AppState.pricesCollapsed = window.innerWidth < 1024;
-
-        BASE_ITEMS.forEach(b => {
-            if (!AppState.items.find(x => x.id === b.id)) AppState.items.unshift(b);
-            if (!(b.id in AppState.prices)) AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0;
-        });
-    }
-
-    function persist() {
-      localStorage.setItem('tacos_items', JSON.stringify(AppState.items));
-      localStorage.setItem('tacos_prices', JSON.stringify(AppState.prices));
-      localStorage.setItem('tacos_promo_enabled', JSON.stringify(AppState.promoEnabled));
-      localStorage.setItem('tacos_tables_v2', JSON.stringify(AppState.tables));
-      localStorage.setItem('tacos_prices_collapsed', JSON.stringify(AppState.pricesCollapsed));
-    }
-
-    // ---------------- Calculation Logic ----------------
-    function computeLine(itemId, qty) {
-      const p = AppState.prices[itemId] || 0;
-      let chargedQty = qty;
-      if (itemId === 'taco_pastor' && AppState.promoEnabled) chargedQty = Math.ceil(qty / 2);
-      return { unit: p, chargedQty, total: chargedQty * p };
-    }
-    function computeTableTotal(table) {
-      return Object.entries(table.order).reduce((sum, [itemId, qty]) => sum + computeLine(itemId, qty).total, 0);
-    }
-    function computeGrandTotalActive() {
-      return AppState.tables.filter(t => !t.charged).reduce((a, t) => a + computeTableTotal(t), 0);
-    }
-
-    // ---------------- Rendering Engine ----------------
-    function render() {
-        renderPriceEditor();
-        renderTables();
-        updateTimers(); // Update timers on every render
-        const currentTable = AppState.tables.find(t => t.id === AppState.currentTableId);
-        if (currentTable) {
-            openDrawer(currentTable, false);
-        }
-    }
-    
-    function renderPriceEditor() {
-      const container = $('#price-editor');
-      container.innerHTML = '';
-      $('#promo-enabled').checked = !!AppState.promoEnabled;
-      AppState.items.forEach(it => {
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3 gap-3';
-        row.innerHTML = `
-          <div class="min-w-0 flex items-center gap-2">
-            <span class="font-medium text-gray-700 truncate">${it.label}</span>
-            ${it.id === 'taco_pastor'
-              ? `<span class="badge ${AppState.promoEnabled ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">2×1</span>`
-              : (it.base ? '' : `<span class="badge bg-blue-100 text-blue-700">custom</span>`)}
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <div class="relative">
-              <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 select-none">$</span>
-              <input type="number" step="0.50" id="price_${it.id}" value="${(AppState.prices[it.id]||0).toFixed(2)}"
-                     class="w-28 sm:w-24 pl-5 p-2 border rounded-md text-right focus:ring-2 focus:ring-yellow-500">
-            </div>
-            ${it.base ? '' : `<button data-del="${it.id}" class="text-red-600 hover:text-red-700 text-sm">Eliminar</button>`}
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function renderTables() {
-      const grid = $('#tables-grid');
-      grid.innerHTML = '';
-      if (AppState.tables.length === 0) {
-        grid.innerHTML = `<div class="text-gray-500 italic">No hay mesas.</div>`;
-      } else {
-        AppState.tables.forEach(t => {
-          const total = computeTableTotal(t);
-          const card = document.createElement('div');
-          card.className = 'card bg-white rounded-xl shadow p-5 cursor-pointer relative border-l-4';
-          card.dataset.tableId = t.id;
-          card.innerHTML = `
-            <div class="absolute top-3 right-3 flex gap-2">
-              ${t.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span>` : ''}
-            </div>
-            <h3 class="text-xl font-bold">${t.name}</h3>
-            <p class="text-sm text-gray-500 min-h-[20px]">${t.note || ''}</p>
-            <div class="mt-2 flex items-end justify-between">
-              <div>
-                <span class="text-gray-600">Total</span>
-                <div class="text-xl font-extrabold">${money(total)}</div>
-              </div>
-              ${!t.charged && t.createdAt ? `<div class="text-xs text-gray-500" data-created-at="${t.createdAt}"></div>` : ''}
-            </div>
-          `;
-          grid.appendChild(card);
-        });
-      }
-      $('#grand-total').textContent = 'TOTAL (activas): ' + money(computeGrandTotalActive());
-    }
-    
-    function renderMenuList(table) {
-        const menu = $('#menu-list');
-        menu.innerHTML = '';
-        const disabled = table.charged ? 'opacity-50 pointer-events-none' : '';
-        AppState.items.forEach(it => {
-            const qty = table.order[it.id] || 0;
-            const promoBadge = (it.id === 'taco_pastor' && AppState.promoEnabled) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
-            const row = document.createElement('div');
-            row.className = `flex items-center justify-between bg-white border rounded-lg p-3 ${disabled}`;
-            row.innerHTML = `
-            <div>
-                <div class="font-semibold flex items-center">${it.label} ${promoBadge}</div>
-                <div class="text-gray-600 text-sm">${money(AppState.prices[it.id] || 0)} c/u</div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold">−</button>
-                <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1">
-                <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
-            </div>
-            `;
-            menu.appendChild(row);
-        });
-    }
-
-    function renderTableSummary(table) {
-        const box = $('#table-summary');
-        box.innerHTML = '';
-        if (Object.keys(table.order).length === 0) {
-            box.innerHTML = '<div class="text-gray-500">Sin productos aún.</div>'; return;
-        }
-        const ul = document.createElement('ul');
-        ul.className = 'space-y-1';
-        for (const [itemId, qty] of Object.entries(table.order)) {
-            const label = (AppState.items.find(i => i.id === itemId)?.label) || itemId;
-            const { chargedQty, total } = computeLine(itemId, qty);
-            const li = document.createElement('li');
-            li.className = 'flex items-center justify-between';
-            li.innerHTML = `
-            <span>${qty} × ${label} ${itemId==='taco_pastor' && AppState.promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
-            <span class="font-semibold">${money(total)}</span>
-            `;
-            ul.appendChild(li);
-        }
-        box.appendChild(ul);
-    }
-
-    function renderDrawerActions(table) {
-        const wrap = $('#drawer-actions');
-        if (table.charged) {
-            wrap.innerHTML = `
-            <button id="reopen-table" class="col-span-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg">Reabrir Mesa</button>
-            <button id="delete-table" class="col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg">Eliminar Permanentemente</button>
-            `;
-        } else {
-            wrap.innerHTML = `
-            <button id="split-bill" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg">Dividir Cuenta</button>
-            <button id="print-bill" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg">Imprimir Cuenta</button>
-            <button id="close-table" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg">Cobrar & Cerrar</button>
-            <button id="clear-table" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg text-sm">Limpiar</button>
-            <button id="delete-table" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Eliminar</button>
-            `;
-        }
-    }
-    
-    // ---------------- Actions & State Changers ----------------
-    function addTable() {
-      const name = ($('#table-name').value || '').trim();
-      const note = ($('#table-note').value || '').trim();
-      if (!name) return alert('Escribe un nombre o número de mesa.');
-      AppState.tables.push({ id: uid(), name, note, order: {}, charged: false, paidAt: null, createdAt: Date.now() });
-      $('#table-name').value = ''; $('#table-note').value = '';
-      persist(); render(); toast('Mesa creada', 'success');
-    }
-    function closeTable(tableId) {
-      const t = AppState.tables.find(x => x.id === tableId); if (!t || t.charged) return;
-      const total = computeTableTotal(t);
-      if (!confirm(`Cobrar ${t.name} por ${money(total)} y marcar como COBRADA?`)) return;
-      t.charged = true; t.paidAt = Date.now();
-      persist(); render(); toast(`Mesa ${t.name} cobrada`, 'success');
-    }
-    function deleteTable(tableId) {
-      const t = AppState.tables.find(x => x.id === tableId); if (!t) return;
-      if (!confirm(`Eliminar ${t.name}? Esta acción no se puede deshacer.`)) return;
-      AppState.tables = AppState.tables.filter(x => x.id !== tableId);
-      persist(); closeDrawer(); render(); toast('Mesa eliminada', 'info');
-    }
-    function changeQty(tableId, itemId, delta) {
-        const t = AppState.tables.find(x => x.id === tableId); if (!t || t.charged) return;
-        const cur = t.order[itemId] || 0;
-        const next = Math.max(0, cur + delta);
-        if (next === 0) delete t.order[itemId]; else t.order[itemId] = next;
-        persist(); render();
-    }
-    // ... Other action functions (reopen, clear, closeAll, etc.) are omitted for brevity but remain the same ...
-    function addNewItem(){const n=$("#new-item-name").value.trim(),e=Number($("#new-item-price").value||0);if(n){if(!(e>0))return alert("Ponle un precio mayor a 0.");const t="custom_"+uid();AppState.items.push({id:t,label:n,base:!1}),AppState.prices[t]=e,$("#new-item-name").value="",$("#new-item-price").value="",persist(),render(),toast("Producto agregado","success")}else alert("Ponle nombre al producto.")}function deleteItem(t){confirm("¿Eliminar este producto?")&&(AppState.items=AppState.items.filter(n=>n.id!==t),delete AppState.prices[t],AppState.tables.forEach(n=>{delete n.order[t]}),persist(),render(),toast("Producto eliminado","info"))}function clearTable(t){const n=AppState.tables.find(n=>n.id===t);n&&!n.charged&&confirm(`Limpiar orden de ${n.name}?`)&&(n.order={},persist(),render(),toast("Mesa limpiada","info"))}function reopenTable(t){const n=AppState.tables.find(n=>n.id===t);n&&n.charged&&confirm(`Reabrir ${n.name} para seguir editando?`)&&(n.charged=!1,n.paidAt=null,persist(),render(),toast("Mesa reabierta","info"))}function closeAllTables(){if(0===AppState.tables.length)return;const t=AppState.tables.filter(n=>!n.charged);if(!t.length)return alert("No hay mesas activas.");const n=t.reduce((n,e)=>n+computeTableTotal(e),0);confirm(`Cobrar & Cerrar TODAS las mesas activas por ${money(n)}?`)&&(t.forEach(n=>{n.charged=!0,n.paidAt=Date.now()}),persist(),render(),toast("Mesas activas cobradas","success"))}function setQty(t,n,e){const a=AppState.tables.find(n=>n.id===t);a&&!a.charged&&(0===e?delete a.order[n]:a.order[n]=e,persist(),render())}
-
-    // ---------------- UI Controllers ----------------
-    function openDrawer(table, shouldAnimate=true) {
-        if (!table) return; AppState.currentTableId = table.id;
-        $('#drawer-title').textContent = table.name; $('#drawer-note').textContent = table.note || '';
-        $('#drawer-status').innerHTML = table.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500">— ${new Date(table.paidAt||Date.now()).toLocaleString()}</span>` : `<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>`;
-        $('#table-total').textContent = money(computeTableTotal(table));
-        renderMenuList(table); renderTableSummary(table); renderDrawerActions(table);
-        if (shouldAnimate) {
-            $('#drawer').classList.remove('translate-x-full');
-            $('#backdrop').classList.remove('pointer-events-none', 'opacity-0');
-            document.documentElement.classList.add('overflow-hidden');
-        }
-    }
-
-    function closeDrawer() {
-      AppState.currentTableId = null;
-      $('#drawer').classList.add('translate-x-full');
-      $('#backdrop').classList.add('pointer-events-none', 'opacity-0');
-      document.documentElement.classList.remove('overflow-hidden');
-    }
-
-    function applyPricesCollapsed(immediate = false) {
-      const body = $('#prices-body'), icon = $('#prices-toggle-icon');
-      if (AppState.pricesCollapsed) {
-        $('#prices-toggle-label').textContent = 'Mostrar';
-        $('#prices-toggle').setAttribute('aria-expanded', 'false');
-        icon.style.transform = 'rotate(-90deg)';
-        if (!immediate) body.style.maxHeight = body.scrollHeight + 'px';
-        requestAnimationFrame(() => { body.style.maxHeight = '0px'; });
-      } else {
-        $('#prices-toggle-label').textContent = 'Ocultar';
-        $('#prices-toggle').setAttribute('aria-expanded', 'true');
-        icon.style.transform = 'rotate(0deg)';
-        body.style.maxHeight = body.scrollHeight + 'px';
-        setTimeout(() => { body.style.maxHeight = '1000px'; }, immediate ? 0 : 10);
-      }
-    }
-    
-    // --- New Feature: Table Timers ---
-    function updateTimers() {
-        const now = Date.now();
-        $$('[data-table-id]').forEach(card => {
-            const tableId = card.dataset.tableId;
-            const table = AppState.tables.find(t => t.id === tableId);
-            if (!table || table.charged || !table.createdAt) {
-                card.style.borderColor = 'transparent';
-                return;
-            }
-            const elapsedMs = now - table.createdAt;
-            const timerEl = card.querySelector('[data-created-at]');
-            if (timerEl) timerEl.textContent = formatElapsedTime(elapsedMs);
-
-            const minutes = elapsedMs / 60000;
-            if (minutes > 30) card.style.borderColor = '#ef4444'; // red-500
-            else if (minutes > 15) card.style.borderColor = '#f59e0b'; // amber-500
-            else card.style.borderColor = '#22c55e'; // green-500
-        });
-    }
-
-    // --- New Feature: Split Bill ---
-    function splitBill(tableId) {
-        const table = AppState.tables.find(t => t.id === tableId); if (!table) return;
-        const numPeople = parseInt(prompt('Dividir la cuenta entre cuántas personas?', '2'), 10);
-        if (!numPeople || numPeople < 2) return;
-        const total = computeTableTotal(table);
-        const amountPerPerson = total / numPeople;
-        alert(`Total por persona: ${money(amountPerPerson)} (${numPeople} personas)`);
-    }
-
-    // --- New Feature: Print Bill ---
-    function printBill(tableId) {
-        const table = AppState.tables.find(t => t.id === tableId); if (!table) return;
-        let itemsHtml = '';
-        Object.entries(table.order).forEach(([itemId, qty]) => {
-            const item = AppState.items.find(i => i.id === itemId);
-            const line = computeLine(itemId, qty);
-            itemsHtml += `
-                <tr>
-                    <td>${qty}x</td>
-                    <td>${item ? item.label : 'Producto desconocido'}</td>
-                    <td class="text-right">${money(line.total)}</td>
-                </tr>
-            `;
-        });
-        const total = computeTableTotal(table);
-        const ticketHtml = `
-            <div id="print-area">
-                <center>
-                    <h1>Taquería "El Apá"</h1>
-                    <p>Gracias por su preferencia</p>
-                </center>
-                <hr>
-                <p><b>Mesa:</b> ${table.name}</p>
-                <p><b>Fecha:</b> ${new Date().toLocaleString()}</p>
-                <hr>
-                <table>${itemsHtml}</table>
-                <hr>
-                <h2 class="text-right">TOTAL: ${money(total)}</h2>
-            </div>
-        `;
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        iframe.contentDocument.write(ticketHtml);
-        const style = iframe.contentDocument.createElement('style');
-        style.textContent = `body{font-family:monospace;font-size:10pt} h1,h2,p{margin:0} table{width:100%;border-collapse:collapse} td,th{padding:4px 2px;text-align:left} .text-right{text-align:right} hr{border-top:1px dashed #000}`;
-        iframe.contentDocument.head.appendChild(style);
-        iframe.contentWindow.print();
-        document.body.removeChild(iframe);
-    }
-    
-    // ... Report Modal functions omitted for brevity but remain the same ...
-    function computeDailyReport(){const t=new Date;t.setHours(0,0,0,0);const n=AppState.tables.filter(n=>n.charged&&n.paidAt&&n.paidAt>=t.getTime()),e=n.reduce((t,n)=>t+computeTableTotal(n),0),a={},o={};return n.forEach(t=>{for(const[n,e]of Object.entries(t.order)){a[n]=(a[n]||0)+e;const s=computeLine(n,e);o[n]=(o[n]||0)+s.total}}),{totalSales:e,tablesCount:n.length,itemCounts:a,itemRevenue:o}}
-    function renderDailyReport(){const t=computeDailyReport();$("#report-total").textContent=money(t.totalSales),$("#report-tables-count").textContent=t.tablesCount;const n=$("#report-items-breakdown");if(n.innerHTML="",0===(t=>{const n=Object.entries(t.itemCounts).sort((t,n)=>n[1]-t[1]);if(0===n.length)return n.innerHTML='<div class="text-gray-500 italic">No hay ventas registradas hoy.</div>',0;n.forEach(([n,e])=>{const a=AppState.items.find(t=>t.id===n),o=a?a.label:n,s=t.itemRevenue[n]||0,i=document.createElement("div");i.className="flex justify-between items-center bg-gray-50 p-3 rounded-lg",i.innerHTML=`\n                <span class="font-medium text-gray-800">${o}</span>\n                <div class="text-right">\n                    <span class="font-bold text-lg">${e}</span>\n                    <span class="ml-2 text-sm text-gray-600">${money(s)}</span>\n                </div>\n            `,n.appendChild(i)})})(t))return}
-    function openReportModal(){renderDailyReport(),$("#report-modal").classList.remove("hidden")}function closeReportModal(){$("#report-modal").classList.add("hidden")}
-    
-    function toast(message, type = 'success', timeout = 2000) {
-      const wrap = $('#toast-wrap'); const el = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
-      el.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
-      el.textContent = message; wrap.appendChild(el);
-      requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
-      setTimeout(() => { el.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => el.remove(), 200); }, timeout);
-    }
-    
-    // ---------------- Event Wiring ----------------
-    function wireEvents() {
-        $('#prices-toggle').addEventListener('click', () => { AppState.pricesCollapsed = !AppState.pricesCollapsed; persist(); applyPricesCollapsed(); });
-        $('#promo-enabled').addEventListener('change', (e) => { AppState.promoEnabled = !!e.target.checked; persist(); render(); toast(`Promo 2×1 ${AppState.promoEnabled ? 'activada' : 'desactivada'}`, 'info'); });
-        $('#add-item').addEventListener('click', addNewItem); $('#add-table').addEventListener('click', addTable);
-        $('#close-all').addEventListener('click', closeAllTables); $('#show-report').addEventListener('click', openReportModal);
-        $('#report-close').addEventListener('click', closeReportModal); $('#report-modal').addEventListener('click', (e) => { if (e.target.id === 'report-modal') closeReportModal(); });
-        $('#price-editor').addEventListener('click', e => { const delId = e.target.closest('[data-del]')?.dataset.del; if (delId) deleteItem(delId); });
-        $('#save-prices').addEventListener('click', () => { AppState.items.forEach(it => { const el = $(`#price_${it.id}`); if (el) { const v = Number(el.value); if (isFinite(v)) AppState.prices[it.id] = v; } }); persist(); render(); toast('Precios guardados', 'success'); });
-        $('#tables-grid').addEventListener('click', (e) => { const tableId = e.target.closest('[data-table-id]')?.dataset.tableId; if (tableId) { const table = AppState.tables.find(t => t.id === tableId); openDrawer(table); } });
-        $('#drawer-close').addEventListener('click', closeDrawer); $('#backdrop').addEventListener('click', closeDrawer);
-
-        $('#drawer-actions').addEventListener('click', (e) => {
-            const tableId = AppState.currentTableId; if (!tableId) return;
-            const targetId = e.target.id;
-            const actions = { 'reopen-table': reopenTable, 'delete-table': deleteTable, 'clear-table': clearTable, 'close-table': closeTable, 'split-bill': splitBill, 'print-bill': printBill };
-            if (actions[targetId]) actions[targetId](tableId);
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        const App = window.TaqueriaApp;
         
-        const menuList = $('#menu-list');
-        menuList.addEventListener('click', (e) => {
-            const tableId = AppState.currentTableId; if (!tableId) return;
-            const plusId = e.target.closest('[data-plus]')?.dataset.plus; if (plusId) changeQty(tableId, plusId, +1);
-            const minusId = e.target.closest('[data-minus]')?.dataset.minus; if (minusId) changeQty(tableId, minusId, -1);
-        });
-        menuList.addEventListener('input', (e) => {
-            const tableId = AppState.currentTableId; if (!tableId) return;
-            const qtyId = e.target.closest('[data-qty]')?.dataset.qty; if (qtyId) setQty(tableId, qtyId, Math.max(0, Number(e.target.value || 0)));
-        });
+        function render() {
+            renderTables();
+            updateTimers();
+            const currentTable = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+            if (currentTable) openDrawer(currentTable, false);
+        }
 
-        window.addEventListener('online', updateNetStatus); window.addEventListener('offline', updateNetStatus);
-    }
-    
-    // ... SW & Versioning functions omitted for brevity but remain the same ...
-    async function requestSwVersion(t={timeoutMs:2e3}){if(!("serviceWorker"in navigator))throw new Error("SW not supported");const n=await navigator.serviceWorker.ready,e=n.active||n.waiting||n.installing;if(!e)throw new Error("No active SW");const o=new MessageChannel,a=new Promise((n,a)=>{const s=setTimeout(()=>a(new Error("SW version timeout")),t.timeoutMs);o.port1.onmessage=t=>{clearTimeout(s),t.data&&"VERSION"===t.data.type?n(t.data.version):a(new Error("Bad SW version response"))}});return e.postMessage({type:"GET_VERSION"},[o.port2]),a}
-    async function showVersion(){const t=document.getElementById("app-version");try{const n=await requestSwVersion({timeoutMs:2500});t.textContent=n,localStorage.setItem("tacos_sw_version",n)}catch{const n=localStorage.getItem("tacos_sw_version");t.textContent=n?`${n} (cache)`:"desconocida"}}
-    function updateNetStatus(){const t=document.getElementById("net-status");t.textContent=navigator.onLine?"· en línea":"· sin conexión",t.className=navigator.onLine?"ml-2 text-emerald-600":"ml-2 text-red-600"}
+        function renderTables() {
+            const g = App.$('#tables-grid'); g.innerHTML = '';
+            if (App.AppState.tables.length === 0) { g.innerHTML = `<div class="text-gray-500 italic">No hay mesas.</div>`; return; }
+            App.AppState.tables.forEach(t => {
+                const total = App.computeTableTotal(t);
+                const card = document.createElement('div'); card.className = 'card bg-white rounded-xl shadow p-5 cursor-pointer relative border-l-4'; card.dataset.tableId = t.id;
+                card.innerHTML = `<div class="absolute top-3 right-3 flex gap-2">${t.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span>` : ''}</div><h3 class="text-xl font-bold">${t.name}</h3><p class="text-sm text-gray-500 min-h-[20px]">${t.note || ''}</p><div class="mt-2 flex items-end justify-between"><div><span class="text-gray-600">Total</span><div class="text-xl font-extrabold">${App.money(total)}</div></div><div class="text-xs text-gray-500">${ t.charged && t.openDurationMs ? App.formatDuration(t.openDurationMs) : !t.charged && t.createdAt ? `<div data-created-at="${t.createdAt}"></div>` : '' }</div></div>`;
+                g.appendChild(card);
+            });
+            App.$('#grand-total').textContent = 'TOTAL (activas): ' + App.money(App.computeGrandTotalActive());
+        }
 
-    // ---------------- Init ----------------
-    function init() {
-      loadState(); persist(); wireEvents(); render();
-      applyPricesCollapsed(true);
-      
-      setInterval(updateTimers, 30000); // Update timers every 30 seconds
+        function renderMenuList(table) {
+            const m = App.$('#menu-list'); m.innerHTML = ''; const d = table.charged ? 'opacity-50 pointer-events-none' : '';
+            App.AppState.items.forEach(it => {
+                const q = table.order[it.id] || 0; const p = (it.id === 'taco_pastor' && App.AppState.promoEnabled) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
+                const r = document.createElement('div'); r.className = `flex items-center justify-between bg-white border rounded-lg p-3 ${d}`;
+                r.innerHTML = `<div><div class="font-semibold flex items-center">${it.label} ${p}</div><div class="text-gray-600 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u</div></div><div class="flex items-center gap-2"><button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold">−</button><input data-qty="${it.id}" type="number" min="0" value="${q}" class="w-16 text-center border rounded-md p-1"><button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button></div>`;
+                m.appendChild(r);
+            });
+        }
 
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./service-worker.js')
-            .then(() => navigator.serviceWorker.ready)
-            .then(() => { updateNetStatus(); showVersion(); })
-            .catch(() => { $('#app-version').textContent = 'sin SW'; updateNetStatus(); });
-        });
-        navigator.serviceWorker.addEventListener('controllerchange', () => { toast('Actualizando versión…', 'info', 1500); setTimeout(showVersion, 400); });
-      } else { $('#app-version').textContent = 'no compatible'; updateNetStatus(); }
-    }
+        function renderTableSummary(table) {
+            const b = App.$('#table-summary'); b.innerHTML = ''; if (Object.keys(table.order).length === 0) { b.innerHTML = '<div class="text-gray-500">Sin productos aún.</div>'; return; }
+            const u = document.createElement('ul'); u.className = 'space-y-1';
+            for (const [i, q] of Object.entries(table.order)) {
+                const l = (App.AppState.items.find(item => item.id === i)?.label) || i; const { chargedQty, total } = App.computeLine(i, q);
+                const li = document.createElement('li'); li.className = 'flex items-center justify-between'; li.innerHTML = `<span>${q} × ${l} ${i === 'taco_pastor' && App.AppState.promoEnabled ? `(Pagas ${chargedQty})` : ''}</span><span class="font-semibold">${App.money(total)}</span>`;
+                u.appendChild(li);
+            } b.appendChild(u);
+        }
 
-    init();
-  })();
+        function renderDrawerActions(table) {
+            const w = App.$('#drawer-actions');
+            w.innerHTML = table.charged ? `<button id="reopen-table" class="col-span-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg">Reabrir Mesa</button><button id="delete-table" class="col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg">Eliminar Permanentemente</button>`
+                : `<button id="print-bill" class="col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg">Imprimir Cuenta</button><button id="close-table" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg">Cobrar & Cerrar</button><button id="clear-table" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg text-sm">Limpiar</button><button id="delete-table" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Eliminar</button>`;
+        }
+        
+        function renderDailyReport(){const t=App.computeDailyReport();App.$("#report-total").textContent=App.money(t.totalSales);App.$("#report-tables-count").textContent=t.tablesCount;const e=App.$("#report-items-breakdown");e.innerHTML="";const n=Object.entries(t.itemCounts).sort((t,n)=>n[1]-t[1]);if(0===n.length)return void(e.innerHTML='<div class="text-gray-500 italic">No hay ventas registradas hoy.</div>');n.forEach(([n,o])=>{const d=App.AppState.items.find(t=>t.id===n),r=d?d.label:n,l=t.itemRevenue[n]||0,c=document.createElement("div");c.className="flex justify-between items-center bg-gray-50 p-3 rounded-lg",c.innerHTML=` <span class="font-medium text-gray-800">${r}</span> <div class="text-right"> <span class="font-bold text-lg">${o}</span> <span class="ml-2 text-sm text-gray-600">${App.money(l)}</span> </div> `,e.appendChild(c)})}
+
+        function addTable() { const n = (App.$('#table-name').value||'').trim(), o = (App.$('#table-note').value||'').trim(); if (!n) return alert('Escribe un nombre o número de mesa.'); App.AppState.tables.push({id:App.uid(),name:n,note:o,order:{},charged:!1,paidAt:null,createdAt:Date.now(),openDurationMs:null}); App.$('#table-name').value='';App.$('#table-note').value=''; App.persist();render();App.toast('Mesa creada','success'); }
+        function closeTable(t) { const e = App.AppState.tables.find(e => e.id === t); if (!e || e.charged) return; const a = App.computeTableTotal(e); if (!confirm(`Cobrar ${e.name} por ${App.money(a)} y marcar como COBRADA?`)) return; e.charged=!0; e.paidAt=Date.now(); e.openDurationMs=e.paidAt - e.createdAt; App.persist();render();App.toast(`Mesa ${e.name} cobrada`,'success'); }
+        function reopenTable(t) { const e = App.AppState.tables.find(e => e.id === t); if (!e || !e.charged) return; if (!confirm(`Reabrir ${e.name} para seguir editando?`)) return; e.charged=!1; e.paidAt=null; e.openDurationMs=null; App.persist();render();App.toast('Mesa reabierta','info'); }
+        function deleteTable(t) { if (!App.AppState.tables.find(e => e.id === t)) return; if (!confirm(`Eliminar mesa? Esta acción no se puede deshacer.`)) return; App.AppState.tables = App.AppState.tables.filter(e => e.id !== t); App.persist();closeDrawer();render();App.toast('Mesa eliminada','info'); }
+        function changeQty(t, e, a) { const n = App.AppState.tables.find(e => e.id === t); if (!n || n.charged) return; const o = n.order[e] || 0, r = Math.max(0, o + a); 0 === r ? delete n.order[e] : n.order[e] = r; App.persist();render(); }
+        function setQty(t,e,a) { const n=App.AppState.tables.find(e=>e.id===t); if(!n||n.charged) return; 0===a?delete n.order[e]:n.order[e]=a; App.persist();render(); }
+        function clearTable(t){const n=App.AppState.tables.find(n=>n.id===t);n&&!n.charged&&confirm(`Limpiar orden de ${n.name}?`)&&(n.order={},App.persist(),render(),App.toast("Mesa limpiada","info"))}
+        function closeAllTables(){if(0===App.AppState.tables.length)return;const t=App.AppState.tables.filter(n=>!n.charged);if(!t.length)return alert("No hay mesas activas.");const n=t.reduce((n,e)=>n+App.computeTableTotal(e),0);confirm(`Cobrar & Cerrar TODAS las mesas activas por ${App.money(n)}?`)&&(t.forEach(t=>{t.charged=!0;t.paidAt=Date.now();t.openDurationMs=t.paidAt-t.createdAt}),App.persist(),render(),App.toast("Mesas activas cobradas","success"))}
+        function printBill(t){const e=App.AppState.tables.find(e=>e.id===t);if(!e)return;let a="";Object.entries(e.order).forEach(([t,n])=>{const o=App.AppState.items.find(e=>e.id===t),d=App.computeLine(t,n);a+=`<tr><td>${n}x</td><td>${o?o.label:"Producto desconocido"}</td><td class="text-right">${App.money(d.total)}</td></tr>`});const n=App.computeTableTotal(e),o=`<div id="print-area"><center><h1>Taquería "El Apá"</h1><p>Gracias por su preferencia</p></center><hr><p><b>Mesa:</b> ${e.name}</p><p><b>Fecha:</b> ${new Date().toLocaleString()}</p><hr><table>${a}</table><hr><h2 class="text-right">TOTAL: ${App.money(n)}</h2></div>`,d=document.createElement("iframe");d.style.display="none";document.body.appendChild(d);d.contentDocument.write(o);const r=d.contentDocument.createElement("style");r.textContent="body{font-family:monospace;font-size:10pt} h1,h2,p{margin:0} table{width:100%;border-collapse:collapse} td,th{padding:4px 2px;text-align:left} .text-right{text-align:right} hr{border-top:1px dashed #000}";d.contentDocument.head.appendChild(r);d.contentWindow.print();document.body.removeChild(d)}
+        
+        function openDrawer(t,e=!0){if(!t)return;App.AppState.currentTableId=t.id;App.$("#drawer-title").textContent=t.name;App.$("#drawer-note").textContent=t.note||"";App.$("#drawer-status").innerHTML=t.charged?`<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500">— ${new Date(t.paidAt||Date.now()).toLocaleString()}</span>`:'<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>';App.$("#table-total").textContent=App.money(App.computeTableTotal(t));renderMenuList(t);renderTableSummary(t);renderDrawerActions(t);if(e){App.$("#drawer").classList.remove("translate-x-full");App.$("#backdrop").classList.remove("pointer-events-none","opacity-0");document.documentElement.classList.add("overflow-hidden")}}
+        function closeDrawer(){App.AppState.currentTableId=null;App.$("#drawer").classList.add("translate-x-full");App.$("#backdrop").classList.add("pointer-events-none","opacity-0");document.documentElement.classList.remove("overflow-hidden")}
+        function updateTimers(){const e=Date.now();App.$$("[data-table-id]").forEach(t=>{const a=t.dataset.tableId,n=App.AppState.tables.find(e=>e.id===a);if(n&&!n.charged&&n.createdAt){const o=t.querySelector("[data-created-at]");o&&(o.textContent=App.formatElapsedTime(e-n.createdAt));const d=(e-n.createdAt)/6e4;t.style.borderColor=d>30?"#ef4444":d>15?"#f59e0b":"#22c55e"}else t.style.borderColor="transparent"})}
+        function openReportModal(){renderDailyReport(),App.$("#report-modal").classList.remove("hidden")}
+        function closeReportModal(){App.$("#report-modal").classList.add("hidden")}
+
+        function wireEvents() {
+            App.$('#add-table').addEventListener('click', addTable);
+            App.$('#close-all').addEventListener('click', closeAllTables);
+            App.$('#show-report').addEventListener('click', openReportModal);
+            App.$('#report-close').addEventListener('click', closeReportModal);
+            App.$('#report-modal').addEventListener('click', e => { if (e.target.id === 'report-modal') closeReportModal(); });
+            App.$('#tables-grid').addEventListener('click', e => { const t = e.target.closest('[data-table-id]')?.dataset.tableId; if (t) { const a = App.AppState.tables.find(e => e.id === t); openDrawer(a); } });
+            App.$('#drawer-close').addEventListener('click', closeDrawer);
+            App.$('#backdrop').addEventListener('click', closeDrawer);
+            App.$('#drawer-actions').addEventListener('click', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.id, n = {'reopen-table': reopenTable, 'delete-table': deleteTable, 'clear-table': clearTable, 'close-table': closeTable, 'print-bill': printBill}; if (n[a]) n[a](t); });
+            const menuList=App.$('#menu-list');
+            menuList.addEventListener('click',e=>{const t=App.AppState.currentTableId;if(!t)return;const a=e.target.closest('[data-plus]')?.dataset.plus;if(a)changeQty(t,a,1);const n=e.target.closest('[data-minus]')?.dataset.minus;if(n)changeQty(t,n,-1)});
+            menuList.addEventListener('input',e=>{const t=App.AppState.currentTableId;if(!t)return;const a=e.target.closest('[data-qty]')?.dataset.qty;if(a)setQty(t,a,Math.max(0,Number(e.target.value||0)))});
+        }
+
+        function init() {
+            App.loadState();
+            wireEvents();
+            render();
+            setInterval(updateTimers, 30000);
+            App.handleSW();
+        }
+        init();
+    });
   </script>
 </body>
 </html>
