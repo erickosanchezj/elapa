@@ -1,13 +1,45 @@
 {
-  "name": "Taquería El Apa",
-  "short_name": "Taquería El Apa",
-  "start_url": "./",
+  "name": "Taquería El Apá Admin",
+  "short_name": "El Apá Admin",
+  "lang": "es-MX",
+  "description": "Panel de administración para gestionar mesas y órdenes en la Taquería El Apá.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#f59e0b",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Administrar Precios",
+      "short_name": "Precios",
+      "description": "Editar el menú y los precios de los productos",
+      "url": "/precios.html",
+      "icons": [{ "src": "icons/icon-shortcut-prices-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Reporte del Día",
+      "short_name": "Reporte",
+      "description": "Ver el resumen de ventas del día actual",
+      "url": "/index.html?action=showReport",
+      "icons": [{ "src": "icons/icon-shortcut-report-192.png", "sizes": "192x192" }]
+    }
   ]
 }
