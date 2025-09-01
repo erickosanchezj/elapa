@@ -24,12 +24,7 @@
         if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = App.isMonOrWed();
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
-        // Compatibilidad con la estructura de datos anterior
-        if(localStorage.getItem('tacos_tables_v2')) {
-            App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2'));
-            localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2'));
-            localStorage.removeItem('tacos_tables_v2');
-        }
+        if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
     };
 
     App.persist = function() {
@@ -39,18 +34,58 @@
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
     };
 
-    App.computeLine = function(itemId, qty) { const p = App.AppState.prices[itemId] || 0; let c = qty; if (itemId === 'taco_pastor' && App.AppState.promoEnabled) c = Math.ceil(qty / 2); return { unit: p, chargedQty: c, total: c * p }; };
-    App.computeTableTotal = function(table) { return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0); };
-    App.computeGrandTotalActive = function() { return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0); };
-    App.computeDailyReport = function(){const t=new Date;t.setHours(0,0,0,0);const n=App.AppState.tables.filter(n=>n.charged&&n.paidAt&&n.paidAt>=t.getTime()),e=n.reduce((t,n)=>t+App.computeTableTotal(n),0),a={},o={};return n.forEach(t=>{for(const[n,e]of Object.entries(t.order)){a[n]=(a[n]||0)+e;const s=App.computeLine(n,e);o[n]=(o[n]||0)+s.total}}),{totalSales:e,tablesCount:n.length,itemCounts:a,itemRevenue:o}};
+    App.computeLine = function(itemId, qty) {
+        const p = App.AppState.prices[itemId] || 0;
+        let c = qty;
+        if (itemId === 'taco_pastor' && App.AppState.promoEnabled) {
+            c = Math.ceil(qty / 2);
+        }
+        return { unit: p, chargedQty: c, total: c * p };
+    };
+    
+    App.computeTableTotal = function(table) {
+        return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
+    };
+
+    App.computeGrandTotalActive = function() {
+        return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0);
+    };
+    
+    App.computeDailyReport = function(){
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        
+        const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStart.getTime());
+        
+        const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
+        const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
+
+        const itemCounts = {};
+        const itemRevenue = {};
+        todaysTables.forEach(t => {
+            for (const [id, qty] of Object.entries(t.order)) {
+                itemCounts[id] = (itemCounts[id] || 0) + qty;
+                const line = App.computeLine(id, qty);
+                itemRevenue[id] = (itemRevenue[id] || 0) + line.total;
+            }
+        });
+        
+        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue };
+    };
 
     App.toast = function(message, type = 'success', timeout = 2000) {
-      const w = App.$('#toast-wrap'); if(!w) return; const e = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
-      e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
-      e.textContent = message; w.appendChild(e);
-      requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
-      setTimeout(() => { e.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => e.remove(), 200); }, timeout);
+        const w = App.$('#toast-wrap');
+        if (!w) return;
+        const e = document.createElement('div');
+        const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
+        e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
+        e.textContent = message;
+        w.appendChild(e);
+        requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
+        setTimeout(() => {
+            e.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => e.remove(), 200);
+        }, timeout);
     };
 
     App.handleSW = function() {
@@ -63,16 +98,59 @@
             statusEl.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
         };
 
-        async function requestSwVersion(t={timeoutMs:2e3}){if(!("serviceWorker"in navigator))throw new Error("SW not supported");const n=await navigator.serviceWorker.ready,e=n.active||n.waiting||n.installing;if(!e)throw new Error("No active SW");const o=new MessageChannel,a=new Promise((n,a)=>{const s=setTimeout(()=>a(new Error("SW version timeout")),t.timeoutMs);o.port1.onmessage=t=>{clearTimeout(s),t.data&&"VERSION"===t.data.type?n(t.data.version):a(new Error("Bad SW version response"))}});return e.postMessage({type:"GET_VERSION"},[o.port2]),a}
-        async function showVersion(){try{const n=await requestSwVersion({timeoutMs:2500});versionEl.textContent=n,localStorage.setItem("tacos_sw_version",n)}catch{const n=localStorage.getItem("tacos_sw_version");versionEl.textContent=n?`${n} (cache)`:"desconocida"}}
+        async function requestSwVersion(config = { timeoutMs: 2000 }) {
+            if (!("serviceWorker" in navigator)) throw new Error("SW not supported");
+            const reg = await navigator.serviceWorker.ready;
+            const sw = reg.active || reg.waiting || reg.installing;
+            if (!sw) throw new Error("No active SW");
+            const channel = new MessageChannel();
+            const promise = new Promise((resolve, reject) => {
+                const timer = setTimeout(() => reject(new Error("SW version timeout")), config.timeoutMs);
+                channel.port1.onmessage = event => {
+                    clearTimeout(timer);
+                    if (event.data && event.data.type === "VERSION") {
+                        resolve(event.data.version);
+                    } else {
+                        reject(new Error("Bad SW version response"));
+                    }
+                };
+            });
+            sw.postMessage({ type: "GET_VERSION" }, [channel.port2]);
+            return promise;
+        }
+
+        async function showVersion() {
+            try {
+                const version = await requestSwVersion({ timeoutMs: 2500 });
+                versionEl.textContent = version;
+                localStorage.setItem("tacos_sw_version", version);
+            } catch {
+                const cachedVersion = localStorage.getItem("tacos_sw_version");
+                versionEl.textContent = cachedVersion ? `${cachedVersion} (cache)` : "desconocida";
+            }
+        }
         
-        if('serviceWorker' in navigator){
-            window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').then(()=>navigator.serviceWorker.ready).then(()=>{updateNetStatus();showVersion()}).catch(()=>{versionEl.textContent='sin SW';updateNetStatus()})});
-            navigator.serviceWorker.addEventListener('controllerchange',()=>{App.toast('Actualizando versión…','info',1500);setTimeout(showVersion,400)});
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(() => navigator.serviceWorker.ready)
+                    .then(() => {
+                        updateNetStatus();
+                        showVersion();
+                    }).catch(() => {
+                        versionEl.textContent = 'sin SW';
+                        updateNetStatus();
+                    });
+            });
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                App.toast('Actualizando versión…', 'info', 1500);
+                setTimeout(showVersion, 400);
+            });
         } else {
-            versionEl.textContent='no compatible';
+            versionEl.textContent = 'no compatible';
             updateNetStatus();
         }
-        window.addEventListener('online',updateNetStatus);window.addEventListener('offline',updateNetStatus);
+        window.addEventListener('online', updateNetStatus);
+        window.addEventListener('offline', updateNetStatus);
     };
 })();
