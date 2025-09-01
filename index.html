@@ -471,6 +471,12 @@
             render();
             setInterval(updateTimers, 30000);
             App.handleSW();
+
+            // Checar si se accedió desde un "shortcut"
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'showReport') {
+                openReportModal();
+            }
         }
         init();
     });

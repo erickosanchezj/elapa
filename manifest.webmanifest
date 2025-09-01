@@ -32,14 +32,14 @@
       "short_name": "Precios",
       "description": "Editar el menú y los precios de los productos",
       "url": "/precios.html",
-      "icons": [{ "src": "icons/icon-shortcut-prices-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icons/icon-512.png", "sizes": "192x192" }]
     },
     {
       "name": "Ver Reporte del Día",
       "short_name": "Reporte",
       "description": "Ver el resumen de ventas del día actual",
       "url": "/index.html?action=showReport",
-      "icons": [{ "src": "icons/icon-shortcut-report-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icons/icon-512.png", "sizes": "512x512" }]
     }
   ]
 }
