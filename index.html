@@ -6,6 +6,7 @@
   <title>Taquería "El Apá" — Órdenes por Mesa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="js/styles.css">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#f59e0b">
@@ -31,7 +32,10 @@
                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
             <input id="table-note" type="text" placeholder="Nota (opcional)"
                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-            <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg">Agregar</button>
+              <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center">
+                  <span class="material-icons mr-1" aria-hidden="true">add</span>
+                  Agregar
+              </button>
         </div>
     </section>
 
@@ -42,8 +46,14 @@
           <div class="text-right">
             <div id="grand-total" class="text-xl font-extrabold">TOTAL (activas): $0.00</div>
             <div class="flex gap-2 justify-end mt-2">
-              <button id="show-report" class="text-sm bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg">Reporte del Día</button>
-              <button id="close-all" class="text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg">Cobrar & Cerrar todas</button>
+                <button id="show-report" class="text-sm bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg inline-flex items-center">
+                  <span class="material-icons mr-1" aria-hidden="true">assessment</span>
+                  Reporte del Día
+                </button>
+                <button id="close-all" class="text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg inline-flex items-center">
+                  <span class="material-icons mr-1" aria-hidden="true">point_of_sale</span>
+                  Cobrar & Cerrar todas
+                </button>
             </div>
           </div>
         </div>
