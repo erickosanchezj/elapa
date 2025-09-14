@@ -1,4 +1,27 @@
-body { font-family: 'Inter', sans-serif; }
+/* /js/styles.css
+   Shared styles and dark mode variables
+   Keeps UI consistent across pages
+   RELEVANT FILES: index.html, precios.html */
+
+:root {
+  --color-amber: #f59e0b;
+  --bg-light: #f3f4f6;
+  --bg-dark: #111827;
+  --text-light: #1f2937;
+  --text-dark: #f3f4f6;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+.dark body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
 .card { transition: transform .2s ease, box-shadow .2s ease, border-color .3s ease; }
 .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
 .badge { font-size:.7rem; padding:.2rem .5rem; border-radius:9999px; }
