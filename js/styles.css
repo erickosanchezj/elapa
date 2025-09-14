@@ -13,22 +13,29 @@ input[type="number"] { -moz-appearance: textfield; }
 .modal.hidden .modal-content { transform: translateY(1rem); }
 
 /* Clases para el modal de propinas */
-.tip-option-btn {
-  background-color: #f3f4f6; /* bg-gray-100 */
-  font-weight: 600;
-  padding: 0.75rem 0;
-  border-radius: 0.5rem;
-  text-align: center;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.tip-option-btn:hover {
-  background-color: #e5e7eb; /* bg-gray-200 */
-}
-.tip-option-btn.selected {
-  background-color: #f59e0b; /* bg-yellow-500 */
-  color: #ffffff; /* text-white */
-  border: 2px solid #d97706; /* ring-2 ring-yellow-600 */
-}
+  .tip-option-btn {
+    background-color: #f3f4f6; /* bg-gray-100 */
+    font-weight: 600;
+    padding: 0.75rem 0;
+    border-radius: 0.5rem;
+    text-align: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .tip-option-btn:hover {
+    background-color: #e5e7eb; /* bg-gray-200 */
+  }
+  .dark .tip-option-btn {
+    background-color: #374151; /* bg-gray-700 */
+    color: #f3f4f6; /* text-gray-100 */
+  }
+  .dark .tip-option-btn:hover {
+    background-color: #4b5563; /* bg-gray-600 */
+  }
+  .tip-option-btn.selected {
+    background-color: #f59e0b; /* bg-yellow-500 */
+    color: #ffffff; /* text-white */
+    border: 2px solid #d97706; /* ring-2 ring-yellow-600 */
+  }
 
 @media print {
   body * { visibility: hidden; }
