@@ -3,36 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apá" — Órdenes por Mesa</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="js/styles.css">
+    <title>Taquería "El Apá" — Órdenes por Mesa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+      if (localStorage.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+    <link rel="stylesheet" href="js/styles.css">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#f59e0b">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
-<body class="bg-gray-100 text-gray-800">
-  <div class="container mx-auto max-w-7xl p-4 md:p-8">
-    <header class="mb-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apá"</h1>
-      <p class="text-gray-600 mt-2">Panel de Administración · Órdenes por Mesa</p>
-    </header>
+  <body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
+    <div class="container mx-auto max-w-7xl p-4 md:p-8">
+      <header class="mb-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apá"</h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">Panel de Administración · Órdenes por Mesa</p>
+        </div>
+        <button id="theme-toggle" class="mt-4 sm:mt-0 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600">
+          <span id="theme-icon" class="material-icons">dark_mode</span>
+        </button>
+      </header>
 
-    <section class="bg-white p-6 rounded-xl shadow mb-8">
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h2 class="text-2xl font-bold text-gray-700">Crear Mesa</h2>
-            <a href="precios.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100">
+            <h2 class="text-2xl font-bold text-gray-700 dark:text-gray-100">Crear Mesa</h2>
+            <a href="precios.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
                 <span>⚙️</span>
                 Administrar Precios y Menú
             </a>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 mt-4">
             <input id="table-name" type="text" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
-                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
             <input id="table-note" type="text" placeholder="Nota (opcional)"
-                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-              <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center">
+                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+              <button id="add-table" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-500">
                   <span class="material-icons mr-1" aria-hidden="true">add</span>
                   Agregar
               </button>
@@ -40,17 +50,17 @@
     </section>
 
     <section class="relative z-0">
-      <div class="sticky top-0 bg-gray-100 z-10 pb-2">
+      <div class="sticky top-0 bg-gray-100 dark:bg-gray-900 z-10 pb-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-700">Mesas</h2>
+          <h2 class="text-2xl font-bold text-gray-700 dark:text-gray-100">Mesas</h2>
           <div class="text-right">
-            <div id="grand-total" class="text-xl font-extrabold">TOTAL (activas): $0.00</div>
+            <div id="grand-total" class="text-xl font-extrabold dark:text-gray-100">TOTAL (activas): $0.00</div>
             <div class="flex gap-2 justify-end mt-2">
-                <button id="show-report" class="text-sm bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg inline-flex items-center">
+                <button id="show-report" class="text-sm bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg inline-flex items-center dark:bg-blue-700 dark:hover:bg-blue-600">
                   <span class="material-icons mr-1" aria-hidden="true">assessment</span>
                   Reporte del Día
                 </button>
-                <button id="close-all" class="text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg inline-flex items-center">
+                <button id="close-all" class="text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg inline-flex items-center dark:bg-gray-700 dark:hover:bg-gray-600">
                   <span class="material-icons mr-1" aria-hidden="true">point_of_sale</span>
                   Cobrar & Cerrar todas
                 </button>
@@ -61,17 +71,17 @@
       <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <footer class="mt-8 text-center text-xs text-gray-500">
+    <footer class="mt-8 text-center text-xs text-gray-500 dark:text-gray-400">
       <span>Versión: </span><span id="app-version" class="font-medium">cargando…</span><span id="net-status" class="ml-2"></span>
     </footer>
   </div>
   
   <div id="tip-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
-    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm">
-        <div class="p-5 border-b"><h3 id="tip-modal-title" class="text-2xl font-bold text-gray-800">Agregar Propina</h3></div>
+    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm">
+        <div class="p-5 border-b"><h3 id="tip-modal-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Agregar Propina</h3></div>
         <div class="p-5 space-y-4">
             <div class="text-center">
-                <div class="text-sm text-gray-500">Subtotal</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                 <div id="tip-subtotal" class="text-3xl font-bold">$0.00</div>
             </div>
             <div class="grid grid-cols-3 gap-3">
@@ -80,8 +90,8 @@
                 <button data-tip-percent="0.20" class="tip-option-btn">20%</button>
             </div>
             <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input id="tip-custom-amount" type="number" placeholder="Otro monto" class="w-full pl-7 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                <input id="tip-custom-amount" type="number" placeholder="Otro monto" class="w-full pl-7 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
             </div>
              <button data-tip-percent="0" class="tip-option-btn w-full">Sin Propina</button>
             <hr/>
@@ -94,16 +104,16 @@
                 <span id="tip-grand-total">$0.00</span>
             </div>
         </div>
-        <div class="p-4 bg-gray-50 grid grid-cols-2 gap-3 rounded-b-xl">
-            <button id="tip-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg">Cancelar</button>
-            <button id="tip-confirm" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg">Cobrar</button>
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 grid grid-cols-2 gap-3 rounded-b-xl">
+            <button id="tip-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100">Cancelar</button>
+            <button id="tip-confirm" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Cobrar</button>
         </div>
     </div>
   </div>
 
-  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]"><div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><h3 class="text-2xl font-bold text-gray-800">Reporte del Día</h3><button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button></div><div class="p-5 overflow-y-auto"><div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center"></div><h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4><div id="report-items-breakdown" class="space-y-2"></div></div></div></div>
+  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]"><div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reporte del Día</h3><button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto"><div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center"></div><h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4><div id="report-items-breakdown" class="space-y-2"></div></div></div></div>
 
-  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white shadow-2xl translate-x-full transition-transform z-[9999]"><div class="h-[100svh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><div><h3 id="drawer-title" class="text-2xl font-bold text-gray-800">Mesa</h3><p id="drawer-note" class="text-sm text-gray-500"></p><div id="drawer-status" class="mt-1 text-xs"></div></div><button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800">&times;</button></div><div class="p-5 overflow-y-auto flex-1"><h4 class="text-lg font-semibold mb-3">Agregar productos</h4><div id="menu-list" class="space-y-3 mb-6"></div><h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4><div id="table-summary" class="bg-gray-50 border rounded-lg p-4"></div></div><div class="p-5 border-t bg-gray-50 pb-[env(safe-area-inset-bottom)]"><div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div><div id="drawer-actions" class="grid grid-cols-2 gap-3"></div></div></div></div>
+  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white dark:bg-gray-800 shadow-2xl translate-x-full transition-transform z-[9999]"><div class="h-[100svh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><div><h3 id="drawer-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mesa</h3><p id="drawer-note" class="text-sm text-gray-500 dark:text-gray-400"></p><div id="drawer-status" class="mt-1 text-xs"></div></div><button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto flex-1"><h4 class="text-lg font-semibold mb-3">Agregar productos</h4><div id="menu-list" class="space-y-3 mb-6"></div><h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4><div id="table-summary" class="bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-4"></div></div><div class="p-5 border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600 pb-[env(safe-area-inset-bottom)]"><div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div><div id="drawer-actions" class="grid grid-cols-2 gap-3"></div></div></div></div>
   
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
   <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
@@ -112,6 +122,17 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const App = window.TaqueriaApp;
+        const themeBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        function updateThemeIcon() {
+            themeIcon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+        }
+        themeBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            updateThemeIcon();
+        });
+        updateThemeIcon();
         let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
 
         function render() {
@@ -127,13 +148,13 @@
             const grid = App.$('#tables-grid');
             grid.innerHTML = '';
             if (App.AppState.tables.length === 0) {
-                grid.innerHTML = `<div class="text-gray-500 italic">No hay mesas.</div>`;
+                grid.innerHTML = `<div class="text-gray-500 dark:text-gray-400 italic">No hay mesas.</div>`;
                 return;
             }
             App.AppState.tables.forEach(t => {
                 const total = App.computeTableTotal(t);
                 const card = document.createElement('div');
-                card.className = 'card bg-white rounded-xl shadow p-5 cursor-pointer relative border-l-4';
+                card.className = 'card bg-white dark:bg-gray-800 rounded-xl shadow p-5 cursor-pointer relative border-l-4';
                 card.dataset.tableId = t.id;
                 const timeInfoHtml = t.charged && t.openDurationMs 
                     ? App.formatDuration(t.openDurationMs) 
@@ -141,15 +162,15 @@
                     ? `<div data-created-at="${t.createdAt}"></div>` 
                     : '';
                 card.innerHTML = `
-                    <div class="absolute top-3 right-3 flex gap-2">${t.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span>` : ''}</div>
-                    <h3 class="text-xl font-bold">${t.name}</h3>
-                    <p class="text-sm text-gray-500 min-h-[20px]">${t.note || ''}</p>
-                    <div class="mt-2 flex items-end justify-between">
+                    <div class=\"absolute top-3 right-3 flex gap-2\">${t.charged ? `<span class=\"badge bg-gray-800 text-white\">COBRADA</span>` : ''}</div>
+                    <h3 class=\"text-xl font-bold\">${t.name}</h3>
+                    <p class=\"text-sm text-gray-500 dark:text-gray-400 min-h-[20px]\">${t.note || ''}</p>
+                    <div class=\"mt-2 flex items-end justify-between\">
                         <div>
-                            <span class="text-gray-600">Total</span>
-                            <div class="text-xl font-extrabold">${App.money(total)}</div>
+                            <span class=\"text-gray-600 dark:text-gray-300\">Total</span>
+                            <div class=\"text-xl font-extrabold\">${App.money(total)}</div>
                         </div>
-                        <div class="text-xs text-gray-500">${timeInfoHtml}</div>
+                        <div class=\"text-xs text-gray-500 dark:text-gray-400\">${timeInfoHtml}</div>
                     </div>`;
                 grid.appendChild(card);
             });
@@ -164,16 +185,16 @@
                 const qty = table.order[it.id] || 0;
                 const promoBadge = (it.id === 'taco_pastor' && App.AppState.promoEnabled) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
                 const row = document.createElement('div');
-                row.className = `flex items-center justify-between bg-white border rounded-lg p-3 ${isDisabled}`;
+                row.className = `flex items-center justify-between bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
                 row.innerHTML = `
                     <div>
-                        <div class="font-semibold flex items-center">${it.label} ${promoBadge}</div>
-                        <div class="text-gray-600 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u</div>
+                        <div class=\"font-semibold flex items-center\">${it.label} ${promoBadge}</div>
+                        <div class=\"text-gray-600 dark:text-gray-300 text-sm\">${App.money(App.AppState.prices[it.id] || 0)} c/u</div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold">−</button>
-                        <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1">
-                        <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
+                    <div class=\"flex items-center gap-2\">
+                        <button data-minus=\"${it.id}\" class=\"w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600\">−</button>
+                        <input data-qty=\"${it.id}\" type=\"number\" min=\"0\" value=\"${qty}\" class=\"w-16 text-center border rounded-md p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100\">
+                        <button data-plus=\"${it.id}\" class=\"w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold\">+</button>
                     </div>`;
                 menu.appendChild(row);
             });
@@ -183,7 +204,7 @@
             const box = App.$('#table-summary');
             box.innerHTML = '';
             if (Object.keys(table.order).length === 0) {
-                box.innerHTML = '<div class="text-gray-500">Sin productos aún.</div>';
+                box.innerHTML = '<div class="text-gray-500 dark:text-gray-400">Sin productos aún.</div>';
                 return;
             }
             const ul = document.createElement('ul');
@@ -206,14 +227,14 @@
             const wrapper = App.$('#drawer-actions');
             if (table.charged) {
                 wrapper.innerHTML = `
-                    <button id="reopen-table" class="col-span-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg">Reabrir Mesa</button>
-                    <button id="delete-table" class="col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg">Eliminar</button>`;
+                    <button id="reopen-table" class="col-span-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg dark:bg-amber-600 dark:hover:bg-amber-500">Reabrir Mesa</button>
+                    <button id="delete-table" class="col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg dark:bg-red-600 dark:hover:bg-red-500">Eliminar</button>`;
             } else {
                 wrapper.innerHTML = `
-                    <button id="print-bill" class="col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg">Imprimir Cuenta</button>
-                    <button id="close-table" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg">Cobrar & Cerrar</button>
-                    <button id="clear-table" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg text-sm">Limpiar</button>
-                    <button id="delete-table" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Eliminar</button>`;
+                    <button id="print-bill" class="col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg dark:bg-blue-600 dark:hover:bg-blue-500">Imprimir Cuenta</button>
+                    <button id="close-table" class="col-span-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Cobrar & Cerrar</button>
+                    <button id="clear-table" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100">Limpiar</button>
+                    <button id="delete-table" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm dark:bg-red-600 dark:hover:bg-red-500">Eliminar</button>`;
             }
         }
         
@@ -221,17 +242,17 @@
             const report = App.computeDailyReport();
             const summaryContainer = App.$("#report-summary");
             summaryContainer.innerHTML = `
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <div class="text-sm text-gray-700">Ventas (Subtotal)</div>
-                    <div class="text-2xl font-extrabold text-gray-800">${App.money(report.totalSubtotals)}</div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <div class="text-sm text-gray-700 dark:text-gray-300">Ventas (Subtotal)</div>
+                    <div class="text-2xl font-extrabold text-gray-800 dark:text-gray-100">${App.money(report.totalSubtotals)}</div>
                 </div>
-                <div class="bg-amber-50 p-4 rounded-lg">
-                    <div class="text-sm text-amber-700">Propinas</div>
-                    <div class="text-2xl font-extrabold text-amber-800">${App.money(report.totalTips)}</div>
+                <div class="bg-amber-50 dark:bg-amber-700 p-4 rounded-lg">
+                    <div class="text-sm text-amber-700 dark:text-amber-200">Propinas</div>
+                    <div class="text-2xl font-extrabold text-amber-800 dark:text-amber-100">${App.money(report.totalTips)}</div>
                 </div>
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <div class="text-sm text-green-700">Total Cobrado</div>
-                    <div class="text-2xl font-extrabold text-green-800">${App.money(report.totalSubtotals + report.totalTips)}</div>
+                <div class="bg-green-50 dark:bg-green-700 p-4 rounded-lg">
+                    <div class="text-sm text-green-700 dark:text-green-200">Total Cobrado</div>
+                    <div class="text-2xl font-extrabold text-green-800 dark:text-green-100">${App.money(report.totalSubtotals + report.totalTips)}</div>
                 </div>`;
 
             const itemsContainer = App.$("#report-items-breakdown");
@@ -239,7 +260,7 @@
             const sortedItems = Object.entries(report.itemCounts).sort((a, b) => b[1] - a[1]);
 
             if (sortedItems.length === 0) {
-                itemsContainer.innerHTML = '<div class="text-gray-500 italic">No hay ventas registradas hoy.</div>';
+                itemsContainer.innerHTML = '<div class="text-gray-500 dark:text-gray-400 italic">No hay ventas registradas hoy.</div>';
                 return;
             }
 
@@ -248,12 +269,12 @@
                 const label = item ? item.label : itemId;
                 const revenue = report.itemRevenue[itemId] || 0;
                 const el = document.createElement("div");
-                el.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg";
+                el.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg";
                 el.innerHTML = `
-                    <span class="font-medium text-gray-800">${label}</span>
-                    <div class="text-right">
-                        <span class="font-bold text-lg">${count}</span>
-                        <span class="ml-2 text-sm text-gray-600">${App.money(revenue)}</span>
+                    <span class=\"font-medium text-gray-800 dark:text-gray-100\">${label}</span>
+                    <div class=\"text-right\">
+                        <span class=\"font-bold text-lg\">${count}</span>
+                        <span class=\"ml-2 text-sm text-gray-600 dark:text-gray-300\">${App.money(revenue)}</span>
                     </div>`;
                 itemsContainer.appendChild(el);
             });
@@ -386,7 +407,7 @@
             App.AppState.currentTableId = table.id;
             App.$("#drawer-title").textContent = table.name;
             App.$("#drawer-note").textContent = table.note || "";
-            App.$("#drawer-status").innerHTML = table.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500">— ${new Date(table.paidAt || Date.now()).toLocaleString()}</span>` : '<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>';
+              App.$("#drawer-status").innerHTML = table.charged ? `<span class="badge bg-gray-800 text-white">COBRADA</span> <span class="text-gray-500 dark:text-gray-400">— ${new Date(table.paidAt || Date.now()).toLocaleString()}</span>` : '<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>';
             App.$("#table-total").textContent = App.money(App.computeTableTotal(table));
             renderMenuList(table);
             renderTableSummary(table);
