@@ -124,20 +124,10 @@
   <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
 
   <script src="js/app.js"></script>
+  <script src="js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const App = window.TaqueriaApp;
-        const themeBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        function updateThemeIcon() {
-            themeIcon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
-        }
-        themeBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            updateThemeIcon();
-        });
-        updateThemeIcon();
         let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
 
         function render() {
