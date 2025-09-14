@@ -113,7 +113,7 @@
 
   <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]"><div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reporte del Día</h3><button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto"><div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center"></div><h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4><div id="report-items-breakdown" class="space-y-2"></div></div></div></div>
 
-  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white dark:bg-gray-800 shadow-2xl translate-x-full transition-transform z-[9999]"><div class="h-[100svh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><div><h3 id="drawer-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mesa</h3><p id="drawer-note" class="text-sm text-gray-500 dark:text-gray-400"></p><div id="drawer-status" class="mt-1 text-xs"></div></div><button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto flex-1"><h4 class="text-lg font-semibold mb-3">Agregar productos</h4><div id="menu-list" class="space-y-3 mb-6"></div><h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4><div id="table-summary" class="bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-4"></div></div><div class="p-5 border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600 pb-[env(safe-area-inset-bottom)]"><div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div><div id="drawer-actions" class="grid grid-cols-2 gap-3"></div></div></div></div>
+  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white dark:bg-gray-800 shadow-2xl translate-x-full transition-transform z-[9999]"><div class="h-[100svh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><div><h3 id="drawer-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mesa</h3><p id="drawer-note" class="text-sm text-gray-500 dark:text-gray-400"></p><div id="drawer-status" class="mt-1 text-xs"></div></div><button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto flex-1"><h4 class="text-lg font-semibold mb-3">Agregar productos</h4><div id="quick-add" class="flex flex-wrap gap-2 mb-4"></div><div id="menu-list" class="space-y-3 mb-6"></div><h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4><div id="table-summary" class="bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-4"></div></div><div class="p-5 border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600 pb-[env(safe-area-inset-bottom)]"><div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div><div id="drawer-actions" class="grid grid-cols-2 gap-3"></div></div></div></div>
   
   <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
   <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
@@ -179,8 +179,23 @@
 
         function renderMenuList(table) {
             const menu = App.$('#menu-list');
+            const quick = App.$('#quick-add');
             menu.innerHTML = '';
+            quick.innerHTML = '';
             const isDisabled = table.charged ? 'opacity-50 pointer-events-none' : '';
+            const popular = ['taco_pastor', 'taco_suadero'];
+            popular.forEach(id => {
+                const item = App.AppState.items.find(i => i.id === id);
+                if (!item) return;
+                [2,4,6].forEach(n => {
+                    const btn = document.createElement('button');
+                    btn.dataset.add = id;
+                    btn.dataset.delta = n;
+                    btn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-2 rounded-lg';
+                    btn.textContent = `${n} × ${item.label}`;
+                    quick.appendChild(btn);
+                });
+            });
             App.AppState.items.forEach(it => {
                 const qty = table.order[it.id] || 0;
                 const promoBadge = (it.id === 'taco_pastor' && App.AppState.promoEnabled) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
@@ -188,13 +203,18 @@
                 row.className = `flex items-center justify-between bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
                 row.innerHTML = `
                     <div>
-                        <div class=\"font-semibold flex items-center\">${it.label} ${promoBadge}</div>
-                        <div class=\"text-gray-600 dark:text-gray-300 text-sm\">${App.money(App.AppState.prices[it.id] || 0)} c/u</div>
+                        <div class="font-semibold flex items-center">${it.label} ${promoBadge}</div>
+                        <div class="text-gray-600 dark:text-gray-300 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u</div>
                     </div>
-                    <div class=\"flex items-center gap-2\">
-                        <button data-minus=\"${it.id}\" class=\"w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600\">−</button>
-                        <input data-qty=\"${it.id}\" type=\"number\" min=\"0\" value=\"${qty}\" class=\"w-16 text-center border rounded-md p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100\">
-                        <button data-plus=\"${it.id}\" class=\"w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold\">+</button>
+                    <div class="flex items-center gap-2">
+                        <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">−</button>
+                        <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
+                        <div class="flex gap-1">
+                            <button data-add="${it.id}" data-delta="2" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">2</button>
+                            <button data-add="${it.id}" data-delta="4" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">4</button>
+                            <button data-add="${it.id}" data-delta="6" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">6</button>
+                        </div>
                     </div>`;
                 menu.appendChild(row);
             });
@@ -480,7 +500,24 @@
             App.$('#backdrop').addEventListener('click', closeDrawer);
             App.$('#drawer-actions').addEventListener('click', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.id, n = {'reopen-table': reopenTable, 'delete-table': deleteTable, 'clear-table': clearTable, 'close-table': () => openTipModal(t), 'print-bill': printBill}; if (n[a]) n[a](t); });
             const menuList = App.$('#menu-list');
-            menuList.addEventListener('click', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.closest('[data-plus]')?.dataset.plus; if (a) changeQty(t, a, 1); const n = e.target.closest('[data-minus]')?.dataset.minus; if (n) changeQty(t, n, -1) });
+            const quickAdd = App.$('#quick-add');
+            const handleClick = e => {
+                const t = App.AppState.currentTableId;
+                if (!t) return;
+                const addBtn = e.target.closest('[data-add]');
+                if (addBtn) {
+                    changeQty(t, addBtn.dataset.add, Number(addBtn.dataset.delta));
+                    const item = App.AppState.items.find(i => i.id === addBtn.dataset.add);
+                    App.toast(`${addBtn.dataset.delta} × ${item?.label || addBtn.dataset.add}`);
+                    return;
+                }
+                const plus = e.target.closest('[data-plus]')?.dataset.plus;
+                if (plus) changeQty(t, plus, 1);
+                const minus = e.target.closest('[data-minus]')?.dataset.minus;
+                if (minus) changeQty(t, minus, -1);
+            };
+            menuList.addEventListener('click', handleClick);
+            quickAdd.addEventListener('click', handleClick);
             menuList.addEventListener('input', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.closest('[data-qty]')?.dataset.qty; if (a) setQty(t, a, Math.max(0, Number(e.target.value || 0))) });
             
             App.$('#tip-cancel').addEventListener('click', closeTipModal);
