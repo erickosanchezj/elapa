@@ -2,8 +2,8 @@
 <!-- /precios.html -->
 <!-- Admin page to manage menu prices -->
 <!-- Lets staff update product prices and deals -->
-<!-- RELEVANT FILES: js/app.js, js/theme.js -->
-<html lang="es">
+<!-- RELEVANT FILES: js/app.js, js/styles.css -->
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -12,9 +12,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="js/styles.css">
-  <meta id="theme-color" name="theme-color" content="#f59e0b">
+  <meta name="theme-color" content="#111827">
 </head>
 <body>
   <div class="container mx-auto max-w-2xl p-4 md:p-8">
@@ -24,9 +23,6 @@
         <p class="text-gray-600 dark:text-gray-400 mt-2">Edita precios, productos y promociones.</p>
         <a href="index.html" class="mt-4 inline-block text-blue-600 hover:underline dark:text-blue-400">&larr; Volver a las mesas</a>
       </div>
-      <button id="theme-toggle" class="mt-4 sm:mt-0 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600">
-        <span id="theme-icon" class="material-icons">dark_mode</span>
-      </button>
     </header>
 
     <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow relative overflow-hidden">
