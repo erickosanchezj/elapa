@@ -5,51 +5,41 @@
 
 (function() {
     const root = document.documentElement;
+    const meta = document.querySelector('meta[name="theme-color"]');
 
-    // Apply or remove the dark class and remember the choice
-    function applyTheme(isDark) {
-        if (isDark) {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    // Switch theme and remember choice
+    function setTheme(mode) {
+        const isDark = mode === 'dark';
+        root.classList.toggle('dark', isDark);
+        localStorage.setItem('theme', mode);
+        if (meta) meta.setAttribute('content', isDark ? '#111827' : '#f59e0b');
     }
 
-    // Get stored theme or fall back to system preference
-    function getStoredTheme() {
+    // Determine starting theme
+    function getTheme() {
         const stored = localStorage.getItem('theme');
-        if (stored) {
-            return stored === 'dark';
-        }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored) return stored;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
-    // Set initial theme immediately
-    const initialTheme = getStoredTheme();
-    applyTheme(initialTheme);
+    // Apply theme ASAP
+    setTheme(getTheme());
 
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('theme-toggle');
         const icon = document.getElementById('theme-icon');
+        if (!btn || !icon) return;
 
-        if (!btn || !icon) {
-            console.warn('Theme toggle elements not found');
-            return;
-        }
-
-        // Update icon based on current theme
         function updateIcon() {
-            const isDark = root.classList.contains('dark');
-            icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            icon.textContent = root.classList.contains('dark') ? 'light_mode' : 'dark_mode';
         }
-
-        updateIcon();
 
         btn.addEventListener('click', () => {
-            const isDark = root.classList.contains('dark');
-            applyTheme(!isDark);
+            const mode = root.classList.contains('dark') ? 'light' : 'dark';
+            setTheme(mode);
             updateIcon();
         });
+
+        updateIcon();
     });
 })();
