@@ -11,15 +11,18 @@
   --text-dark: #f3f4f6;
 }
 
+/* Ensure dark mode styles are properly scoped */
+html.dark body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Add transition for smooth theme switching */
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-light);
   color: var(--text-light);
-}
-
-.dark body {
-  background-color: var(--bg-dark);
-  color: var(--text-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .card { transition: transform .2s ease, box-shadow .2s ease, border-color .3s ease; }

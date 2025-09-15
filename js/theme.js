@@ -6,26 +6,50 @@
 (function() {
     const root = document.documentElement;
 
+    // Apply or remove the dark class and remember the choice
     function applyTheme(isDark) {
-        root.classList.toggle('dark', isDark);
-        localStorage.theme = isDark ? 'dark' : 'light';
+        if (isDark) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // Set initial theme early
-    applyTheme(localStorage.theme === 'dark');
+    // Get stored theme or fall back to system preference
+    function getStoredTheme() {
+        const stored = localStorage.getItem('theme');
+        if (stored) {
+            return stored === 'dark';
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // Set initial theme immediately
+    const initialTheme = getStoredTheme();
+    applyTheme(initialTheme);
 
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('theme-toggle');
         const icon = document.getElementById('theme-icon');
+
         if (!btn || !icon) {
             console.warn('Theme toggle elements not found');
             return;
         }
-        icon.textContent = root.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+
+        // Update icon based on current theme
+        function updateIcon() {
+            const isDark = root.classList.contains('dark');
+            icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        }
+
+        updateIcon();
+
         btn.addEventListener('click', () => {
             const isDark = root.classList.contains('dark');
             applyTheme(!isDark);
-            icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+            updateIcon();
         });
     });
 })();
