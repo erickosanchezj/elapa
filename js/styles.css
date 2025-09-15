@@ -11,6 +11,10 @@
   --text-dark: #f3f4f6;
 }
 
+/* Use color-scheme so browser UI matches theme */
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
 /* Ensure dark mode styles are properly scoped */
 html.dark body {
   background-color: var(--bg-dark);
