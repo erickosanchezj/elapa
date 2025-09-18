@@ -91,9 +91,9 @@
     App.handleSW = function() {
         const versionEl = App.$('#app-version');
         const statusEl = App.$('#net-status');
-        if (!versionEl || !statusEl) return;
 
         const updateNetStatus = () => {
+            if (!statusEl) return;
             statusEl.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
             statusEl.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
         };
@@ -120,6 +120,7 @@
         }
 
         async function showVersion() {
+            if (!versionEl) return;
             try {
                 const version = await requestSwVersion({ timeoutMs: 2500 });
                 versionEl.textContent = version;
@@ -129,16 +130,16 @@
                 versionEl.textContent = cachedVersion ? `${cachedVersion} (cache)` : "desconocida";
             }
         }
-        
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(() => navigator.serviceWorker.ready)
                     .then(() => {
                         updateNetStatus();
-                        showVersion();
+                        return showVersion();
                     }).catch(() => {
-                        versionEl.textContent = 'sin SW';
+                        if (versionEl) versionEl.textContent = 'sin SW';
                         updateNetStatus();
                     });
             });
@@ -147,7 +148,7 @@
                 setTimeout(showVersion, 400);
             });
         } else {
-            versionEl.textContent = 'no compatible';
+            if (versionEl) versionEl.textContent = 'no compatible';
             updateNetStatus();
         }
         window.addEventListener('online', updateNetStatus);
