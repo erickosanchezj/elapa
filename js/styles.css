@@ -70,11 +70,61 @@ input[type="number"] { -moz-appearance: textfield; }
   .receipt-brand-tagline {
     font-size: 8pt; text-transform: uppercase; letter-spacing: 1px;
   }
-  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  th, td { padding: 4px 2px; }
-  td.qty { width: 18%; text-align: left; }
-  td.item { width: 52%; }
-  td.price { width: 30%; text-align: right; }
+  .receipt-meta {
+    margin: 6px 0;
+    font-size: 9pt;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .receipt-meta-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .receipt-meta-label {
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .receipt-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  .receipt-table colgroup col:first-child { width: 18%; }
+  .receipt-table colgroup col:nth-child(2) { width: 52%; }
+  .receipt-table colgroup col:last-child { width: 30%; }
+  .receipt-table th, .receipt-table td { padding: 4px 2px; }
+  .receipt-table th {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    text-align: left;
+    border-bottom: 1px solid #000;
+  }
+  .receipt-table td.qty { text-align: left; }
+  .receipt-table td.item { text-align: left; }
+  .receipt-table td.price { text-align: right; }
+  .receipt-table tbody tr + tr td { border-top: 1px dotted #9ca3af; }
+  .receipt-table .receipt-empty {
+    text-align: center;
+    font-style: italic;
+    padding: 8px 0;
+  }
+  .receipt-summary {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10pt;
+  }
+  .receipt-summary-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .receipt-summary-row.total {
+    font-weight: 700;
+    border-top: 1px solid #000;
+    margin-top: 4px;
+    padding-top: 4px;
+  }
   .text-right { text-align: right; }
   hr { border: 0; border-top: 1px dashed black; margin: 6px 0; }
 }
