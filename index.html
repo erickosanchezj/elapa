@@ -397,19 +397,19 @@
               Object.entries(table.order).forEach(([itemId, qty]) => {
                   const item = App.AppState.items.find(i => i.id === itemId);
                   const line = App.computeLine(itemId, qty);
-                  itemsHtml += `<tr><td>${qty}x</td><td>${item ? item.label : "Item"}</td><td class="text-right">${App.money(line.total)}</td></tr>`;
+                  itemsHtml += `<tr><td class="qty">${qty}x</td><td class="item">${item ? item.label : "Item"}</td><td class="price">${App.money(line.total)}</td></tr>`;
               });
               const subtotal = App.computeTableTotal(table);
               const tipHtml = table.tip ? `<h2 class="text-right">PROPINA: ${App.money(table.tip)}</h2>` : '';
               const totalHtml = table.tip ? `<h2 class="text-right">TOTAL: ${App.money(subtotal + table.tip)}</h2>` : '';
-              const ticketHtml = `<div id="print-area"><center><h1>Taquería \"El Apá\"</h1></center><hr><p><b>Mesa:</b> ${table.name}</p><p><b>Fecha:</b> ${new Date().toLocaleString()}</p><hr><table>${itemsHtml}</table><hr><h2 class=\"text-right\">SUBTOTAL: ${App.money(subtotal)}</h2>${tipHtml}${totalHtml}</div>`;
+              const ticketHtml = `<div id="print-area"><div class="receipt-brand"><img src="icons/icon-192.png" alt="Logo de Taquería El Apá" class="receipt-brand-logo"/><h1 class=\"receipt-brand-name\">Taquería \"El Apá\"</h1><p class=\"receipt-brand-tagline\">Sabor auténtico cada día</p></div><hr><p><b>Mesa:</b> ${table.name}</p><p><b>Fecha:</b> ${new Date().toLocaleString()}</p><hr><table>${itemsHtml}</table><hr><h2 class=\"text-right\">SUBTOTAL: ${App.money(subtotal)}</h2>${tipHtml}${totalHtml}</div>`;
               const iframe = document.createElement("iframe");
               iframe.style.display = "none";
               document.body.appendChild(iframe);
               const doc = iframe.contentDocument;
             doc.write(ticketHtml);
             const style = doc.createElement("style");
-            style.textContent = `body{font-family:monospace;font-size:10pt} h1,h2,p{margin:0} table{width:100%;border-collapse:collapse} td,th{padding:4px 2px;text-align:left} .text-right{text-align:right} hr{border-top:1px dashed #000}`;
+            style.textContent = `body{font-family:'Courier New',Courier,monospace;font-size:10pt;margin:0;padding:0} h1,h2,p{margin:0} #print-area{width:100%;padding:8px 0} .receipt-brand{text-align:center;margin-bottom:8px} .receipt-brand-logo{width:48px;height:48px;object-fit:contain;margin:0 auto 4px;display:block} .receipt-brand-name{font-size:14pt;letter-spacing:1px} .receipt-brand-tagline{font-size:8pt;text-transform:uppercase;letter-spacing:1px} table{width:100%;border-collapse:collapse;margin-top:4px} th,td{padding:4px 2px} td.qty{width:18%;text-align:left} td.item{width:52%} td.price{width:30%;text-align:right} h2{font-size:10pt;font-weight:700;margin:4px 0} .text-right{text-align:right} hr{border:0;border-top:1px dashed #000;margin:6px 0}`;
             doc.head.appendChild(style);
             doc.close(); // Important for some browsers
             iframe.contentWindow.print();
