@@ -405,6 +405,7 @@
             const subtotal = App.computeTableTotal(table);
             const tip = table.tip || 0;
             const issuedAt = new Date().toLocaleString();
+            const logoUrl = new URL('icons/icon-192.png', document.baseURI).href; // Build an absolute path so the iframe can load the logo.
 
             // Build inline CSS so the iframe ticket keeps our styling when it prints.
             const styleContent = `
@@ -451,7 +452,7 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
 <body>
   <div id="print-area">
     <div class="receipt-brand">
-      <img src="icons/icon-192.png" alt="Logo de Taquería El Apá" class="receipt-brand-logo"/>
+      <img src="${logoUrl}" alt="Logo de Taquería El Apá" class="receipt-brand-logo"/>
       <h1 class="receipt-brand-name">Taquería &quot;El Apá&quot;</h1>
       <p class="receipt-brand-tagline">Sabor auténtico cada día</p>
     </div>
