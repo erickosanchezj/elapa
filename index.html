@@ -8,6 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Taquería "El Apá" — Órdenes por Mesa</title>
+  <script src="js/theme.js"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -611,33 +612,9 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             });
         }
 
-        function setupTheme() {
-            const themeToggleBtn = App.$('#theme-toggle');
-            if (!themeToggleBtn) return;
-
-            const themeIcon = App.$('#theme-icon');
-            const bodyEl = document.body;
-
-            const applyTheme = (theme) => {
-                bodyEl.classList.toggle('dark', theme === 'dark');
-                themeIcon.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
-            };
-
-            // Set initial theme based on localStorage or system preference
-            const initialTheme = localStorage.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            applyTheme(initialTheme);
-
-            themeToggleBtn.addEventListener('click', () => {
-                const newTheme = bodyEl.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.theme = newTheme;
-                applyTheme(newTheme);
-            });
-        }
-
         function init() {
             App.loadState();
             wireEvents();
-            setupTheme();
             render();
             setInterval(updateTimers, 30000);
             App.handleSW();
