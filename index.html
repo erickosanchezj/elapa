@@ -556,10 +556,15 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             }
         }
 
+        function openReportModal() {
+            renderDailyReport();
+            App.$("#report-modal").classList.remove("hidden");
+        }
+
         function wireEvents() {
             App.$('#add-table').addEventListener('click', addTable);
             App.$('#close-all').addEventListener('click', closeAllTables);
-            App.$('#show-report').addEventListener('click', () => { renderDailyReport(); App.$("#report-modal").classList.remove("hidden"); });
+            App.$('#show-report').addEventListener('click', openReportModal);
             App.$('#report-close').addEventListener('click', () => App.$("#report-modal").classList.add("hidden"));
             App.$('#tables-grid').addEventListener('click', e => { const t = e.target.closest('[data-table-id]')?.dataset.tableId; if (t) { const a = App.AppState.tables.find(e => e.id === t); openDrawer(a); } });
             App.$('#drawer-close').addEventListener('click', closeDrawer);
