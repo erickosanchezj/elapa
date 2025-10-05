@@ -3,11 +3,12 @@
 <!-- Page for managing menu items and prices -->
 <!-- Provides interface to add, edit, and delete menu items -->
 <!-- RELEVANT FILES: js/precios.js, js/app.js, index.html -->
-<html lang="es" class="dark">
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Taquería "El Apá" — Administrar Precios</title>
+    <script src="js/theme.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,10 +25,15 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-yellow-600">Administrar Menú</h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Agrega, edita o elimina productos y precios.</p>
             </div>
-            <a href="index.html" class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
-                <span class="material-icons">arrow_back</span>
-                Volver al panel
-            </a>
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
+                    <span class="material-icons">arrow_back</span>
+                    Volver al panel
+                </a>
+                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700" aria-label="Toggle dark mode">
+                    <span id="theme-icon" class="material-icons"></span>
+                </button>
+            </div>
         </header>
 
         <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
