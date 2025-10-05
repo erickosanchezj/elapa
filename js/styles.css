@@ -1,22 +1,15 @@
 /* /js/styles.css
-   Shared styles for the always-on dark theme
-   Keeps UI consistent across pages
+   Custom shared styles for the application.
+   Complements Tailwind CSS with specific component styles.
    RELEVANT FILES: index.html, precios.html */
 
-:root {
-  --color-amber: #f59e0b;
-  --bg-dark: #111827;
-  --text-dark: #f3f4f6;
+html {
+  color-scheme: light dark;
 }
 
-/* Use color-scheme so browser UI matches theme */
-html { color-scheme: dark; }
-
-/* Apply base dark theme */
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
-  color: var(--text-dark);
+  /* Base background and text colors are now handled by Tailwind's dark/light mode classes on the body tag */
 }
 
 .card { transition: transform .2s ease, box-shadow .2s ease, border-color .3s ease; }
