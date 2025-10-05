@@ -3,7 +3,7 @@
 <!-- Main admin page for table orders -->
 <!-- Provides interface to manage tables and orders -->
 <!-- RELEVANT FILES: js/app.js, js/styles.css -->
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -17,12 +17,17 @@
   <meta name="theme-color" content="#111827">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
-  <body>
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     <div class="container mx-auto max-w-7xl p-4 md:p-8">
       <header class="mb-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
         <div>
           <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apá"</h1>
           <p class="text-gray-600 dark:text-gray-400 mt-2">Panel de Administración · Órdenes por Mesa</p>
+        </div>
+        <div class="flex items-center mt-4 sm:mt-0">
+            <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700" aria-label="Toggle dark mode">
+                <span id="theme-icon" class="material-icons"></span>
+            </button>
         </div>
       </header>
 
@@ -240,7 +245,7 @@
                   wrapper.innerHTML = `
                       <button id=\"print-bill\" class=\"col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg dark:bg-blue-600 dark:hover:bg-blue-500\">Imprimir Cuenta</button>
                       <button id=\"reopen-table\" class=\"col-span-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg dark:bg-amber-600 dark:hover:bg-amber-500\">Reabrir Mesa</button>
-                      <button id=\"delete-table\" class=\"col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg dark:bg-red-600 dark:hover:bg-red-500\">Eliminar</button>`;
+                      <button id=\"delete-table\" class="col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg dark:bg-red-600 dark:hover:bg-red-500">Eliminar</button>`;
               } else {
                   wrapper.innerHTML = `
                       <button id="print-bill" class="col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg dark:bg-blue-600 dark:hover:bg-blue-500">Imprimir Cuenta</button>
@@ -606,9 +611,33 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             });
         }
 
+        function setupTheme() {
+            const themeToggleBtn = App.$('#theme-toggle');
+            if (!themeToggleBtn) return;
+
+            const themeIcon = App.$('#theme-icon');
+            const bodyEl = document.body;
+
+            const applyTheme = (theme) => {
+                bodyEl.classList.toggle('dark', theme === 'dark');
+                themeIcon.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
+            };
+
+            // Set initial theme based on localStorage or system preference
+            const initialTheme = localStorage.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(initialTheme);
+
+            themeToggleBtn.addEventListener('click', () => {
+                const newTheme = bodyEl.classList.contains('dark') ? 'light' : 'dark';
+                localStorage.theme = newTheme;
+                applyTheme(newTheme);
+            });
+        }
+
         function init() {
             App.loadState();
             wireEvents();
+            setupTheme();
             render();
             setInterval(updateTimers, 30000);
             App.handleSW();
