@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderPromoToggle() {
         if (!promoToggle) return;
-        promoToggle.checked = App.AppState.promoEnabled;
+        promoToggle.checked = App.isPastorPromoActive();
     }
 
     function handleAddItem(e) {

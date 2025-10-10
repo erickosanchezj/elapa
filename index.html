@@ -200,7 +200,7 @@
             });
             App.AppState.items.forEach(it => {
                 const qty = table.order[it.id] || 0;
-                const promoBadge = (it.id === 'taco_pastor' && App.AppState.promoEnabled) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
+                const promoBadge = (it.id === 'taco_pastor' && App.isPastorPromoActive()) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
                 const row = document.createElement('div');
                 row.className = `flex items-center justify-between bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
                 row.innerHTML = `
@@ -238,7 +238,7 @@
                   const li = document.createElement('li');
                   li.className = 'flex items-center justify-between';
                   li.innerHTML = `
-                      <span>${qty} × ${label} ${itemId === 'taco_pastor' && App.AppState.promoEnabled ? `(Pagas ${chargedQty})` : ''}</span>
+                      <span>${qty} × ${label} ${itemId === 'taco_pastor' && App.isPastorPromoActive() ? `(Pagas ${chargedQty})` : ''}</span>
                       <span class="font-semibold">${App.money(total)}</span>`;
                   ul.appendChild(li);
               }

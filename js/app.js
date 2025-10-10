@@ -21,10 +21,14 @@
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
         App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
         App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
-        if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = App.isMonOrWed();
+        if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
+    };
+
+    App.isPastorPromoActive = function() {
+        return App.isMonOrWed() || App.AppState.promoEnabled === true;
     };
 
     App.persist = function() {
@@ -37,7 +41,7 @@
     App.computeLine = function(itemId, qty) {
         const p = App.AppState.prices[itemId] || 0;
         let c = qty;
-        if (itemId === 'taco_pastor' && App.AppState.promoEnabled) {
+        if (itemId === 'taco_pastor' && App.isPastorPromoActive()) {
             c = Math.ceil(qty / 2);
         }
         return { unit: p, chargedQty: c, total: c * p };
