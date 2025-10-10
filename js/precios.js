@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPromoToggle() {
         if (!promoToggle) return;
         promoToggle.checked = App.isPastorPromoActive();
+        promoToggle.disabled = true;
     }
 
     function handleAddItem(e) {
@@ -96,12 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleTogglePromo() {
-        App.AppState.promoEnabled = promoToggle.checked;
-        App.persist();
-        App.toast(`Promoción ${promoToggle.checked ? 'activada' : 'desactivada'}`, 'info');
-    }
-
     function wireEvents() {
         if (addItemForm) {
             addItemForm.addEventListener('submit', handleAddItem);
@@ -123,10 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     handleDeleteItem(itemId);
                 }
             });
-        }
-
-        if (promoToggle) {
-            promoToggle.addEventListener('change', handleTogglePromo);
         }
     }
 
