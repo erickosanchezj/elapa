@@ -28,7 +28,7 @@
     };
 
     App.isPastorPromoActive = function() {
-        return App.isMonOrWed() || App.AppState.promoEnabled === true;
+        return App.isMonOrWed();
     };
 
     App.persist = function() {
