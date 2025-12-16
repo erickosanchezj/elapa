@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.innerHTML = `<div class="text-gray-500 dark:text-gray-400 italic">No hay mesas.</div>`;
             return;
         }
-          App.AppState.tables.forEach(t => {
+          const sortedTables = [...App.AppState.tables].sort((a, b) => {
+              const getTimestamp = table => table.charged ? (table.paidAt || table.createdAt || 0) : (table.createdAt || 0);
+              return getTimestamp(b) - getTimestamp(a);
+          });
+          sortedTables.forEach(t => {
               const subtotal = App.computeTableTotal(t);
               const finalTotal = subtotal + (t.charged ? t.tip : 0);
               const card = document.createElement('div');
