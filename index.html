@@ -78,34 +78,51 @@
   
   <div id="tip-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
     <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm">
-        <div class="p-5 border-b"><h3 id="tip-modal-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Agregar Propina</h3></div>
-        <div class="p-5 space-y-4">
-            <div class="text-center">
-                <div class="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
+        <div class="p-5 border-b space-y-1">
+            <h3 id="tip-modal-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Agregar Propina</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Elige un porcentaje sugerido o ingresa un monto personalizado.</p>
+        </div>
+        <div class="p-5 space-y-5">
+            <div class="text-center space-y-1">
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Subtotal</div>
                 <div id="tip-subtotal" class="text-3xl font-bold">$0.00</div>
             </div>
-            <div class="grid grid-cols-3 gap-3">
-                <button data-tip-percent="0.10" class="tip-option-btn">10%</button>
-                <button data-tip-percent="0.15" class="tip-option-btn">15%</button>
-                <button data-tip-percent="0.20" class="tip-option-btn">20%</button>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                    <span>Selecciona un porcentaje</span>
+                    <span class="text-xs">Propina rápida</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <button type="button" data-tip-percent="0.10" class="tip-option-btn">10%</button>
+                    <button type="button" data-tip-percent="0.15" class="tip-option-btn">15%</button>
+                    <button type="button" data-tip-percent="0.20" class="tip-option-btn">20%</button>
+                </div>
             </div>
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                <input id="tip-custom-amount" type="number" placeholder="Otro monto" class="w-full pl-7 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+            <div>
+                <label for="tip-custom-amount" class="block text-sm font-semibold text-gray-600 dark:text-gray-300">Otro monto</label>
+                <div class="relative mt-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                    <input id="tip-custom-amount" type="number" inputmode="decimal" placeholder="0.00" class="w-full pl-7 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Si escribes un monto manual, se aplicará en lugar del porcentaje seleccionado.</p>
+                <button type="button" data-tip-percent="0" class="tip-option-btn tip-option-btn--ghost w-full mt-3">Sin Propina</button>
             </div>
-             <button data-tip-percent="0" class="tip-option-btn w-full">Sin Propina</button>
-            <hr/>
-            <div class="flex justify-between items-center text-lg">
-                <span>Propina:</span>
-                <span id="tip-amount" class="font-semibold">$0.00</span>
-            </div>
-            <div class="flex justify-between items-center text-2xl font-bold">
-                <span>TOTAL:</span>
-                <span id="tip-grand-total">$0.00</span>
+            <div class="tip-summary-card space-y-3">
+                <div class="flex justify-between items-center text-base">
+                    <span>Propina</span>
+                    <span id="tip-amount" class="font-semibold">$0.00</span>
+                </div>
+                <div class="border-t border-dashed border-gray-200 dark:border-gray-600 pt-3 flex items-end justify-between">
+                    <div>
+                        <span class="block text-xs tracking-wide text-gray-500 dark:text-gray-400 uppercase">Total a cobrar</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Incluye la propina seleccionada</span>
+                    </div>
+                    <span id="tip-grand-total" class="text-3xl font-bold text-gray-900 dark:text-gray-100">$0.00</span>
+                </div>
             </div>
         </div>
         <div class="p-4 bg-gray-50 dark:bg-gray-700 grid grid-cols-2 gap-3 rounded-b-xl">
-            <button id="tip-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100">Cancelar</button>
+            <button id="tip-cancel" class="border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg bg-white hover:bg-gray-50 dark:bg-transparent dark:border-gray-500 dark:hover:bg-gray-600 dark:text-gray-100">Cancelar</button>
             <button id="tip-confirm" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Cobrar</button>
         </div>
     </div>

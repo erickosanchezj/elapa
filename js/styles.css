@@ -86,6 +86,33 @@ input[type="number"] { -moz-appearance: textfield; }
     color: #ffffff; /* text-white */
     border: 2px solid #d97706; /* ring-2 ring-yellow-600 */
   }
+  .tip-option-btn--ghost {
+    background-color: #f3f4f6; /* bg-gray-100 */
+    color: #1f2937; /* text-gray-800 */
+    border: 1px solid #d1d5db;
+    font-weight: 500;
+  }
+  .tip-option-btn--ghost:hover {
+    background-color: #e5e7eb;
+  }
+  .dark .tip-option-btn--ghost {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #4b5563;
+  }
+  .dark .tip-option-btn--ghost:hover {
+    background-color: #374151;
+  }
+  .tip-summary-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f9fafb, #ffffff);
+  }
+  .dark .tip-summary-card {
+    border-color: #4b5563;
+    background: #1f2937;
+  }
 
 @media print {
   body * { visibility: hidden; }
