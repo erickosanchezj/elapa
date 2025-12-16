@@ -14,8 +14,17 @@
     App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
     App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
 
-    const BASE_ITEMS = [ { id: 'taco_pastor', label: 'Taco de Pastor', base: true }, { id: 'taco_suadero', label: 'Taco de Suadero', base: true }, { id: 'taco_carbon', label: 'Taco al Carbón', base: true }, { id: 'refresco', label: 'Refresco', base: true }, { id: 'cerveza', label: 'Cerveza', base: true }, ];
-    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, cerveza: 35.00 };
+    const BASE_ITEMS = [
+        { id: 'taco_pastor', label: 'Taco de Pastor', base: true },
+        { id: 'taco_suadero', label: 'Taco de Suadero', base: true },
+        { id: 'taco_carbon', label: 'Taco al Carbón', base: true },
+        { id: 'taco_tripa', label: 'Taco de Tripa', base: true },
+        { id: 'taco_cabeza', label: 'Taco de Cabeza', base: true },
+        { id: 'gringas', label: 'Gringas', base: true },
+        { id: 'refresco', label: 'Refresco', base: true },
+        { id: 'cerveza', label: 'Cerveza', base: true },
+    ];
+    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00 };
 
     App.loadState = function() {
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
