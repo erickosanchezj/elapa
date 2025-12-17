@@ -4,7 +4,7 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all' };
+    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -34,6 +34,12 @@
         { id: 'qp_suadero_6', label: '6 × Taco de Suadero', itemId: 'taco_suadero', qty: 6 },
     ];
     App.DEFAULT_QUICK_PRESETS = DEFAULT_QUICK_PRESETS;
+    const DEFAULT_TABLE_TEMPLATES = [
+        { id: 'tmpl_brendos', label: 'Brendos', name: 'Brendos', note: 'Pareja', order: { taco_pastor: 6, refresco: 2 } },
+        { id: 'tmpl_jaricks', label: 'Jaricks', name: 'Jaricks', note: 'Pareja', order: { taco_suadero: 6, cerveza: 2 } },
+        { id: 'tmpl_compartida', label: 'Compartida', name: 'Mesa Compartida', note: 'Para pedidos en común', order: { taco_carbon: 2, taco_tripa: 2, cerveza: 4 } },
+    ];
+    App.DEFAULT_TABLE_TEMPLATES = DEFAULT_TABLE_TEMPLATES;
     const REMOVED_ITEMS = ['agua_horchata', 'agua_jamaica', 'flan_casero'];
     const ITEM_META = {
         taco_pastor: { category: 'tacos', emoji: '🌮', label: 'Pastor' },
@@ -54,6 +60,8 @@
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
+        const storedTemplates = JSON.parse(localStorage.getItem('tacos_table_templates') || 'null');
+        App.AppState.tableTemplates = Array.isArray(storedTemplates) && storedTemplates.length ? storedTemplates : DEFAULT_TABLE_TEMPLATES.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         App.AppState.items = App.AppState.items
             .filter(it => !REMOVED_ITEMS.includes(it.id))
@@ -75,6 +83,7 @@
         localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
+        localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));
         localStorage.setItem('tacos_ui_dense', JSON.stringify(App.AppState.uiDense));
         localStorage.setItem('tacos_ui_high_contrast', JSON.stringify(App.AppState.uiHighContrast));
     };

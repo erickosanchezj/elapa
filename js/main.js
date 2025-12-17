@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
     const setMobileBarHidden = hidden => document.body.classList.toggle('mobile-bar-hidden', !!hidden);
-    const DEFAULT_TABLE_TEMPLATES = [
+    const DEFAULT_TABLE_TEMPLATES = App.DEFAULT_TABLE_TEMPLATES || [
         { id: 'tmpl_brendos', label: 'Brendos', name: 'Brendos', note: 'Pareja', order: { taco_pastor: 6, refresco: 2 } },
         { id: 'tmpl_jaricks', label: 'Jaricks', name: 'Jaricks', note: 'Pareja', order: { taco_suadero: 6, cerveza: 2 } },
         { id: 'tmpl_compartida', label: 'Compartida', name: 'Mesa Compartida', note: 'Para pedidos en común', order: { taco_carbon: 2, taco_tripa: 2, cerveza: 4 } },
@@ -42,6 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function ensureTableTemplates() {
+        if (!Array.isArray(App.AppState.tableTemplates)) App.AppState.tableTemplates = [];
+    }
+
+    function getTableTemplates() {
+        ensureTableTemplates();
+        return App.AppState.tableTemplates;
+    }
+
     function renderCategoryFilters() {
         App.$$('#menu-filters .filter-chip').forEach(btn => {
             const cat = btn.dataset.categoryFilter;
@@ -50,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function render() {
+        ensureTableTemplates();
         syncUiPrefs();
         syncSearchField();
         renderCategoryFilters();
@@ -229,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrap = App.$('#table-templates');
         if (!wrap) return;
         wrap.innerHTML = '';
-        DEFAULT_TABLE_TEMPLATES.forEach(tpl => {
+        getTableTemplates().forEach(tpl => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.dataset.tableTemplate = tpl.id;
@@ -242,6 +252,95 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.appendChild(pill);
             wrap.appendChild(btn);
         });
+    }
+
+    function renderTableTemplateEditor() {
+        const list = App.$('#table-template-list');
+        if (!list) return;
+        ensureTableTemplates();
+        const templates = getTableTemplates();
+        list.innerHTML = '';
+        if (!templates.length) {
+            const empty = document.createElement('div');
+            empty.className = 'text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2';
+            empty.textContent = 'No hay mesas rápidas. Agrega una nueva.';
+            list.appendChild(empty);
+            return;
+        }
+        templates.forEach(tpl => {
+            const row = document.createElement('div');
+            row.className = 'space-y-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3';
+            row.innerHTML = `
+                <div class="grid grid-cols-12 gap-2">
+                    <input type="text" placeholder="Etiqueta" value="${tpl.label || ''}" data-template-id="${tpl.id}" data-template-field="label" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <input type="text" placeholder="Nombre de mesa" value="${tpl.name || ''}" data-template-id="${tpl.id}" data-template-field="name" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <input type="text" placeholder="Nota" value="${tpl.note || ''}" data-template-id="${tpl.id}" data-template-field="note" class="col-span-3 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <button type="button" data-delete-template="${tpl.id}" class="col-span-1 text-red-600 dark:text-red-400 hover:underline text-sm font-semibold">Eliminar</button>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">Orden predeterminada (JSON)</label>
+                    <textarea rows="2" data-template-id="${tpl.id}" data-template-field="order" class="w-full p-2 border rounded-lg font-mono text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">${JSON.stringify(tpl.order || {})}</textarea>
+                </div>`;
+            list.appendChild(row);
+        });
+    }
+
+    function openTableTemplatesModal() {
+        renderTableTemplateEditor();
+        App.$('#table-templates-modal')?.classList.remove('hidden');
+        setMobileBarHidden(true);
+    }
+
+    function closeTableTemplatesModal() {
+        App.$('#table-templates-modal')?.classList.add('hidden');
+        setMobileBarHidden(false);
+    }
+
+    function addTableTemplate() {
+        ensureTableTemplates();
+        App.AppState.tableTemplates.push({ id: App.uid(), label: 'Nueva mesa', name: 'Mesa nueva', note: '', order: {} });
+        App.persist();
+        renderTableTemplateEditor();
+        renderTableTemplates();
+        App.toast('Mesa rápida agregada', 'success', 1400);
+    }
+
+    function resetTableTemplates() {
+        if (!confirm('¿Restablecer las mesas rápidas predeterminadas?')) return;
+        App.AppState.tableTemplates = (App.DEFAULT_TABLE_TEMPLATES || DEFAULT_TABLE_TEMPLATES || []).map(t => ({ ...t }));
+        App.persist();
+        renderTableTemplateEditor();
+        renderTableTemplates();
+        App.toast('Mesas rápidas restablecidas', 'info', 1600);
+    }
+
+    function updateTableTemplateField(templateId, field, value) {
+        const tpl = getTableTemplates().find(t => t.id === templateId);
+        if (!tpl) return;
+        if (field === 'order') {
+            try {
+                const parsed = value ? JSON.parse(value) : {};
+                if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('bad format');
+                tpl.order = parsed;
+            } catch (err) {
+                App.toast('Orden inválida, usa JSON simple (ej {"taco_pastor":6})', 'error', 2600);
+                renderTableTemplateEditor();
+                return;
+            }
+        } else {
+            tpl[field] = value;
+        }
+        App.persist();
+        renderTableTemplates();
+    }
+
+    function deleteTableTemplate(templateId) {
+        ensureTableTemplates();
+        App.AppState.tableTemplates = App.AppState.tableTemplates.filter(t => t.id !== templateId);
+        App.persist();
+        renderTableTemplateEditor();
+        renderTableTemplates();
+        App.toast('Mesa rápida eliminada', 'info', 1400);
     }
 
     function renderTableSummary(table) {
@@ -356,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createTableFromTemplate(templateId) {
-        const tpl = DEFAULT_TABLE_TEMPLATES.find(t => t.id === templateId);
+        const tpl = getTableTemplates().find(t => t.id === templateId);
         if (!tpl) return;
         if (!tpl.name) return;
         const record = buildTableRecord({ name: tpl.name, note: tpl.note || '', order: tpl.order || {} });
@@ -379,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = App.$('#table-name').value.trim();
         const note = App.$('#table-note').value.trim();
         if (!name) return alert('Escribe un nombre o número de mesa.');
-        App.AppState.tables.push({ id: App.uid(), name, note, order: {}, charged: false, paidAt: null, createdAt: Date.now(), openDurationMs: null, tip: 0 });
+        App.AppState.tables.push(buildTableRecord({ name, note, order: {} }));
         App.$('#table-name').value = '';
         App.$('#table-note').value = '';
         App.persist();
@@ -665,9 +764,33 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             App.persist();
             syncUiPrefs();
         });
+        App.$('#edit-table-templates')?.addEventListener('click', openTableTemplatesModal);
         App.$('#table-templates')?.addEventListener('click', e => {
             const tplId = e.target.closest('[data-table-template]')?.dataset.tableTemplate;
             if (tplId) createTableFromTemplate(tplId);
+        });
+        App.$('#table-templates-close')?.addEventListener('click', closeTableTemplatesModal);
+        App.$('#table-templates-done')?.addEventListener('click', closeTableTemplatesModal);
+        App.$('#add-table-template')?.addEventListener('click', addTableTemplate);
+        App.$('#reset-table-templates')?.addEventListener('click', resetTableTemplates);
+        App.$('#table-template-list')?.addEventListener('input', e => {
+            const input = e.target.closest('[data-template-field]');
+            if (!input) return;
+            const field = input.dataset.templateField;
+            if (field === 'order') return;
+            updateTableTemplateField(input.dataset.templateId, field, input.value);
+        });
+        App.$('#table-template-list')?.addEventListener('change', e => {
+            const input = e.target.closest('[data-template-field]');
+            if (!input) return;
+            if (input.dataset.templateField === 'order') {
+                updateTableTemplateField(input.dataset.templateId, 'order', input.value);
+            }
+        });
+        App.$('#table-template-list')?.addEventListener('click', e => {
+            const btn = e.target.closest('[data-delete-template]');
+            if (!btn) return;
+            deleteTableTemplate(btn.dataset.deleteTemplate);
         });
         App.$('#tables-grid').addEventListener('click', e => { const t = e.target.closest('[data-table-id]')?.dataset.tableId; if (t) { const a = App.AppState.tables.find(e => e.id === t); openDrawer(a); } });
         App.$('#drawer-close').addEventListener('click', closeDrawer);
