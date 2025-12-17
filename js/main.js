@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function render() {
+        App.AppState.tables.forEach(App.ensureRoundsShape);
         syncUiPrefs();
         syncSearchField();
         renderCategoryFilters();
@@ -248,6 +249,103 @@ document.addEventListener('DOMContentLoaded', () => {
           }
       }
 
+    function renderRoundsPanel(table) {
+        const panel = App.$('#rounds-panel');
+        if (!panel) return;
+        App.ensureRoundsShape(table);
+        const total = App.computeTableTotal(table) + (table.tip || 0);
+        const roundsTotal = App.computeRoundsTotal(table);
+        const pending = total - roundsTotal;
+        const pendingLabel = pending > 0 ? 'Falta registrar' : pending < 0 ? 'Pagaron de más' : 'Sin pendientes';
+        const pendingClass = pending > 0 ? 'text-amber-700 dark:text-amber-200' : 'text-emerald-700 dark:text-emerald-300';
+        const friends = App.getFriendsForTable(table);
+        const balances = App.computeFriendBalances(table);
+        const perHead = friends.length ? total / friends.length : 0;
+        const friendChips = friends.length
+            ? friends.map(name => `<button type="button" class="pill" data-fill-payer="${name}">${name}</button>`).join('')
+            : '<div class="text-sm text-gray-500 dark:text-gray-300">Agrega amigos para calcular los saldos.</div>';
+        const rounds = (table.rounds || []).slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        const roundsHtml = rounds.length
+            ? rounds.map(r => {
+                const note = r.note ? `<div class="text-sm text-gray-500 dark:text-gray-300">${r.note}</div>` : '';
+                const when = r.createdAt ? `<div class="text-xs text-gray-400">${new Date(r.createdAt).toLocaleString()}</div>` : '';
+                return `<div class="flex items-start justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+                    <div>
+                        <div class="font-semibold">${r.payer || 'Sin nombre'}</div>
+                        ${note}
+                        ${when}
+                    </div>
+                    <div class="text-right">
+                        <div class="font-extrabold">${App.money(Number(r.amount) || 0)}</div>
+                        <button type="button" data-round-action="delete-round" data-round-id="${r.id}" class="text-sm text-red-600 dark:text-red-400 hover:underline">Eliminar</button>
+                    </div>
+                </div>`;
+            }).join('')
+            : '<div class="text-sm text-gray-500 dark:text-gray-300 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700/50">Aún no registras rondas.</div>';
+        const balancesHtml = balances.length
+            ? balances.map(b => {
+                const statusClass = b.balance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-200';
+                const sign = b.balance >= 0 ? '+' : '';
+                return `<div class="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div>
+                        <div class="font-semibold">${b.name}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Pagó ${App.money(b.paid)} · Cuota ${App.money(b.shouldPay)}</div>
+                    </div>
+                    <div class="text-right font-extrabold ${statusClass}">${sign}${App.money(b.balance)}</div>
+                </div>`;
+            }).join('')
+            : '<div class="text-sm text-gray-500 dark:text-gray-300">Agrega amigos para ver el saldo de cada uno.</div>';
+        panel.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3">
+                    <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Total de la mesa</div>
+                    <div class="text-xl font-extrabold">${App.money(total)}</div>
+                </div>
+                <div class="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3">
+                    <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Registrado en rondas</div>
+                    <div class="text-xl font-extrabold">${App.money(roundsTotal)}</div>
+                </div>
+                <div class="rounded-lg bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-3">
+                    <div class="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-200">Liquidación pendiente</div>
+                    <div class="text-xl font-extrabold ${pendingClass}">${App.money(pending)}</div>
+                    <div class="text-xs text-amber-700 dark:text-amber-100">${pendingLabel}</div>
+                </div>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 space-y-3">
+                <div class="text-sm font-semibold">Agrega a tus amigos</div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                    <input data-field="friend-name" type="text" placeholder="Nombre para repartir la cuenta" class="col-span-1 sm:col-span-3 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <button type="button" data-round-action="save-friend" class="bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-200 dark:text-gray-900 font-semibold px-3 py-2 rounded-lg">Guardar amigo</button>
+                </div>
+                <div class="flex flex-wrap gap-2">${friendChips}</div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Tip: toca un nombre para rellenar el campo de pagador.</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70 p-3 space-y-3">
+                <div class="text-sm font-semibold">Registrar ronda / turno pagado</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input data-field="round-payer" type="text" placeholder="Quién pagó" class="p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <input data-field="round-amount" type="number" min="0" step="0.01" placeholder="Monto" class="p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <input data-field="round-note" type="text" placeholder="Nota (opcional)" class="p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" data-round-action="add-round" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg">Guardar ronda</button>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="text-sm font-semibold flex items-center justify-between">Saldo entre amigos <span class="text-xs text-gray-500 dark:text-gray-400">Cuota: ${App.money(perHead || 0)}</span></div>
+                ${balancesHtml}
+            </div>
+            <div class="space-y-2">
+                <div class="text-sm font-semibold">Historial de rondas</div>
+                ${roundsHtml}
+            </div>
+        `;
+        const amountInput = panel.querySelector('[data-field="round-amount"]');
+        if (amountInput && !amountInput.value) amountInput.value = Math.max(pending, 0).toFixed(2);
+        const payerInput = panel.querySelector('[data-field="round-payer"]');
+        if (payerInput && !payerInput.value && friends.length) payerInput.value = friends[0];
+    }
+
     function renderDrawerActions(table) {
         const wrapper = App.$('#drawer-actions');
           if (table.charged) {
@@ -334,11 +432,69 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshQuickAddArea();
     }
 
+    function addFriend(tableId, name) {
+        const table = App.AppState.tables.find(t => t.id === tableId);
+        if (!table) return false;
+        App.ensureRoundsShape(table);
+        const clean = (name || '').trim();
+        if (!clean) {
+            App.toast('Escribe un nombre para el saldo', 'error', 2200);
+            return false;
+        }
+        const exists = (table.friends || []).some(n => n.toLowerCase() === clean.toLowerCase());
+        if (exists) {
+            App.toast('Ya está en la lista de amigos', 'info', 1400);
+            return false;
+        }
+        table.friends.push(clean);
+        App.persist();
+        render();
+        App.toast('Amigo guardado', 'success', 1400);
+        return true;
+    }
+
+    function addRoundEntry(tableId, data) {
+        const table = App.AppState.tables.find(t => t.id === tableId);
+        if (!table) return false;
+        App.ensureRoundsShape(table);
+        const payer = (data.payer || '').trim();
+        const amount = Number(data.amount);
+        const note = (data.note || '').trim();
+        if (!payer) {
+            alert('Escribe quién pagó esta ronda.');
+            return false;
+        }
+        if (!(amount > 0)) {
+            alert('Ingresa un monto mayor a 0.');
+            return false;
+        }
+        table.rounds.unshift({ id: App.uid(), payer, amount, note, createdAt: Date.now() });
+        if (!table.friends.some(n => n.toLowerCase() === payer.toLowerCase())) {
+            table.friends.push(payer);
+        }
+        App.persist();
+        render();
+        App.toast('Ronda registrada', 'success');
+        return true;
+    }
+
+    function deleteRoundEntry(tableId, roundId) {
+        const table = App.AppState.tables.find(t => t.id === tableId);
+        if (!table) return;
+        App.ensureRoundsShape(table);
+        if (!roundId) return;
+        if (!confirm('¿Eliminar este registro de ronda?')) return;
+        table.rounds = (table.rounds || []).filter(r => r.id !== roundId);
+        App.persist();
+        render();
+        App.toast('Ronda eliminada', 'info');
+    }
+
     function addTable() {
         const name = App.$('#table-name').value.trim();
         const note = App.$('#table-note').value.trim();
         if (!name) return alert('Escribe un nombre o número de mesa.');
-        App.AppState.tables.push({ id: App.uid(), name, note, order: {}, charged: false, paidAt: null, createdAt: Date.now(), openDurationMs: null, tip: 0 });
+        App.AppState.tables.push({ id: App.uid(), name, note, order: {}, charged: false, paidAt: null, createdAt: Date.now(), openDurationMs: null, tip: 0, rounds: [], friends: [] });
         App.$('#table-name').value = '';
         App.$('#table-note').value = '';
         App.persist();
@@ -540,6 +696,7 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
           App.$("#table-total").textContent = App.money(App.computeTableTotal(table) + (table.charged ? table.tip : 0));
           renderMenuList(table);
           renderTableSummary(table);
+          renderRoundsPanel(table);
           renderDrawerActions(table);
         if (shouldAnimate) {
             App.$("#drawer").classList.remove("translate-x-full");
@@ -714,6 +871,55 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             App.persist();
             renderQuickPresetEditor();
             refreshQuickAddArea();
+        });
+
+        const roundsPanel = App.$('#rounds-panel');
+        const getCurrentTable = () => App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+        const getRoundPayload = () => {
+            if (!roundsPanel) return { payer: '', amount: 0, note: '' };
+            return {
+                payer: roundsPanel.querySelector('[data-field="round-payer"]')?.value || '',
+                amount: roundsPanel.querySelector('[data-field="round-amount"]')?.value || 0,
+                note: roundsPanel.querySelector('[data-field="round-note"]')?.value || '',
+            };
+        };
+        roundsPanel?.addEventListener('click', e => {
+            const chip = e.target.closest('[data-fill-payer]');
+            if (chip && roundsPanel) {
+                const input = roundsPanel.querySelector('[data-field="round-payer"]');
+                if (input) {
+                    input.value = chip.dataset.fillPayer || '';
+                    input.focus();
+                }
+            }
+            const actionBtn = e.target.closest('[data-round-action]');
+            if (!actionBtn) return;
+            const current = getCurrentTable();
+            if (!current) return;
+            const action = actionBtn.dataset.roundAction;
+            if (action === 'save-friend') {
+                const friendInput = roundsPanel.querySelector('[data-field="friend-name"]');
+                if (friendInput && addFriend(current.id, friendInput.value)) {
+                    friendInput.value = '';
+                }
+            } else if (action === 'add-round') {
+                addRoundEntry(current.id, getRoundPayload());
+            } else if (action === 'delete-round') {
+                deleteRoundEntry(current.id, actionBtn.dataset.roundId);
+            }
+        });
+        roundsPanel?.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            const current = getCurrentTable();
+            if (!current) return;
+            if (e.target.matches('[data-field="friend-name"]')) {
+                e.preventDefault();
+                const input = e.target;
+                if (addFriend(current.id, input.value)) input.value = '';
+            } else if (e.target.matches('[data-field="round-payer"], [data-field="round-amount"], [data-field="round-note"]')) {
+                e.preventDefault();
+                addRoundEntry(current.id, getRoundPayload());
+            }
         });
 
         App.$('#tip-cancel').addEventListener('click', closeTipModal);

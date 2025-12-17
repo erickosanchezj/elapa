@@ -13,6 +13,11 @@
     App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
     App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
     App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
+    App.ensureRoundsShape = table => {
+        if (!table) return;
+        if (!Array.isArray(table.rounds)) table.rounds = [];
+        if (!Array.isArray(table.friends)) table.friends = [];
+    };
 
     const BASE_ITEMS = [
         { id: 'taco_pastor', label: 'Pastor', base: true },
@@ -54,6 +59,7 @@
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
+        App.AppState.tables.forEach(App.ensureRoundsShape);
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         App.AppState.items = App.AppState.items
             .filter(it => !REMOVED_ITEMS.includes(it.id))
@@ -118,6 +124,50 @@
 
     App.computeGrandTotalActive = function() {
         return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0);
+    };
+
+    App.computeRoundsTotal = function(table) {
+        if (!table) return 0;
+        App.ensureRoundsShape(table);
+        return table.rounds.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    };
+
+    App.getFriendsForTable = function(table) {
+        if (!table) return [];
+        App.ensureRoundsShape(table);
+        const seen = new Set();
+        const friends = [];
+        const add = name => {
+            const clean = (name || '').trim();
+            if (!clean) return;
+            const key = clean.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            friends.push(clean);
+        };
+        (table.friends || []).forEach(add);
+        (table.rounds || []).forEach(r => add(r.payer));
+        return friends;
+    };
+
+    App.computeFriendBalances = function(table) {
+        if (!table) return [];
+        App.ensureRoundsShape(table);
+        const friends = App.getFriendsForTable(table);
+        if (!friends.length) return [];
+        const total = App.computeTableTotal(table) + (table.tip || 0);
+        const share = friends.length ? total / friends.length : 0;
+        const paidMap = {};
+        (table.rounds || []).forEach(r => {
+            const name = (r.payer || '').trim().toLowerCase();
+            if (!name) return;
+            paidMap[name] = (paidMap[name] || 0) + (Number(r.amount) || 0);
+        });
+        return friends.map(name => {
+            const paid = paidMap[name.toLowerCase()] || 0;
+            const balance = paid - share;
+            return { name, paid, shouldPay: share, balance };
+        });
     };
     
     App.computeDailyReport = function(){
