@@ -161,6 +161,30 @@
         return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
     };
 
+    App.computeMonthlyTimeline = function(monthsBack = 6) {
+        const now = new Date();
+        const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const chargedTables = App.AppState.tables.filter(t => t.charged && t.paidAt);
+        const timeline = [];
+        for (let i = monthsBack - 1; i >= 0; i--) {
+            const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const start = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1).getTime();
+            const end = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1).getTime();
+            const monthTables = chargedTables.filter(t => t.paidAt >= start && t.paidAt < end);
+            const subtotal = monthTables.reduce((s, t) => s + App.computeTableTotal(t), 0);
+            const tips = monthTables.reduce((s, t) => s + (t.tip || 0), 0);
+            timeline.push({
+                key: `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`,
+                label: `${monthNames[monthDate.getMonth()]} ${String(monthDate.getFullYear()).slice(-2)}`,
+                subtotal,
+                tips,
+                total: subtotal + tips,
+                tablesCount: monthTables.length,
+            });
+        }
+        return timeline;
+    };
+
     App.toast = function(message, type = 'success', timeout = 2000, opts = {}) {
         const w = App.$('#toast-wrap');
         if (!w) return;

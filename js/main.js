@@ -417,6 +417,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="text-2xl font-extrabold text-green-800 dark:text-green-100">${App.money(report.totalSubtotals + report.totalTips)}</div>
             </div>`;
 
+        const monthlyContainer = App.$("#report-monthly-timeline");
+        if (monthlyContainer) {
+            const monthly = App.computeMonthlyTimeline(6);
+            monthlyContainer.innerHTML = "";
+            const maxTotal = Math.max(...monthly.map(m => m.total), 0) || 1;
+            if (monthly.every(m => m.total === 0)) {
+                monthlyContainer.innerHTML = '<div class="text-gray-500 dark:text-gray-400 italic">Aún no hay consumos registrados.</div>';
+            } else {
+                monthly.forEach(m => {
+                    const barWidth = Math.max(6, Math.round((m.total / maxTotal) * 100));
+                    const el = document.createElement("div");
+                    el.className = "bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg p-3";
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="font-semibold">${m.label}</div>
+                            <div class="text-gray-500 dark:text-gray-300">${m.tablesCount} mesa${m.tablesCount === 1 ? '' : 's'}</div>
+                        </div>
+                        <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600" style="width:${barWidth}%;"></div>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-300">Propinas: ${App.money(m.tips)}</span>
+                            <span class="font-bold">${App.money(m.total)}</span>
+                        </div>`;
+                    monthlyContainer.appendChild(el);
+                });
+            }
+        }
+
         const unpaidContainer = App.$("#report-unpaid-tables");
         const unpaidBadge = App.$("#report-unpaid-count");
         const unpaidTables = (report.unpaidTablesToday || []).slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
