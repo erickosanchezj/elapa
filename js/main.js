@@ -149,20 +149,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const promoBadge = (it.id === 'taco_pastor' && App.isPastorPromoActive()) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
             const emoji = it.emoji ? `<span class="mr-2 text-xl">${it.emoji}</span>` : '';
             const row = document.createElement('div');
-            row.className = `flex items-center justify-between bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
+            row.className = `menu-item-row bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
             row.innerHTML = `
                 <div>
                     <div class="font-semibold flex items-center">${emoji}<span>${it.label}</span> ${promoBadge}</div>
                     <div class="text-gray-600 dark:text-gray-300 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u · ${App.describeCategory(it.category)}</div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">−</button>
-                    <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="w-16 text-center border rounded-md p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                    <button data-plus="${it.id}" class="w-8 h-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
-                    <div class="flex gap-1">
-                        <button data-add="${it.id}" data-delta="2" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">2</button>
-                        <button data-add="${it.id}" data-delta="4" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">4</button>
-                        <button data-add="${it.id}" data-delta="6" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">6</button>
+                <div class="menu-item-controls">
+                    <button data-minus="${it.id}" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">−</button>
+                    <input data-qty="${it.id}" type="number" min="0" value="${qty}" class="qty-input text-center border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <button data-plus="${it.id}" class="w-9 h-9 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold">+</button>
+                    <div class="menu-item-quick">
+                        <button data-add="${it.id}" data-delta="2" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">2</button>
+                        <button data-add="${it.id}" data-delta="4" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">4</button>
+                        <button data-add="${it.id}" data-delta="6" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">6</button>
                     </div>
                 </div>`;
             menu.appendChild(row);
