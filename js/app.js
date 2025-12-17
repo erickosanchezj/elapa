@@ -4,7 +4,7 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null };
+    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [] };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -25,6 +25,15 @@
         { id: 'cerveza', label: 'Cerveza', base: true },
     ];
     const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00 };
+    const DEFAULT_QUICK_PRESETS = [
+        { id: 'qp_pastor_2', label: '2 × Taco de Pastor', itemId: 'taco_pastor', qty: 2 },
+        { id: 'qp_pastor_4', label: '4 × Taco de Pastor', itemId: 'taco_pastor', qty: 4 },
+        { id: 'qp_pastor_6', label: '6 × Taco de Pastor', itemId: 'taco_pastor', qty: 6 },
+        { id: 'qp_suadero_2', label: '2 × Taco de Suadero', itemId: 'taco_suadero', qty: 2 },
+        { id: 'qp_suadero_4', label: '4 × Taco de Suadero', itemId: 'taco_suadero', qty: 4 },
+        { id: 'qp_suadero_6', label: '6 × Taco de Suadero', itemId: 'taco_suadero', qty: 6 },
+    ];
+    App.DEFAULT_QUICK_PRESETS = DEFAULT_QUICK_PRESETS;
 
     App.loadState = function() {
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
@@ -32,7 +41,10 @@
         App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
         if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
+        const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
+        App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
+        App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p && p.itemId && p.qty > 0);
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
     };
 
@@ -45,6 +57,7 @@
         localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
         localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
+        localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
     };
 
     App.computeLine = function(itemId, qty) {

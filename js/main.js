@@ -60,19 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
         menu.innerHTML = '';
         quick.innerHTML = '';
         const isDisabled = table.charged ? 'opacity-50 pointer-events-none' : '';
-        const popular = ['taco_pastor', 'taco_suadero'];
-        popular.forEach(id => {
-            const item = App.AppState.items.find(i => i.id === id);
-            if (!item) return;
-            [2,4,6].forEach(n => {
+
+        const presets = App.AppState.quickPresets || [];
+        if (presets.length === 0) {
+            quick.innerHTML = `<div class="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2">Configura accesos rápidos para tus combos frecuentes.</div>`;
+        } else {
+            presets.forEach(preset => {
+                const item = App.AppState.items.find(i => i.id === preset.itemId);
+                if (!item || !preset.qty) return;
+                const label = preset.label && preset.label.trim() ? preset.label : `${preset.qty} × ${item.label}`;
                 const btn = document.createElement('button');
-                btn.dataset.add = id;
-                btn.dataset.delta = n;
-                btn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-2 rounded-lg';
-                btn.textContent = `${n} × ${item.label}`;
+                btn.dataset.add = preset.itemId;
+                btn.dataset.delta = preset.qty;
+                btn.className = `bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-2 rounded-lg ${isDisabled}`;
+                btn.textContent = label;
                 quick.appendChild(btn);
             });
-        });
+        }
+
         App.AppState.items.forEach(it => {
             const qty = table.order[it.id] || 0;
             const promoBadge = (it.id === 'taco_pastor' && App.isPastorPromoActive()) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
@@ -94,6 +99,72 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             menu.appendChild(row);
+        });
+    }
+
+    function refreshQuickAddArea() {
+        const currentTable = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+        if (currentTable) {
+            renderMenuList(currentTable);
+        }
+    }
+
+    function renderQuickPresetEditor() {
+        const list = App.$('#preset-list');
+        if (!list) return;
+        list.innerHTML = '';
+        const presets = App.AppState.quickPresets || [];
+        if (presets.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2';
+            empty.textContent = 'No hay accesos rápidos. Agrega uno nuevo.';
+            list.appendChild(empty);
+            return;
+        }
+
+        presets.forEach(preset => {
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-3 items-center bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg p-3';
+            
+            const labelInput = document.createElement('input');
+            labelInput.type = 'text';
+            labelInput.placeholder = 'Etiqueta';
+            labelInput.value = preset.label || '';
+            labelInput.dataset.presetId = preset.id;
+            labelInput.dataset.field = 'label';
+            labelInput.className = 'col-span-5 p-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100';
+
+            const select = document.createElement('select');
+            select.dataset.presetId = preset.id;
+            select.dataset.field = 'itemId';
+            select.className = 'col-span-5 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent';
+            App.AppState.items.forEach(it => {
+                const opt = document.createElement('option');
+                opt.value = it.id;
+                opt.textContent = it.label;
+                if (it.id === preset.itemId) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            qtyInput.value = preset.qty || 1;
+            qtyInput.dataset.presetId = preset.id;
+            qtyInput.dataset.field = 'qty';
+            qtyInput.className = 'col-span-1 p-2 border rounded-lg text-center dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.dataset.deletePreset = preset.id;
+            deleteBtn.className = 'col-span-1 text-red-600 hover:text-red-700 font-semibold';
+            deleteBtn.textContent = '✕';
+
+            row.appendChild(labelInput);
+            row.appendChild(select);
+            row.appendChild(qtyInput);
+            row.appendChild(deleteBtn);
+            list.appendChild(row);
         });
     }
 
@@ -182,6 +253,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             itemsContainer.appendChild(el);
         });
+    }
+
+    function openQuickPresetsModal() {
+        renderQuickPresetEditor();
+        App.$('#quick-presets-modal')?.classList.remove('hidden');
+    }
+
+    function closeQuickPresetsModal() {
+        App.$('#quick-presets-modal')?.classList.add('hidden');
+    }
+
+    function addQuickPreset() {
+        const firstItem = App.AppState.items[0];
+        if (!firstItem) return alert('No hay productos en el menú. Primero agrega productos en Precios.');
+        App.AppState.quickPresets.push({ id: App.uid(), label: `Nuevo preset (${firstItem.label})`, itemId: firstItem.id, qty: 1 });
+        App.persist();
+        renderQuickPresetEditor();
+        refreshQuickAddArea();
+    }
+
+    function resetQuickPresets() {
+        if (!confirm('¿Restablecer los accesos rápidos predeterminados?')) return;
+        App.AppState.quickPresets = (App.DEFAULT_QUICK_PRESETS || []).slice();
+        App.persist();
+        renderQuickPresetEditor();
+        refreshQuickAddArea();
     }
 
     function addTable() {
@@ -482,6 +579,39 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         menuList.addEventListener('click', handleClick);
         quickAdd.addEventListener('click', handleClick);
         menuList.addEventListener('input', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.closest('[data-qty]')?.dataset.qty; if (a) setQty(t, a, Math.max(0, Number(e.target.value || 0))) });
+
+        App.$('#open-quick-presets')?.addEventListener('click', openQuickPresetsModal);
+        App.$('#quick-presets-close')?.addEventListener('click', closeQuickPresetsModal);
+        App.$('#quick-presets-done')?.addEventListener('click', closeQuickPresetsModal);
+        App.$('#add-quick-preset')?.addEventListener('click', addQuickPreset);
+        App.$('#reset-quick-presets')?.addEventListener('click', resetQuickPresets);
+        App.$('#preset-list')?.addEventListener('input', e => {
+            const target = e.target;
+            const presetId = target.dataset.presetId;
+            const field = target.dataset.field;
+            if (!presetId || !field) return;
+            const preset = App.AppState.quickPresets.find(p => p.id === presetId);
+            if (!preset) return;
+            if (field === 'qty') {
+                preset.qty = Math.max(1, Number(target.value || 1));
+                target.value = preset.qty;
+            } else if (field === 'label') {
+                preset.label = target.value;
+            } else if (field === 'itemId') {
+                preset.itemId = target.value;
+            }
+            App.persist();
+            refreshQuickAddArea();
+        });
+        App.$('#preset-list')?.addEventListener('click', e => {
+            const btn = e.target.closest('[data-delete-preset]');
+            if (!btn) return;
+            const presetId = btn.dataset.deletePreset;
+            App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p.id !== presetId);
+            App.persist();
+            renderQuickPresetEditor();
+            refreshQuickAddArea();
+        });
 
         App.$('#tip-cancel').addEventListener('click', closeTipModal);
         App.$('#tip-confirm').addEventListener('click', () => finalizeCloseTable(currentTipState.tableId, currentTipState.tip));
