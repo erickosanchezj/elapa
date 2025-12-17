@@ -466,11 +466,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return { id: App.uid(), name, note, order: { ...order }, charged: false, paidAt: null, createdAt: Date.now(), openDurationMs: null, tip: 0, rounds: [], friends: [] };
     }
 
+    function buildDatedName(baseName) {
+        const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const now = new Date();
+        const suffix = `${months[now.getMonth()]}${now.getDate()}`;
+        return `${baseName}-${suffix}`;
+    }
+
     function createTableFromTemplate(templateId) {
         const tpl = getTableTemplates().find(t => t.id === templateId);
         if (!tpl) return;
         if (!tpl.name) return;
-        const record = buildTableRecord({ name: tpl.name, note: tpl.note || '', order: tpl.order || {} });
+        const record = buildTableRecord({ name: buildDatedName(tpl.name), note: tpl.note || '', order: tpl.order || {} });
         App.AppState.tables.push(record);
         App.persist();
         render();
