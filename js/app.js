@@ -4,7 +4,7 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [] };
+    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '' };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -46,6 +46,8 @@
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p && p.itemId && p.qty > 0);
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
+        App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
+        App.AppState.uiHighContrast = Boolean(JSON.parse(localStorage.getItem('tacos_ui_high_contrast') || 'false'));
     };
 
     App.isPastorPromoActive = function() {
@@ -58,6 +60,15 @@
         localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
+        localStorage.setItem('tacos_ui_dense', JSON.stringify(App.AppState.uiDense));
+        localStorage.setItem('tacos_ui_high_contrast', JSON.stringify(App.AppState.uiHighContrast));
+    };
+
+    App.applyUiPrefs = function() {
+        const body = document.body;
+        if (!body) return;
+        body.classList.toggle('dense', !!App.AppState.uiDense);
+        body.classList.toggle('high-contrast', !!App.AppState.uiHighContrast);
     };
 
     App.computeLine = function(itemId, qty) {
@@ -99,14 +110,28 @@
         return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue };
     };
 
-    App.toast = function(message, type = 'success', timeout = 2000) {
+    App.toast = function(message, type = 'success', timeout = 2000, opts = {}) {
         const w = App.$('#toast-wrap');
         if (!w) return;
         const e = document.createElement('div');
         const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
         e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
         e.textContent = message;
+        if (opts.confetti) e.classList.add('toast-with-confetti');
         w.appendChild(e);
+        if (opts.confetti) {
+            const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#a855f7'];
+            for (let i = 0; i < 8; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'confetti-piece';
+                dot.style.backgroundColor = colors[i % colors.length];
+                dot.style.left = `${45 + Math.random() * 20}%`;
+                dot.style.setProperty('--confetti-x', `${Math.random() * 40 - 20}px`);
+                dot.style.animationDelay = `${i * 12}ms`;
+                e.appendChild(dot);
+                setTimeout(() => dot.remove(), 700);
+            }
+        }
         requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
         setTimeout(() => {
             e.classList.add('opacity-0', 'translate-y-2');

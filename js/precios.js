@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         App.loadState();
+        App.applyUiPrefs();
         renderItems();
         renderPromoToggle();
         wireEvents();

@@ -6,7 +6,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
 
+    function syncUiPrefs() {
+        App.applyUiPrefs();
+        const denseBtn = App.$('#toggle-dense');
+        if (denseBtn) denseBtn.setAttribute('aria-pressed', String(App.AppState.uiDense));
+        const contrastBtn = App.$('#toggle-contrast');
+        if (contrastBtn) contrastBtn.setAttribute('aria-pressed', String(App.AppState.uiHighContrast));
+    }
+
+    function triggerAddFx(btn) {
+        if (!btn) return;
+        btn.classList.remove('btn-pulse');
+        btn.offsetWidth; // force reflow to restart animation
+        btn.classList.add('btn-pulse');
+    }
+
+    function syncSearchField() {
+        const input = App.$('#menu-search');
+        const clearBtn = App.$('#menu-search-clear');
+        if (input) input.value = App.AppState.menuSearch || '';
+        if (clearBtn) clearBtn.classList.toggle('hidden', !(App.AppState.menuSearch || '').length);
+    }
+
+    function focusMenuSearch() {
+        const input = App.$('#menu-search');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }
+
     function render() {
+        syncUiPrefs();
+        syncSearchField();
         renderTables();
         updateTimers();
         const table = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
@@ -60,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         menu.innerHTML = '';
         quick.innerHTML = '';
         const isDisabled = table.charged ? 'opacity-50 pointer-events-none' : '';
+        const filter = (App.AppState.menuSearch || '').trim().toLowerCase();
 
         const presets = App.AppState.quickPresets || [];
         if (presets.length === 0) {
@@ -78,7 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        App.AppState.items.forEach(it => {
+        const listItems = App.AppState.items.filter(it => !filter || it.label.toLowerCase().includes(filter));
+        if (listItems.length === 0) {
+            menu.innerHTML = `<div class="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2">Sin productos que coincidan.</div>`;
+            return;
+        }
+        listItems.forEach(it => {
             const qty = table.order[it.id] || 0;
             const promoBadge = (it.id === 'taco_pastor' && App.isPastorPromoActive()) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
             const row = document.createElement('div');
@@ -480,6 +518,7 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
     function openDrawer(table, shouldAnimate = true) {
         if (!table) return;
         App.AppState.currentTableId = table.id;
+        syncSearchField();
         App.$("#drawer-title").textContent = table.name;
           App.$("#drawer-note").textContent = table.note || "";
           App.$("#drawer-status").innerHTML = table.charged ? `<span class="badge bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white">COBRADA</span> <span class="text-gray-500 dark:text-gray-400">— ${new Date(table.paidAt || Date.now()).toLocaleString()}</span>` : '<span class="badge bg-emerald-100 text-emerald-700">ACTIVA</span>';
@@ -555,12 +594,43 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         App.$('#close-all').addEventListener('click', closeAllTables);
         App.$('#show-report').addEventListener('click', openReportModal);
         App.$('#report-close').addEventListener('click', () => App.$("#report-modal").classList.add("hidden"));
+        App.$('#toggle-dense')?.addEventListener('click', () => {
+            App.AppState.uiDense = !App.AppState.uiDense;
+            App.persist();
+            syncUiPrefs();
+            render();
+        });
+        App.$('#toggle-contrast')?.addEventListener('click', () => {
+            App.AppState.uiHighContrast = !App.AppState.uiHighContrast;
+            App.persist();
+            syncUiPrefs();
+        });
         App.$('#tables-grid').addEventListener('click', e => { const t = e.target.closest('[data-table-id]')?.dataset.tableId; if (t) { const a = App.AppState.tables.find(e => e.id === t); openDrawer(a); } });
         App.$('#drawer-close').addEventListener('click', closeDrawer);
         App.$('#backdrop').addEventListener('click', closeDrawer);
         App.$('#drawer-actions').addEventListener('click', e => { const t = App.AppState.currentTableId; if (!t) return; const a = e.target.id, n = {'reopen-table': reopenTable, 'delete-table': deleteTable, 'clear-table': clearTable, 'close-table': () => openTipModal(t), 'print-bill': printBill}; if (n[a]) n[a](t); });
         const menuList = App.$('#menu-list');
         const quickAdd = App.$('#quick-add');
+        const menuSearch = App.$('#menu-search');
+        const menuSearchClear = App.$('#menu-search-clear');
+        if (menuSearch) {
+            menuSearch.addEventListener('input', () => {
+                App.AppState.menuSearch = menuSearch.value;
+                if (menuSearchClear) menuSearchClear.classList.toggle('hidden', !menuSearch.value);
+                const current = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+                if (current) renderMenuList(current);
+            });
+        }
+        if (menuSearchClear) {
+            menuSearchClear.addEventListener('click', () => {
+                App.AppState.menuSearch = '';
+                if (menuSearch) menuSearch.value = '';
+                menuSearchClear.classList.add('hidden');
+                const current = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+                if (current) renderMenuList(current);
+                focusMenuSearch();
+            });
+        }
         const handleClick = e => {
             const t = App.AppState.currentTableId;
             if (!t) return;
@@ -568,11 +638,17 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             if (addBtn) {
                 changeQty(t, addBtn.dataset.add, Number(addBtn.dataset.delta));
                 const item = App.AppState.items.find(i => i.id === addBtn.dataset.add);
-                App.toast(`${addBtn.dataset.delta} × ${item?.label || addBtn.dataset.add}`);
+                triggerAddFx(addBtn);
+                App.toast(`${addBtn.dataset.delta} × ${item?.label || addBtn.dataset.add}`, 'success', 1400, { confetti: true });
                 return;
             }
-            const plus = e.target.closest('[data-plus]')?.dataset.plus;
-            if (plus) changeQty(t, plus, 1);
+            const plusBtn = e.target.closest('[data-plus]');
+            const plus = plusBtn?.dataset.plus;
+            if (plus) {
+                changeQty(t, plus, 1);
+                triggerAddFx(plusBtn);
+                return;
+            }
             const minus = e.target.closest('[data-minus]')?.dataset.minus;
             if (minus) changeQty(t, minus, -1);
         };
@@ -625,6 +701,31 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         App.$('#tip-custom-amount').addEventListener('input', e => {
             const customAmount = Number(e.target.value || 0);
             updateTipDisplay(customAmount, null);
+        });
+
+        App.$('#mobile-action-bar')?.addEventListener('click', e => {
+            const action = e.target.closest('[data-mobile-action]')?.dataset.mobileAction;
+            if (!action) return;
+            if (action === 'new-table') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => App.$('#table-name')?.focus(), 180);
+            } else if (action === 'search') {
+                const current = App.AppState.tables.find(t => t.id === App.AppState.currentTableId) || App.AppState.tables.find(t => !t.charged);
+                if (current) {
+                    openDrawer(current);
+                    setTimeout(focusMenuSearch, 200);
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    setTimeout(() => App.$('#table-name')?.focus(), 180);
+                }
+            } else if (action === 'charge') {
+                const current = App.AppState.tables.find(t => t.id === App.AppState.currentTableId && !t.charged) || App.AppState.tables.find(t => !t.charged);
+                if (!current) return alert('No hay mesas activas para cobrar.');
+                if (!App.AppState.currentTableId) openDrawer(current);
+                openTipModal(current.id);
+            } else if (action === 'report') {
+                openReportModal();
+            }
         });
     }
 

@@ -12,6 +12,56 @@ body {
   /* Base background and text colors are now handled by Tailwind's dark/light mode classes on the body tag */
 }
 
+body.has-mobile-bar {
+  padding-bottom: 6rem;
+}
+body.has-mobile-bar #toast-wrap {
+  bottom: 6rem;
+}
+@media (min-width: 640px) {
+  body.has-mobile-bar {
+    padding-bottom: 0;
+  }
+  body.has-mobile-bar #toast-wrap {
+    bottom: 1rem;
+  }
+}
+
+.mobile-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0.65rem 0.4rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, #fefce8, #fef9c3);
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.dark .mobile-action-btn {
+  background: linear-gradient(135deg, #1f2937, #111827);
+  color: #fcd34d;
+  border-color: #f59e0b;
+}
+.mobile-action-btn:active {
+  transform: translateY(1px);
+}
+
+.toggle-btn[aria-pressed="true"] {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.3);
+}
+.dark .toggle-btn[aria-pressed="true"] {
+  background: #1f2937;
+  border-color: #facc15;
+  color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.35);
+}
+
 /* Dark mode overrides to force class-based toggling when using the Tailwind CDN build */
 .dark body { background-color: #111827; color: #e5e7eb; }
 .dark .dark\:bg-gray-900 { background-color: #111827; }
@@ -113,6 +163,69 @@ input[type="number"] { -moz-appearance: textfield; }
     border-color: #4b5563;
     background: #1f2937;
   }
+
+.btn-pulse {
+  animation: btnPulse 0.35s ease;
+}
+
+.toast-with-confetti {
+  position: relative;
+  overflow: visible;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  opacity: 0.9;
+  animation: confettiPop 650ms ease-out forwards;
+}
+
+@keyframes btnPulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes confettiPop {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--confetti-x, 12px), -40px) scale(0.6); opacity: 0; }
+}
+
+body.dense #tables-grid { gap: 0.85rem; }
+body.dense .card { padding: 1rem; }
+body.dense #menu-list .flex { padding: 0.6rem 0.75rem; }
+body.dense #menu-list .flex .w-8 { width: 2.4rem; height: 2.4rem; }
+body.dense #menu-list input[type="number"] { width: 3.5rem; }
+body.dense #quick-add { gap: 0.35rem; }
+
+body.high-contrast {
+  background-color: #0b1120;
+  color: #f8fafc;
+}
+body.high-contrast .card,
+body.high-contrast .modal-content,
+body.high-contrast .mobile-action-btn,
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select,
+body.high-contrast button,
+body.high-contrast .bg-white,
+body.high-contrast .bg-gray-50,
+body.high-contrast .dark\:bg-gray-700,
+body.high-contrast .dark\:bg-gray-800 {
+  border: 2px solid #facc15 !important;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+}
+body.high-contrast .badge {
+  background: #facc15;
+  color: #1f2937;
+}
+body.high-contrast .text-gray-500,
+body.high-contrast .dark\:text-gray-400 {
+  color: #fef3c7 !important;
+}
 
 @media print {
   body * { visibility: hidden; }
