@@ -259,6 +259,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!list) return;
         ensureTableTemplates();
         const templates = getTableTemplates();
+        const itemsJsonEl = App.$('#table-template-items-json');
+        const orderExampleEl = App.$('#table-template-order-example');
+        if (itemsJsonEl) {
+            const map = {};
+            (App.AppState.items || []).forEach(it => { map[it.id] = it.label; });
+            itemsJsonEl.textContent = JSON.stringify(map, null, 2);
+        }
+        if (orderExampleEl) {
+            const example = {};
+            (App.AppState.items || []).forEach(it => { example[it.id] = 1; });
+            orderExampleEl.textContent = JSON.stringify(example, null, 2);
+        }
         list.innerHTML = '';
         if (!templates.length) {
             const empty = document.createElement('div');
