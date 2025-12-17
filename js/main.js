@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
     const setMobileBarHidden = hidden => document.body.classList.toggle('mobile-bar-hidden', !!hidden);
+    const DEFAULT_TABLE_TEMPLATES = [
+        { id: 'tmpl_brendos', label: 'Brendos', name: 'Brendos', note: 'Pareja', order: { taco_pastor: 6, refresco: 2 } },
+        { id: 'tmpl_jaricks', label: 'Jaricks', name: 'Jaricks', note: 'Pareja', order: { taco_suadero: 6, cerveza: 2 } },
+        { id: 'tmpl_compartida', label: 'Compartida', name: 'Mesa Compartida', note: 'Para pedidos en común', order: { taco_carbon: 2, taco_tripa: 2, cerveza: 4 } },
+    ];
 
     function syncUiPrefs() {
         App.applyUiPrefs();
@@ -48,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncUiPrefs();
         syncSearchField();
         renderCategoryFilters();
+        renderTableTemplates();
         renderTables();
         updateTimers();
         const table = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
@@ -219,6 +225,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function renderTableTemplates() {
+        const wrap = App.$('#table-templates');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        DEFAULT_TABLE_TEMPLATES.forEach(tpl => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.dataset.tableTemplate = tpl.id;
+            btn.className = 'px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-semibold flex items-center gap-2';
+            btn.innerHTML = `<span class="material-icons text-base">bolt</span><span>${tpl.label}</span>`;
+            const pill = document.createElement('span');
+            const qtySummary = Object.values(tpl.order || {}).reduce((s, n) => s + Number(n || 0), 0);
+            pill.className = 'pill text-xs';
+            pill.textContent = `${qtySummary || 0} ítems`;
+            btn.appendChild(pill);
+            wrap.appendChild(btn);
+        });
+    }
+
     function renderTableSummary(table) {
         const box = App.$('#table-summary');
         box.innerHTML = '';
@@ -324,6 +349,22 @@ document.addEventListener('DOMContentLoaded', () => {
         App.persist();
         renderQuickPresetEditor();
         refreshQuickAddArea();
+    }
+
+    function buildTableRecord({ name, note = '', order = {} }) {
+        return { id: App.uid(), name, note, order: { ...order }, charged: false, paidAt: null, createdAt: Date.now(), openDurationMs: null, tip: 0, rounds: [], friends: [] };
+    }
+
+    function createTableFromTemplate(templateId) {
+        const tpl = DEFAULT_TABLE_TEMPLATES.find(t => t.id === templateId);
+        if (!tpl) return;
+        if (!tpl.name) return;
+        const record = buildTableRecord({ name: tpl.name, note: tpl.note || '', order: tpl.order || {} });
+        App.AppState.tables.push(record);
+        App.persist();
+        render();
+        openDrawer(record);
+        App.toast(`Mesa ${tpl.label} creada con orden predeterminada`, 'success');
     }
 
     function resetQuickPresets() {
@@ -623,6 +664,10 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             App.AppState.uiHighContrast = !App.AppState.uiHighContrast;
             App.persist();
             syncUiPrefs();
+        });
+        App.$('#table-templates')?.addEventListener('click', e => {
+            const tplId = e.target.closest('[data-table-template]')?.dataset.tableTemplate;
+            if (tplId) createTableFromTemplate(tplId);
         });
         App.$('#tables-grid').addEventListener('click', e => { const t = e.target.closest('[data-table-id]')?.dataset.tableId; if (t) { const a = App.AppState.tables.find(e => e.id === t); openDrawer(a); } });
         App.$('#drawer-close').addEventListener('click', closeDrawer);
