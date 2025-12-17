@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     let currentTipState = { tableId: null, subtotal: 0, tip: 0 };
+    const setMobileBarHidden = hidden => document.body.classList.toggle('mobile-bar-hidden', !!hidden);
 
     function syncUiPrefs() {
         App.applyUiPrefs();
@@ -296,10 +297,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function openQuickPresetsModal() {
         renderQuickPresetEditor();
         App.$('#quick-presets-modal')?.classList.remove('hidden');
+        setMobileBarHidden(true);
     }
 
     function closeQuickPresetsModal() {
         App.$('#quick-presets-modal')?.classList.add('hidden');
+        setMobileBarHidden(false);
     }
 
     function addQuickPreset() {
@@ -565,10 +568,12 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         App.$('#tip-subtotal').textContent = App.money(subtotal);
         updateTipDisplay(0, null);
         App.$('#tip-modal').classList.remove('hidden');
+        setMobileBarHidden(true);
     }
 
     function closeTipModal() {
         App.$('#tip-modal').classList.add('hidden');
+        setMobileBarHidden(false);
     }
 
     function updateTipDisplay(tipAmount, selectedBtn) {
@@ -587,13 +592,14 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
     function openReportModal() {
         renderDailyReport();
         App.$("#report-modal").classList.remove("hidden");
+        setMobileBarHidden(true);
     }
 
     function wireEvents() {
         App.$('#add-table').addEventListener('click', addTable);
         App.$('#close-all').addEventListener('click', closeAllTables);
         App.$('#show-report').addEventListener('click', openReportModal);
-        App.$('#report-close').addEventListener('click', () => App.$("#report-modal").classList.add("hidden"));
+        App.$('#report-close').addEventListener('click', () => { App.$("#report-modal").classList.add("hidden"); setMobileBarHidden(false); });
         App.$('#toggle-dense')?.addEventListener('click', () => {
             App.AppState.uiDense = !App.AppState.uiDense;
             App.persist();

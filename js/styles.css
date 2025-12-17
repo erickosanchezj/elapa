@@ -26,6 +26,17 @@ body.has-mobile-bar #toast-wrap {
     bottom: 1rem;
   }
 }
+body.mobile-bar-hidden #toast-wrap {
+  bottom: 1rem;
+}
+#mobile-action-bar {
+  transition: transform .2s ease, opacity .2s ease;
+}
+.mobile-bar-hidden #mobile-action-bar {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+}
 
 .mobile-action-btn {
   display: flex;
@@ -47,6 +58,11 @@ body.has-mobile-bar #toast-wrap {
 }
 .mobile-action-btn:active {
   transform: translateY(1px);
+}
+
+.modal-content {
+  max-height: calc(100vh - 2.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
 }
 
 .toggle-btn[aria-pressed="true"] {
@@ -116,6 +132,10 @@ input[type="number"] { -moz-appearance: textfield; }
 .modal { transition: opacity .2s ease, transform .2s ease; }
 .modal.hidden { opacity: 0; transform: scale(.95); pointer-events: none; }
 .modal-content { transition: transform .2s ease; }
+.modal-content {
+  max-height: calc(100vh - 2.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
 .modal.hidden .modal-content { transform: translateY(1rem); }
 
 /* Clases para el modal de propinas */
