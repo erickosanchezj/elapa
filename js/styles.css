@@ -38,6 +38,12 @@ body.mobile-bar-hidden #toast-wrap {
   pointer-events: none;
 }
 
+@media (max-width: 639px) {
+  body.has-mobile-bar #drawer-footer {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .mobile-action-btn {
   display: flex;
   flex-direction: column;
