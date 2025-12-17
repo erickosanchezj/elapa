@@ -37,9 +37,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function buildBadges(it) {
+        const badges = [];
+        if (it.spice === 'mild') badges.push('<span class="pill pill-spice-mild">Picor suave</span>');
+        if (it.spice === 'medium') badges.push('<span class="pill pill-spice-medium">Picor medio</span>');
+        if (it.spice === 'hot') badges.push('<span class="pill pill-spice-hot">Picor alto</span>');
+        const allergenMap = { lactosa: 'Lácteos', gluten: 'Gluten', huevo: 'Huevo', nueces: 'Nueces' };
+        (it.allergens || []).forEach(a => badges.push(`<span class="pill pill-allergen">${allergenMap[a] || a}</span>`));
+        if (!badges.length) return '';
+        return `<div class="flex flex-wrap gap-1 mt-1">${badges.join('')}</div>`;
+    }
+
+    function renderCategoryFilters() {
+        App.$$('#menu-filters .filter-chip').forEach(btn => {
+            const cat = btn.dataset.categoryFilter;
+            btn.classList.toggle('active', cat === App.AppState.menuCategory);
+        });
+    }
+
     function render() {
         syncUiPrefs();
         syncSearchField();
+        renderCategoryFilters();
         renderTables();
         updateTimers();
         const table = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
@@ -94,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         quick.innerHTML = '';
         const isDisabled = table.charged ? 'opacity-50 pointer-events-none' : '';
         const filter = (App.AppState.menuSearch || '').trim().toLowerCase();
+        const category = App.AppState.menuCategory || 'all';
 
         const presets = App.AppState.quickPresets || [];
         if (presets.length === 0) {
@@ -112,7 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const listItems = App.AppState.items.filter(it => !filter || it.label.toLowerCase().includes(filter));
+        const listItems = App.AppState.items
+            .filter(it => !filter || it.label.toLowerCase().includes(filter))
+            .filter(it => category === 'all' || (it.category || 'otros') === category);
         if (listItems.length === 0) {
             menu.innerHTML = `<div class="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2">Sin productos que coincidan.</div>`;
             return;
@@ -120,12 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
         listItems.forEach(it => {
             const qty = table.order[it.id] || 0;
             const promoBadge = (it.id === 'taco_pastor' && App.isPastorPromoActive()) ? '<span class="ml-2 badge bg-red-500 text-white">2x1</span>' : '';
+            const emoji = it.emoji ? `<span class="mr-2 text-xl">${it.emoji}</span>` : '';
             const row = document.createElement('div');
             row.className = `flex items-center justify-between bg-white dark:bg-gray-800 border rounded-lg dark:border-gray-600 p-3 ${isDisabled}`;
             row.innerHTML = `
                 <div>
-                    <div class="font-semibold flex items-center">${it.label} ${promoBadge}</div>
-                    <div class="text-gray-600 dark:text-gray-300 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u</div>
+                    <div class="font-semibold flex items-center">${emoji}<span>${it.label}</span> ${promoBadge}</div>
+                    <div class="text-gray-600 dark:text-gray-300 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u · ${App.describeCategory(it.category)}</div>
+                    ${buildBadges(it)}
                 </div>
                 <div class="flex items-center gap-2">
                     <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">−</button>
@@ -139,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             menu.appendChild(row);
         });
+        renderUpsell(table);
     }
 
     function refreshQuickAddArea() {
@@ -595,6 +620,31 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         setMobileBarHidden(true);
     }
 
+    function renderUpsell(table) {
+        const box = App.$('#upsell-box');
+        if (!box) return;
+        const orderEntries = Object.entries(table.order || {});
+        const tacoQty = orderEntries
+            .filter(([id]) => id.startsWith('taco_'))
+            .reduce((sum, [, qty]) => sum + qty, 0);
+        const hasHorchata = (table.order['agua_horchata'] || 0) > 0;
+        if (tacoQty >= 3 && !hasHorchata) {
+            const price = App.money(App.AppState.prices['agua_horchata'] || 0);
+            box.innerHTML = `
+                <div class="upsell-card">
+                  <div>
+                    <div class="font-semibold">Agrega Agua de Horchata 🥤</div>
+                    <div class="text-sm opacity-80">Combínala con tus tacos. ${price}</div>
+                  </div>
+                  <button type="button" data-upsell-add="agua_horchata">+ ${price}</button>
+                </div>`;
+            box.classList.remove('hidden');
+        } else {
+            box.classList.add('hidden');
+            box.innerHTML = '';
+        }
+    }
+
     function wireEvents() {
         App.$('#add-table').addEventListener('click', addTable);
         App.$('#close-all').addEventListener('click', closeAllTables);
@@ -637,6 +687,14 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
                 focusMenuSearch();
             });
         }
+        App.$('#menu-filters')?.addEventListener('click', e => {
+            const btn = e.target.closest('[data-category-filter]');
+            if (!btn) return;
+            App.AppState.menuCategory = btn.dataset.categoryFilter || 'all';
+            renderCategoryFilters();
+            const current = App.AppState.tables.find(t => t.id === App.AppState.currentTableId);
+            if (current) renderMenuList(current);
+        });
         const handleClick = e => {
             const t = App.AppState.currentTableId;
             if (!t) return;
@@ -657,6 +715,12 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             }
             const minus = e.target.closest('[data-minus]')?.dataset.minus;
             if (minus) changeQty(t, minus, -1);
+            const upsellBtn = e.target.closest('[data-upsell-add]');
+            if (upsellBtn) {
+                changeQty(t, upsellBtn.dataset.upsellAdd, 1);
+                const item = App.AppState.items.find(i => i.id === upsellBtn.dataset.upsellAdd);
+                App.toast(`${item?.label || 'Producto'} agregado`, 'success', 1400, { confetti: true });
+            }
         };
         menuList.addEventListener('click', handleClick);
         quickAdd.addEventListener('click', handleClick);

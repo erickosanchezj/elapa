@@ -4,7 +4,7 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '' };
+    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all' };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -23,8 +23,11 @@
         { id: 'gringas', label: 'Gringas', base: true },
         { id: 'refresco', label: 'Refresco', base: true },
         { id: 'cerveza', label: 'Cerveza', base: true },
+        { id: 'agua_horchata', label: 'Agua de Horchata', base: true },
+        { id: 'agua_jamaica', label: 'Agua de Jamaica', base: true },
+        { id: 'flan_casero', label: 'Flan Casero', base: true },
     ];
-    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00 };
+    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00, agua_horchata: 32.00, agua_jamaica: 28.00, flan_casero: 38.00 };
     const DEFAULT_QUICK_PRESETS = [
         { id: 'qp_pastor_2', label: '2 × Taco de Pastor', itemId: 'taco_pastor', qty: 2 },
         { id: 'qp_pastor_4', label: '4 × Taco de Pastor', itemId: 'taco_pastor', qty: 4 },
@@ -34,6 +37,19 @@
         { id: 'qp_suadero_6', label: '6 × Taco de Suadero', itemId: 'taco_suadero', qty: 6 },
     ];
     App.DEFAULT_QUICK_PRESETS = DEFAULT_QUICK_PRESETS;
+    const ITEM_META = {
+        taco_pastor: { category: 'tacos', emoji: '🌮', spice: 'medium' },
+        taco_suadero: { category: 'tacos', emoji: '🌮' },
+        taco_carbon: { category: 'tacos', emoji: '🥩', spice: 'mild' },
+        taco_tripa: { category: 'tacos', emoji: '🔥', spice: 'hot' },
+        taco_cabeza: { category: 'tacos', emoji: '🐄' },
+        gringas: { category: 'tacos', emoji: '🧀', allergens: ['lactosa', 'gluten'] },
+        refresco: { category: 'bebidas', emoji: '🥤' },
+        cerveza: { category: 'bebidas', emoji: '🍺', allergens: ['gluten'] },
+        agua_horchata: { category: 'bebidas', emoji: '🥤', allergens: ['lactosa'] },
+        agua_jamaica: { category: 'bebidas', emoji: '🫐' },
+        flan_casero: { category: 'postres', emoji: '🍮', allergens: ['huevo', 'lactosa'] },
+    };
 
     App.loadState = function() {
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
@@ -44,6 +60,7 @@
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
+        App.AppState.items = App.AppState.items.map(it => App.mergeItemDefaults(it));
         App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p && p.itemId && p.qty > 0);
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
         App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
@@ -69,6 +86,24 @@
         if (!body) return;
         body.classList.toggle('dense', !!App.AppState.uiDense);
         body.classList.toggle('high-contrast', !!App.AppState.uiHighContrast);
+    };
+
+    App.mergeItemDefaults = function(item) {
+        const defaults = ITEM_META[item.id] || {};
+        return {
+            ...item,
+            category: item.category || defaults.category || 'otros',
+            emoji: item.emoji || defaults.emoji || '',
+            spice: item.spice || defaults.spice || null,
+            allergens: item.allergens || defaults.allergens || [],
+        };
+    };
+
+    App.describeCategory = function(cat) {
+        if (cat === 'tacos') return 'Tacos';
+        if (cat === 'bebidas') return 'Bebidas';
+        if (cat === 'postres') return 'Postres';
+        return 'Otros';
     };
 
     App.computeLine = function(itemId, qty) {
