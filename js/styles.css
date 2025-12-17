@@ -89,36 +89,7 @@ body.mobile-bar-hidden #toast-wrap {
   background: #f9fafb;
   color: #374151;
 }
-.pill-spice-mild { background: #ecfeff; border-color: #06b6d4; color: #0f172a; }
-.pill-spice-medium { background: #fff7ed; border-color: #f97316; color: #7c2d12; }
-.pill-spice-hot { background: #fef2f2; border-color: #ef4444; color: #7f1d1d; }
-.pill-allergen { background: #eef2ff; border-color: #6366f1; color: #312e81; }
 .dark .pill { border-color: #4b5563; background: #1f2937; color: #e5e7eb; }
-.dark .pill-spice-mild { background: #0ea5e9; color: #0b1021; border-color: #38bdf8; }
-.dark .pill-spice-medium { background: #f97316; color: #0b1021; border-color: #fb923c; }
-.dark .pill-spice-hot { background: #dc2626; color: #0b1021; border-color: #f87171; }
-.dark .pill-allergen { background: #4338ca; color: #fef3c7; border-color: #818cf8; }
-
-.upsell-card {
-  border: 1px dashed #f59e0b;
-  background: #fffbeb;
-  color: #92400e;
-  padding: 0.9rem;
-  border-radius: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.upsell-card button {
-  background: #f59e0b;
-  color: #1f2937;
-  padding: 0.55rem 0.9rem;
-  border-radius: 0.7rem;
-  font-weight: 700;
-}
-.dark .upsell-card { border-color: #facc15; background: #1f2937; color: #facc15; }
-.dark .upsell-card button { background: #facc15; color: #1f2937; }
 
 .modal-content {
   max-height: calc(100vh - 2.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));

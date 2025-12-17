@@ -15,19 +15,16 @@
     App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
 
     const BASE_ITEMS = [
-        { id: 'taco_pastor', label: 'Taco de Pastor', base: true },
-        { id: 'taco_suadero', label: 'Taco de Suadero', base: true },
-        { id: 'taco_carbon', label: 'Taco al Carbón', base: true },
-        { id: 'taco_tripa', label: 'Taco de Tripa', base: true },
-        { id: 'taco_cabeza', label: 'Taco de Cabeza', base: true },
+        { id: 'taco_pastor', label: 'Pastor', base: true },
+        { id: 'taco_suadero', label: 'Suadero', base: true },
+        { id: 'taco_carbon', label: 'Al Carbón', base: true },
+        { id: 'taco_tripa', label: 'Tripa', base: true },
+        { id: 'taco_cabeza', label: 'Cabeza', base: true },
         { id: 'gringas', label: 'Gringas', base: true },
         { id: 'refresco', label: 'Refresco', base: true },
         { id: 'cerveza', label: 'Cerveza', base: true },
-        { id: 'agua_horchata', label: 'Agua de Horchata', base: true },
-        { id: 'agua_jamaica', label: 'Agua de Jamaica', base: true },
-        { id: 'flan_casero', label: 'Flan Casero', base: true },
     ];
-    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00, agua_horchata: 32.00, agua_jamaica: 28.00, flan_casero: 38.00 };
+    const DEFAULT_PRICES = { refresco: 27.00, taco_pastor: 17.00, taco_suadero: 17.00, taco_carbon: 40.00, taco_tripa: 18.00, taco_cabeza: 17.00, gringas: 80.00, cerveza: 35.00 };
     const DEFAULT_QUICK_PRESETS = [
         { id: 'qp_pastor_2', label: '2 × Taco de Pastor', itemId: 'taco_pastor', qty: 2 },
         { id: 'qp_pastor_4', label: '4 × Taco de Pastor', itemId: 'taco_pastor', qty: 4 },
@@ -37,18 +34,16 @@
         { id: 'qp_suadero_6', label: '6 × Taco de Suadero', itemId: 'taco_suadero', qty: 6 },
     ];
     App.DEFAULT_QUICK_PRESETS = DEFAULT_QUICK_PRESETS;
+    const REMOVED_ITEMS = ['agua_horchata', 'agua_jamaica', 'flan_casero'];
     const ITEM_META = {
-        taco_pastor: { category: 'tacos', emoji: '🌮', spice: 'medium' },
-        taco_suadero: { category: 'tacos', emoji: '🌮' },
-        taco_carbon: { category: 'tacos', emoji: '🥩', spice: 'mild' },
-        taco_tripa: { category: 'tacos', emoji: '🔥', spice: 'hot' },
-        taco_cabeza: { category: 'tacos', emoji: '🐄' },
-        gringas: { category: 'tacos', emoji: '🧀', allergens: ['lactosa', 'gluten'] },
-        refresco: { category: 'bebidas', emoji: '🥤' },
-        cerveza: { category: 'bebidas', emoji: '🍺', allergens: ['gluten'] },
-        agua_horchata: { category: 'bebidas', emoji: '🥤', allergens: ['lactosa'] },
-        agua_jamaica: { category: 'bebidas', emoji: '🫐' },
-        flan_casero: { category: 'postres', emoji: '🍮', allergens: ['huevo', 'lactosa'] },
+        taco_pastor: { category: 'tacos', emoji: '🌮', label: 'Pastor' },
+        taco_suadero: { category: 'tacos', emoji: '🌮', label: 'Suadero' },
+        taco_carbon: { category: 'tacos', emoji: '🌮', label: 'Al Carbón' },
+        taco_tripa: { category: 'tacos', emoji: '🌮', label: 'Tripa' },
+        taco_cabeza: { category: 'tacos', emoji: '🌮', label: 'Cabeza' },
+        gringas: { category: 'tacos', emoji: '🌮', label: 'Gringas' },
+        refresco: { category: 'bebidas', emoji: '🥤', label: 'Refresco' },
+        cerveza: { category: 'bebidas', emoji: '🍺', label: 'Cerveza' },
     };
 
     App.loadState = function() {
@@ -60,7 +55,10 @@
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
-        App.AppState.items = App.AppState.items.map(it => App.mergeItemDefaults(it));
+        App.AppState.items = App.AppState.items
+            .filter(it => !REMOVED_ITEMS.includes(it.id))
+            .map(it => App.mergeItemDefaults(it));
+        REMOVED_ITEMS.forEach(id => { delete App.AppState.prices[id]; });
         App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p && p.itemId && p.qty > 0);
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
         App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
@@ -94,8 +92,7 @@
             ...item,
             category: item.category || defaults.category || 'otros',
             emoji: item.emoji || defaults.emoji || '',
-            spice: item.spice || defaults.spice || null,
-            allergens: item.allergens || defaults.allergens || [],
+            label: defaults.label || item.label,
         };
     };
 

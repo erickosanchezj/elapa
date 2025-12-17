@@ -37,17 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function buildBadges(it) {
-        const badges = [];
-        if (it.spice === 'mild') badges.push('<span class="pill pill-spice-mild">Picor suave</span>');
-        if (it.spice === 'medium') badges.push('<span class="pill pill-spice-medium">Picor medio</span>');
-        if (it.spice === 'hot') badges.push('<span class="pill pill-spice-hot">Picor alto</span>');
-        const allergenMap = { lactosa: 'Lácteos', gluten: 'Gluten', huevo: 'Huevo', nueces: 'Nueces' };
-        (it.allergens || []).forEach(a => badges.push(`<span class="pill pill-allergen">${allergenMap[a] || a}</span>`));
-        if (!badges.length) return '';
-        return `<div class="flex flex-wrap gap-1 mt-1">${badges.join('')}</div>`;
-    }
-
     function renderCategoryFilters() {
         App.$$('#menu-filters .filter-chip').forEach(btn => {
             const cat = btn.dataset.categoryFilter;
@@ -149,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>
                     <div class="font-semibold flex items-center">${emoji}<span>${it.label}</span> ${promoBadge}</div>
                     <div class="text-gray-600 dark:text-gray-300 text-sm">${App.money(App.AppState.prices[it.id] || 0)} c/u · ${App.describeCategory(it.category)}</div>
-                    ${buildBadges(it)}
                 </div>
                 <div class="flex items-center gap-2">
                     <button data-minus="${it.id}" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 font-bold dark:bg-gray-700 dark:hover:bg-gray-600">−</button>
@@ -163,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             menu.appendChild(row);
         });
-        renderUpsell(table);
     }
 
     function refreshQuickAddArea() {
@@ -620,30 +607,6 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         setMobileBarHidden(true);
     }
 
-    function renderUpsell(table) {
-        const box = App.$('#upsell-box');
-        if (!box) return;
-        const orderEntries = Object.entries(table.order || {});
-        const tacoQty = orderEntries
-            .filter(([id]) => id.startsWith('taco_'))
-            .reduce((sum, [, qty]) => sum + qty, 0);
-        const hasHorchata = (table.order['agua_horchata'] || 0) > 0;
-        if (tacoQty >= 3 && !hasHorchata) {
-            const price = App.money(App.AppState.prices['agua_horchata'] || 0);
-            box.innerHTML = `
-                <div class="upsell-card">
-                  <div>
-                    <div class="font-semibold">Agrega Agua de Horchata 🥤</div>
-                    <div class="text-sm opacity-80">Combínala con tus tacos. ${price}</div>
-                  </div>
-                  <button type="button" data-upsell-add="agua_horchata">+ ${price}</button>
-                </div>`;
-            box.classList.remove('hidden');
-        } else {
-            box.classList.add('hidden');
-            box.innerHTML = '';
-        }
-    }
 
     function wireEvents() {
         App.$('#add-table').addEventListener('click', addTable);
@@ -715,12 +678,6 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
             }
             const minus = e.target.closest('[data-minus]')?.dataset.minus;
             if (minus) changeQty(t, minus, -1);
-            const upsellBtn = e.target.closest('[data-upsell-add]');
-            if (upsellBtn) {
-                changeQty(t, upsellBtn.dataset.upsellAdd, 1);
-                const item = App.AppState.items.find(i => i.id === upsellBtn.dataset.upsellAdd);
-                App.toast(`${item?.label || 'Producto'} agregado`, 'success', 1400, { confetti: true });
-            }
         };
         menuList.addEventListener('click', handleClick);
         quickAdd.addEventListener('click', handleClick);

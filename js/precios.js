@@ -16,17 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemPriceInput = App.$('#item-price');
     const promoToggle = App.$('#promo-toggle');
 
-    function buildBadges(it) {
-        const badges = [];
-        if (it.spice === 'mild') badges.push('<span class="pill pill-spice-mild">Picor suave</span>');
-        if (it.spice === 'medium') badges.push('<span class="pill pill-spice-medium">Picor medio</span>');
-        if (it.spice === 'hot') badges.push('<span class="pill pill-spice-hot">Picor alto</span>');
-        const allergenMap = { lactosa: 'Lácteos', gluten: 'Gluten', huevo: 'Huevo', nueces: 'Nueces' };
-        (it.allergens || []).forEach(a => badges.push(`<span class="pill pill-allergen">${allergenMap[a] || a}</span>`));
-        if (!badges.length) return '';
-        return `<div class="flex flex-wrap gap-1 mt-1">${badges.join('')}</div>`;
-    }
-
     function renderItems() {
         if (!itemsList) return;
         itemsList.innerHTML = '';
@@ -46,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
                       ${isBaseItem ? '<span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(básico)</span>' : ''}
                       <span class="pill text-xs">${App.describeCategory(item.category)}</span>
                     </div>
-                    ${buildBadges(item)}
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="relative">
