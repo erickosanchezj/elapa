@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         presets.forEach(preset => {
             const row = document.createElement('div');
-            row.className = 'grid grid-cols-12 gap-3 items-center bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg p-3';
+            row.className = 'grid grid-cols-12 gap-3 items-start sm:items-center bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-lg p-3';
             
             const labelInput = document.createElement('input');
             labelInput.type = 'text';
@@ -199,12 +199,12 @@ document.addEventListener('DOMContentLoaded', () => {
             labelInput.value = preset.label || '';
             labelInput.dataset.presetId = preset.id;
             labelInput.dataset.field = 'label';
-            labelInput.className = 'col-span-5 p-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100';
+            labelInput.className = 'col-span-12 sm:col-span-5 p-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100';
 
             const select = document.createElement('select');
             select.dataset.presetId = preset.id;
             select.dataset.field = 'itemId';
-            select.className = 'col-span-5 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent';
+            select.className = 'col-span-12 sm:col-span-5 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent';
             App.AppState.items.forEach(it => {
                 const opt = document.createElement('option');
                 opt.value = it.id;
@@ -219,12 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
             qtyInput.value = preset.qty || 1;
             qtyInput.dataset.presetId = preset.id;
             qtyInput.dataset.field = 'qty';
-            qtyInput.className = 'col-span-1 p-2 border rounded-lg text-center dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent';
+            qtyInput.className = 'col-span-6 sm:col-span-1 p-2 border rounded-lg text-center dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent w-full';
 
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
             deleteBtn.dataset.deletePreset = preset.id;
-            deleteBtn.className = 'col-span-1 text-red-600 hover:text-red-700 font-semibold';
+            deleteBtn.className = 'col-span-6 sm:col-span-1 text-red-600 hover:text-red-700 font-semibold justify-self-end';
             deleteBtn.textContent = '✕';
 
             row.appendChild(labelInput);
