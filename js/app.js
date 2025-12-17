@@ -132,8 +132,18 @@
     App.computeDailyReport = function(){
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
+        const todayStartMs = todayStart.getTime();
         
-        const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStart.getTime());
+        const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStartMs);
+        const unpaidTablesToday = App.AppState.tables
+            .filter(t => !t.charged && (t.createdAt || 0) >= todayStartMs)
+            .map(t => ({
+                id: t.id,
+                name: t.name,
+                note: t.note,
+                createdAt: t.createdAt,
+                total: App.computeTableTotal(t),
+            }));
         
         const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
         const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
@@ -148,7 +158,7 @@
             }
         });
         
-        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue };
+        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
     };
 
     App.toast = function(message, type = 'success', timeout = 2000, opts = {}) {

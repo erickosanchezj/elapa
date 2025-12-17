@@ -417,6 +417,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="text-2xl font-extrabold text-green-800 dark:text-green-100">${App.money(report.totalSubtotals + report.totalTips)}</div>
             </div>`;
 
+        const unpaidContainer = App.$("#report-unpaid-tables");
+        const unpaidBadge = App.$("#report-unpaid-count");
+        const unpaidTables = (report.unpaidTablesToday || []).slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (unpaidBadge) {
+            unpaidBadge.textContent = String(unpaidTables.length);
+            unpaidBadge.classList.toggle("hidden", unpaidTables.length === 0);
+        }
+        if (unpaidContainer) {
+            unpaidContainer.innerHTML = "";
+            if (unpaidTables.length === 0) {
+                unpaidContainer.innerHTML = '<div class="text-gray-500 dark:text-gray-400 italic">No hay mesas sin cobrar hoy.</div>';
+            } else {
+                const now = Date.now();
+                unpaidTables.forEach(table => {
+                    const metaParts = [];
+                    if (table.note) metaParts.push(table.note);
+                    if (table.createdAt) metaParts.push(`Abierta ${App.formatElapsedTime(now - table.createdAt)}`);
+                    const metaLine = metaParts.length ? `<div class="text-xs text-red-700 dark:text-red-200/80">${metaParts.join(' · ')}</div>` : '';
+                    const el = document.createElement("div");
+                    el.className = "flex items-center justify-between bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-lg p-3";
+                    el.innerHTML = `
+                        <div>
+                            <div class="font-semibold text-red-900 dark:text-red-100">${table.name || "Mesa"}</div>
+                            ${metaLine}
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg text-red-900 dark:text-red-100">${App.money(table.total || 0)}</div>
+                            <div class="text-xs text-red-700 dark:text-red-200/80">Sin cobrar</div>
+                        </div>`;
+                    unpaidContainer.appendChild(el);
+                });
+            }
+        }
+
         const itemsContainer = App.$("#report-items-breakdown");
         itemsContainer.innerHTML = "";
         const sortedItems = Object.entries(report.itemCounts).sort((a, b) => b[1] - a[1]);

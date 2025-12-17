@@ -148,7 +148,28 @@
     </div>
   </div>
 
-  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]"><div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="p-5 border-b flex items-center justify-between"><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reporte del Día</h3><button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button></div><div class="p-5 overflow-y-auto"><div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center"></div><h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4><div id="report-items-breakdown" class="space-y-2"></div></div></div></div>
+  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
+    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="p-5 border-b flex items-center justify-between">
+        <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reporte del Día</h3>
+        <button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-6">
+        <div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"></div>
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-lg font-semibold">Mesas no cobradas</h4>
+            <span id="report-unpaid-count" class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-100"></span>
+          </div>
+          <div id="report-unpaid-tables" class="space-y-2"></div>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4>
+          <div id="report-items-breakdown" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="quick-presets-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]">
     <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
