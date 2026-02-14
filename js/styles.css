@@ -109,7 +109,7 @@ body.mobile-bar-hidden #toast-wrap {
   border: 1px solid #e5e7eb;
   background: #fff;
   color: #374151;
-  transition: all .15s ease;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
 }
 .filter-chip.active {
   background: #fef3c7;

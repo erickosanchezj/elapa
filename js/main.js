@@ -224,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
             deleteBtn.dataset.deletePreset = preset.id;
+            deleteBtn.setAttribute('aria-label', `Eliminar acceso rápido ${preset.label || ''}`.trim());
             deleteBtn.className = 'col-span-6 sm:col-span-1 text-red-600 hover:text-red-700 font-semibold justify-self-end';
             deleteBtn.textContent = '✕';
 
@@ -281,17 +282,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         templates.forEach(tpl => {
             const row = document.createElement('div');
+            const labelInputId = `tpl-${tpl.id}-label`;
+            const nameInputId = `tpl-${tpl.id}-name`;
+            const noteInputId = `tpl-${tpl.id}-note`;
+            const orderInputId = `tpl-${tpl.id}-order`;
             row.className = 'space-y-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3';
             row.innerHTML = `
                 <div class="grid grid-cols-12 gap-2">
-                    <input type="text" placeholder="Etiqueta" value="${tpl.label || ''}" data-template-id="${tpl.id}" data-template-field="label" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                    <input type="text" placeholder="Nombre de mesa" value="${tpl.name || ''}" data-template-id="${tpl.id}" data-template-field="name" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                    <input type="text" placeholder="Nota" value="${tpl.note || ''}" data-template-id="${tpl.id}" data-template-field="note" class="col-span-3 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <label for="${labelInputId}" class="sr-only">Etiqueta de mesa rápida</label>
+                    <input id="${labelInputId}" name="templateLabel-${tpl.id}" autocomplete="off" type="text" placeholder="Etiqueta" value="${tpl.label || ''}" data-template-id="${tpl.id}" data-template-field="label" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <label for="${nameInputId}" class="sr-only">Nombre de mesa</label>
+                    <input id="${nameInputId}" name="templateName-${tpl.id}" autocomplete="off" type="text" placeholder="Nombre de mesa" value="${tpl.name || ''}" data-template-id="${tpl.id}" data-template-field="name" class="col-span-4 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                    <label for="${noteInputId}" class="sr-only">Nota de mesa</label>
+                    <input id="${noteInputId}" name="templateNote-${tpl.id}" autocomplete="off" type="text" placeholder="Nota" value="${tpl.note || ''}" data-template-id="${tpl.id}" data-template-field="note" class="col-span-3 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                     <button type="button" data-delete-template="${tpl.id}" class="col-span-1 text-red-600 dark:text-red-400 hover:underline text-sm font-semibold">Eliminar</button>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 block mb-1">Orden predeterminada (JSON)</label>
-                    <textarea rows="2" data-template-id="${tpl.id}" data-template-field="order" class="w-full p-2 border rounded-lg font-mono text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">${JSON.stringify(tpl.order || {})}</textarea>
+                    <label for="${orderInputId}" class="text-xs text-gray-500 dark:text-gray-400 block mb-1">Orden predeterminada (JSON)</label>
+                    <textarea id="${orderInputId}" name="templateOrder-${tpl.id}" rows="2" data-template-id="${tpl.id}" data-template-field="order" class="w-full p-2 border rounded-lg font-mono text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">${JSON.stringify(tpl.order || {})}</textarea>
                 </div>`;
             list.appendChild(row);
         });

@@ -190,7 +190,7 @@
         if (!w) return;
         const e = document.createElement('div');
         const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
-        e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-all duration-200`;
+        e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-[opacity,transform] duration-200`;
         e.textContent = message;
         if (opts.confetti) e.classList.add('toast-with-confetti');
         w.appendChild(e);

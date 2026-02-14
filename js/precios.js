@@ -39,10 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center gap-3">
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                        <input type="number" value="${price.toFixed(2)}" min="0" step="0.50"
+                        <input type="number" name="price-${item.id}" aria-label="Precio para ${item.label}" autocomplete="off" value="${price.toFixed(2)}" min="0" step="0.50"
                                class="price-input w-28 pl-7 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
                     </div>
-                    <button ${isBaseItem ? 'disabled' : ''} class="delete-item-btn text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button ${isBaseItem ? 'disabled' : ''} aria-label="Eliminar ${item.label}" class="delete-item-btn text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed">
                         <span class="material-icons">delete</span>
                     </button>
                 </div>
