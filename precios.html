@@ -30,7 +30,7 @@
                     <span class="material-icons">arrow_back</span>
                     Volver al panel
                 </a>
-                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700" aria-label="Toggle dark mode">
+                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-4 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-700" aria-label="Toggle dark mode">
                     <span id="theme-icon" class="material-icons"></span>
                 </button>
             </div>
@@ -39,10 +39,12 @@
         <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
             <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Agregar Producto</h2>
             <form id="add-item-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input id="item-name" type="text" placeholder="Nombre del producto" required class="sm:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-                <input id="item-price" type="number" placeholder="Precio ($)" required min="0" step="0.50" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+                <label for="item-name" class="sr-only">Nombre del producto</label>
+                <input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required class="sm:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+                <label for="item-price" class="sr-only">Precio del producto</label>
+                <input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="Precio ($)" required min="0" step="0.50" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
                 <button type="submit" class="sm:col-span-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center justify-center dark:bg-yellow-600 dark:hover:bg-yellow-500">
-                    <span class="material-icons mr-1">add</span>
+                    <span class="material-icons mr-1" aria-hidden="true">add</span>
                     Agregar al Menú
                 </button>
             </form>
@@ -57,7 +59,7 @@
                 </div>
                 <label for="promo-toggle" class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="promo-toggle" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-yellow-500"></div>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform dark:border-gray-500 peer-checked:bg-yellow-500"></div>
                 </label>
             </div>
         </section>
@@ -70,7 +72,7 @@
         </section>
     </div>
 
-    <div id="toast-wrap" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
+    <div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
 
     <script src="js/app.js"></script>
     <script src="js/precios.js"></script>
