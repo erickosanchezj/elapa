@@ -1,0 +1,16 @@
+# /web-guidelines-audit.txt
+# UI audit findings for Web Interface Guidelines style checks.
+# Exists to track actionable accessibility and UX compliance issues.
+# RELEVANT FILES: index.html, precios.html, js/precios.js
+
+fetch:error unable_to_download_guidelines_403
+index.html:48
+index.html:50
+index.html:207
+index.html:235
+index.html:276
+precios.html:42
+precios.html:43
+precios.html:58
+js/precios.js:42
+js/precios.js:45
