@@ -1026,6 +1026,11 @@ hr{border:0;border-top:1px dashed #000;margin:6px 0}
         if (urlParams.get('action') === 'showReport') {
             openReportModal();
         }
+        const tableId = urlParams.get('tableId');
+        if (tableId) {
+            const table = App.AppState.tables.find(t => t.id === tableId);
+            if (table) openDrawer(table);
+        }
     }
     init();
 });
