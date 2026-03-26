@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         App.persist();
-        window.location.href = "index.html"; // Go back to dashboard
+        window.location.href = "floor.html"; // Go back to floor plan
     }
 
     // Events

@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             App.persist();
             render();
             if(confirm("Ir a la mesa ahora?")) {
-                window.location.href = `index.html?tableId=${newTable.id}`;
+                window.location.href = `ticket.html?tableId=${newTable.id}`;
             }
         }
     }
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (card.dataset.tableId) {
             // Navigate to table
-            window.location.href = `index.html?tableId=${card.dataset.tableId}`;
+            window.location.href = `ticket.html?tableId=${card.dataset.tableId}`;
         } else if (card.dataset.action === 'create-table') {
             promptAddTable();
         }
