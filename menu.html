@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7,14 +6,13 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#ef0658", // Rosa Mexicano
+                        "primary": "#ef0658",
                         "background-light": "#f8f5f6",
                         "background-dark": "#230f16",
                     },
@@ -27,7 +25,7 @@
                         "DEFAULT": "0px",
                         "lg": "0px",
                         "xl": "0px",
-                        "full": "0.75rem" // Keeping full for specific toggle UI if needed, but per request 0px preferred
+                        "full": "0.75rem"
                     },
                 },
             },
@@ -38,7 +36,6 @@
         .font-display { font-family: 'Space Grotesk', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         .border-1 { border-width: 1px; }
-        /* Clinical Brutalist Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #f8f5f6; }
         ::-webkit-scrollbar-thumb { background: #ef0658; }
@@ -48,7 +45,7 @@
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head>
+</head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
 <!-- Header Section -->
 <header class="sticky top-0 z-50 bg-white dark:bg-background-dark border-b border-slate-900 dark:border-slate-700">
@@ -58,7 +55,7 @@
 <h1 class="text-xl font-bold font-display tracking-tight uppercase">[05 Menu Management]</h1>
 </div>
 <div class="flex items-center gap-2">
-<button class="px-3 py-1 bg-slate-900 text-white text-xs font-bold font-display uppercase hover:bg-primary transition-colors">
+<button id="btn-quick-toggle" class="px-3 py-1 bg-slate-900 text-white text-xs font-bold font-display uppercase hover:bg-primary transition-colors">
                     Quick Toggle Mode
                 </button>
 </div>
@@ -67,21 +64,21 @@
 <div class="px-4 pb-4">
 <div class="relative flex items-center border border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-800">
 <span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
-<input class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm font-display uppercase tracking-wider placeholder:text-slate-400" placeholder="SEARCH SERVICE CATALOG..." type="text"/>
+<input id="menu-search" class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm font-display uppercase tracking-wider placeholder:text-slate-400" placeholder="SEARCH SERVICE CATALOG..." type="text"/>
 </div>
 </div>
 <!-- Tabs Navigation -->
-<nav class="flex overflow-x-auto border-t border-slate-900 dark:border-slate-700 no-scrollbar">
-<a class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 bg-primary text-white" href="#">
+<nav id="category-tabs" class="flex overflow-x-auto border-t border-slate-900 dark:border-slate-700 no-scrollbar">
+<a data-category="tacos" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
                 TACOS
             </a>
-<a class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+<a data-category="bebidas" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
                 BEBIDAS
             </a>
-<a class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+<a data-category="postres" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
                 POSTRES
             </a>
-<a class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display hover:bg-slate-100 dark:hover:bg-slate-800" href="#">
+<a data-category="otros" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display cursor-pointer" href="#">
                 EXTRAS
             </a>
 </nav>
@@ -90,137 +87,64 @@
 <main class="p-0 mb-24">
 <!-- Item List Section -->
 <div class="flex flex-col">
-<!-- Active Items Header -->
 <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2 border-b border-slate-900 dark:border-slate-700">
-<p class="text-[10px] font-bold font-display text-slate-500 uppercase tracking-widest">Master Inventory / Category: Tacos</p>
+<p id="items-header-text" class="text-[10px] font-bold font-display text-slate-500 uppercase tracking-widest">Master Inventory / Category: Tacos</p>
 </div>
-<!-- Item Row: In Stock -->
-<div class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark group">
-<div class="flex flex-col">
-<span class="text-base font-bold font-display uppercase text-slate-900 dark:text-slate-100">Pastor</span>
-<span class="text-xs font-mono text-primary font-bold tracking-tight">$18.00</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end gap-1">
-<span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-<div class="flex items-center gap-2">
-<span class="text-[10px] font-bold font-display text-slate-900 dark:text-slate-100">IN STOCK</span>
-<div class="w-10 h-5 bg-primary relative cursor-pointer border border-slate-900">
-<div class="absolute right-0 top-0 bottom-0 w-4 bg-white border-l border-slate-900"></div>
+<div id="items-list">
+<!-- Dynamically rendered by menu.js -->
 </div>
 </div>
-</div>
-<button class="p-2 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-</div>
-</div>
-<!-- Item Row: In Stock -->
-<div class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark">
-<div class="flex flex-col">
-<span class="text-base font-bold font-display uppercase text-slate-900 dark:text-slate-100">Suadero</span>
-<span class="text-xs font-mono text-primary font-bold tracking-tight">$22.00</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end gap-1">
-<span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-<div class="flex items-center gap-2">
-<span class="text-[10px] font-bold font-display text-slate-900 dark:text-slate-100">IN STOCK</span>
-<div class="w-10 h-5 bg-primary relative cursor-pointer border border-slate-900">
-<div class="absolute right-0 top-0 bottom-0 w-4 bg-white border-l border-slate-900"></div>
-</div>
-</div>
-</div>
-<button class="p-2 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-</div>
-</div>
-<!-- Item Row: OUT OF STOCK (OOS) -->
-<div class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 opacity-60 grayscale">
-<div class="flex flex-col">
-<span class="text-base font-bold font-display uppercase text-slate-500 line-through decoration-primary">Lengua Especial</span>
-<span class="text-xs font-mono text-slate-500 font-bold tracking-tight">$28.00</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end gap-1">
-<span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-<div class="flex items-center gap-2">
-<span class="text-[10px] font-bold font-display text-slate-500">OOS</span>
-<div class="w-10 h-5 bg-slate-300 dark:bg-slate-700 relative cursor-pointer border border-slate-400">
-<div class="absolute left-0 top-0 bottom-0 w-4 bg-white border-r border-slate-400"></div>
-</div>
-</div>
-</div>
-<button class="p-2 border border-slate-400">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-</div>
-</div>
-<!-- Item Row: In Stock -->
-<div class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark">
-<div class="flex flex-col">
-<span class="text-base font-bold font-display uppercase text-slate-900 dark:text-slate-100">Tripa Dorada</span>
-<span class="text-xs font-mono text-primary font-bold tracking-tight">$24.00</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end gap-1">
-<span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-<div class="flex items-center gap-2">
-<span class="text-[10px] font-bold font-display text-slate-900 dark:text-slate-100">IN STOCK</span>
-<div class="w-10 h-5 bg-primary relative cursor-pointer border border-slate-900">
-<div class="absolute right-0 top-0 bottom-0 w-4 bg-white border-l border-slate-900"></div>
-</div>
-</div>
-</div>
-<button class="p-2 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-</div>
-</div>
-<!-- Item Row: In Stock -->
-<div class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark">
-<div class="flex flex-col">
-<span class="text-base font-bold font-display uppercase text-slate-900 dark:text-slate-100">Campechano</span>
-<span class="text-xs font-mono text-primary font-bold tracking-tight">$20.00</span>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex flex-col items-end gap-1">
-<span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-<div class="flex items-center gap-2">
-<span class="text-[10px] font-bold font-display text-slate-900 dark:text-slate-100">IN STOCK</span>
-<div class="w-10 h-5 bg-primary relative cursor-pointer border border-slate-900">
-<div class="absolute right-0 top-0 bottom-0 w-4 bg-white border-l border-slate-900"></div>
-</div>
-</div>
-</div>
-<button class="p-2 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Quick Toggle Grid Preview (Hidden state indicator) -->
-<div class="mt-8 px-4">
+<!-- Quick Toggle Grid -->
+<div id="quick-toggle-section" class="mt-8 px-4 hidden">
 <div class="flex items-center justify-between border-t border-slate-900 pt-4 mb-4">
-<h3 class="text-sm font-bold font-display uppercase italic">Kitchen Quick Kill View (Preview)</h3>
+<h3 class="text-sm font-bold font-display uppercase italic">Kitchen Quick Kill View</h3>
+<button id="btn-exit-quick" class="px-3 py-1 border border-slate-900 text-xs font-bold font-display uppercase hover:bg-slate-900 hover:text-white transition-colors">Exit</button>
 </div>
-<div class="grid grid-cols-2 gap-2">
-<button class="aspect-square border border-slate-900 flex flex-col items-center justify-center p-4 bg-primary text-white">
-<span class="text-lg font-bold font-display uppercase leading-tight">PASTOR</span>
-<span class="text-[10px] uppercase font-mono mt-2">Kill Item</span>
-</button>
-<button class="aspect-square border border-slate-900 flex flex-col items-center justify-center p-4 bg-primary text-white">
-<span class="text-lg font-bold font-display uppercase leading-tight">SUADERO</span>
-<span class="text-[10px] uppercase font-mono mt-2">Kill Item</span>
-</button>
+<div id="quick-toggle-grid" class="grid grid-cols-2 gap-2">
+<!-- Dynamically rendered -->
 </div>
 </div>
 </main>
+<!-- Add/Edit Modal Overlay -->
+<div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden items-end justify-center" style="display:none;">
+<div class="bg-white dark:bg-background-dark border-t border-slate-900 w-full max-w-lg p-6">
+<h2 id="modal-title" class="text-lg font-bold font-display uppercase mb-4"></h2>
+<form id="modal-form" class="flex flex-col gap-4">
+<input type="hidden" id="modal-item-id" />
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Name</label>
+<input id="modal-item-name" type="text" required autocomplete="off"
+    class="w-full border border-slate-900 px-3 py-2 bg-transparent font-display uppercase text-sm focus:ring-0 focus:border-primary" />
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Price ($)</label>
+<input id="modal-item-price" type="number" required min="0" step="0.50" autocomplete="off"
+    class="w-full border border-slate-900 px-3 py-2 bg-transparent font-mono text-sm focus:ring-0 focus:border-primary" />
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</label>
+<select id="modal-item-category"
+    class="w-full border border-slate-900 px-3 py-2 bg-white dark:bg-background-dark font-display uppercase text-sm focus:ring-0 focus:border-primary">
+    <option value="tacos">Tacos</option>
+    <option value="bebidas">Bebidas</option>
+    <option value="postres">Postres</option>
+    <option value="otros">Extras / Otros</option>
+</select>
+</div>
+<div class="flex gap-2">
+<button type="submit" class="flex-1 bg-primary text-white font-bold font-display uppercase py-3 text-sm hover:opacity-90">Save</button>
+<button type="button" id="modal-cancel" class="flex-1 border border-slate-900 font-bold font-display uppercase py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+</div>
+<button type="button" id="modal-delete" class="hidden w-full border border-red-600 text-red-600 font-bold font-display uppercase py-2 text-xs hover:bg-red-600 hover:text-white">Delete Item</button>
+</form>
+</div>
+</div>
 <!-- Floating Action Button -->
-<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50 border border-white">
+<button id="btn-add-item" class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50 border border-white">
 <span class="material-symbols-outlined text-3xl">add</span>
 </button>
+<!-- Toast container -->
+<div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-28 space-y-2 z-[10000] pointer-events-none"></div>
 <!-- Bottom Navigation Bar -->
 <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-background-dark border-t border-slate-900 z-40">
 <div class="flex gap-2 px-4 pb-3 pt-2 max-w-full overflow-hidden">
@@ -250,4 +174,6 @@
 </a>
 </div>
 </footer>
+<script src="js/app.js"></script>
+<script src="js/menu.js"></script>
 </body></html>

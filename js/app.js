@@ -4,7 +4,7 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
+    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -69,6 +69,7 @@
         REMOVED_ITEMS.forEach(id => { delete App.AppState.prices[id]; });
         App.AppState.quickPresets = App.AppState.quickPresets.filter(p => p && p.itemId && p.qty > 0);
         if(localStorage.getItem('tacos_tables_v2')) { App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables_v2')); localStorage.setItem('tacos_tables', localStorage.getItem('tacos_tables_v2')); localStorage.removeItem('tacos_tables_v2'); }
+        App.AppState.stock = JSON.parse(localStorage.getItem('tacos_stock') || '{}');
         App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
         App.AppState.uiHighContrast = Boolean(JSON.parse(localStorage.getItem('tacos_ui_high_contrast') || 'false'));
     };
@@ -84,6 +85,7 @@
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
         localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));
+        localStorage.setItem('tacos_stock', JSON.stringify(App.AppState.stock));
         localStorage.setItem('tacos_ui_dense', JSON.stringify(App.AppState.uiDense));
         localStorage.setItem('tacos_ui_high_contrast', JSON.stringify(App.AppState.uiHighContrast));
     };
@@ -110,6 +112,15 @@
         if (cat === 'bebidas') return 'Bebidas';
         if (cat === 'postres') return 'Postres';
         return 'Otros';
+    };
+
+    App.isInStock = function(itemId) {
+        return App.AppState.stock[itemId] !== false;
+    };
+
+    App.toggleStock = function(itemId) {
+        App.AppState.stock[itemId] = !App.isInStock(itemId);
+        App.persist();
     };
 
     App.computeLine = function(itemId, qty) {
