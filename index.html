@@ -1,308 +1,157 @@
 <!DOCTYPE html>
-<!-- /index.html -->
-<!-- Main admin page for table orders -->
-<!-- Provides interface to manage tables and orders -->
-<!-- RELEVANT FILES: js/app.js, js/styles.css -->
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taquería "El Apá" — Órdenes por Mesa</title>
-  <script src="js/theme.js"></script>
-  <script>tailwind.config = { darkMode: 'class' }</script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="js/styles.css">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#111827">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Taquería El Apá - Floor Plan</title>
+    <script src="js/theme.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="js/styles.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F50057", // Rosa Mexicano
+                        "background-light": "#FFFFFF",
+                        "background-dark": "#111827",
+                        "surface": "#F3F4F6",
+                        "border-color": "#E5E7EB",
+                        "text-main": "#111827",
+                        "text-muted": "#9CA3AF",
+                        "alert": "#F59E0B",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "none": "0px",
+                        "sm": "0px",
+                        "md": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "0px", // Force 0 radius as per design spec
+                    },
+                    spacing: {
+                        "18": "4.5rem",
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom Utilities for the specific brutalist look */
+        .striped-bg {
+            background: repeating-linear-gradient(
+                45deg,
+                #F50057,
+                #F50057 10px,
+                #ffffff 10px,
+                #ffffff 20px
+            );
+        }
+        .text-rosa {
+            color: #F50057;
+        }
+        .bg-rosa {
+            background-color: #F50057;
+        }
+        .border-rosa {
+            border-color: #F50057;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
-  <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 has-mobile-bar">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[10010] bg-white dark:bg-gray-800 border border-yellow-500 text-sm font-semibold px-3 py-2 rounded-lg">Saltar al contenido principal</a>
-    <div id="main-content" class="container mx-auto max-w-7xl p-4 md:p-8">
-      <header class="mb-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left">
-        <div>
-          <h1 class="text-4xl md:text-5xl font-bold text-yellow-600">Taquería "El Apá"</h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-2">Panel de Administración · Órdenes por Mesa</p>
-        </div>
-        <div class="flex items-center mt-4 sm:mt-0">
-            <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-4 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-700" aria-label="Toggle dark mode">
-                <span id="theme-icon" class="material-icons"></span>
-            </button>
-        </div>
-      </header>
-
-    <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h2 class="text-2xl font-bold text-gray-700 dark:text-gray-100">Crear Mesa</h2>
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <a href="floor.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
-                    <span class="material-icons text-base">grid_view</span>
-                    Ver Plano
-                </a>
-                <a href="precios.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
-                    <span>⚙️</span>
-                    Administrar Precios y Menú
-                </a>
-            </div>
-            <button id="open-quick-presets" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600">
-              <span>⚡</span>
-              Editar accesos rápidos
-            </button>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-3 mt-4">
-            <label for="table-name" class="sr-only">Nombre o número de mesa</label>
-            <input id="table-name" name="tableName" type="text" autocomplete="off" placeholder="Nombre/No. de mesa (ej. Mesa 1)"
-                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-            <label for="table-note" class="sr-only">Nota de la mesa</label>
-            <input id="table-note" name="tableNote" type="text" autocomplete="off" placeholder="Nota (opcional)"
-                   class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-              <button id="add-table" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center dark:bg-yellow-600 dark:hover:bg-yellow-500">
-                  <span class="material-icons mr-1" aria-hidden="true">add</span>
-                  Agregar
-              </button>
-        </div>
-        <div class="mt-3 space-y-2">
-          <div class="flex items-center justify-between gap-3">
-            <div class="text-sm text-gray-600 dark:text-gray-300">Mesas rápidas de amigos</div>
-            <button id="edit-table-templates" type="button" class="text-sm px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 inline-flex items-center gap-1">
-              <span class="material-icons text-base" aria-hidden="true">tune</span>
-              <span>Editar</span>
-            </button>
-          </div>
-          <div id="table-templates" class="flex flex-wrap gap-2"></div>
-        </div>
-    </section>
-
-    <section class="relative z-0">
-      <div class="sticky top-0 bg-gray-100 dark:bg-gray-900 z-10 pb-2">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="text-2xl font-bold text-gray-700 dark:text-gray-100">Mesas</h2>
-          <div class="w-full sm:w-auto text-left sm:text-right space-y-3 sm:space-y-2">
-            <div id="grand-total" class="text-xl font-extrabold dark:text-gray-100">TOTAL (activas): $0.00</div>
-            <div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                <button id="show-report" class="text-sm bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg inline-flex items-center justify-center w-full sm:w-auto dark:bg-yellow-700 dark:hover:bg-yellow-600">
-                  <span class="material-icons mr-1" aria-hidden="true">assessment</span>
-                  Reporte del Día
-                </button>
-                <button id="close-all" class="text-sm bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded-lg inline-flex items-center justify-center w-full sm:w-auto dark:bg-yellow-700 dark:hover:bg-yellow-600">
-                  <span class="material-icons mr-1" aria-hidden="true">point_of_sale</span>
-                  Cobrar & Cerrar todas
-                </button>
-            </div>
-          </div>
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2 text-sm">
-          <button id="toggle-dense" class="toggle-btn px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2" aria-pressed="false">
-            <span class="material-icons text-base" aria-hidden="true">view_list</span>
-            Vista densa
-          </button>
-          <button id="toggle-contrast" class="toggle-btn px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2" aria-pressed="false">
-            <span class="material-icons text-base" aria-hidden="true">contrast</span>
-            Alto contraste
-          </button>
-        </div>
-      </div>
-      <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </section>
-
-  </div>
-  
-  <div id="tip-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]" role="dialog" aria-modal="true" aria-labelledby="tip-modal-title">
-    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm">
-        <div class="p-5 border-b space-y-1">
-            <h3 id="tip-modal-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Agregar Propina</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Elige un porcentaje sugerido o ingresa un monto personalizado.</p>
-        </div>
-        <div class="p-5 space-y-5">
-            <div class="text-center space-y-1">
-                <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Subtotal</div>
-                <div id="tip-subtotal" class="text-3xl font-bold">$0.00</div>
-            </div>
-            <div class="space-y-2">
-                <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                    <span>Selecciona un porcentaje</span>
-                    <span class="text-xs">Propina rápida</span>
-                </div>
-                <div class="grid grid-cols-3 gap-3">
-                    <button type="button" data-tip-percent="0.10" class="tip-option-btn">10%</button>
-                    <button type="button" data-tip-percent="0.15" class="tip-option-btn">15%</button>
-                    <button type="button" data-tip-percent="0.20" class="tip-option-btn">20%</button>
-                </div>
-            </div>
+<body class="bg-background-light text-text-main font-body antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white dark:bg-background-dark dark:text-gray-100">
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-border-color dark:border-gray-700">
+        <div class="flex items-center justify-between px-4 py-4">
             <div>
-                <label for="tip-custom-amount" class="block text-sm font-semibold text-gray-600 dark:text-gray-300">Otro monto</label>
-                <div class="relative mt-1">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                    <input id="tip-custom-amount" name="tipCustomAmount" type="number" inputmode="decimal" autocomplete="off" placeholder="0.00" class="w-full pl-7 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-                </div>
-                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Si escribes un monto manual, se aplicará en lugar del porcentaje seleccionado.</p>
-                <button type="button" data-tip-percent="0" class="tip-option-btn tip-option-btn--ghost w-full mt-3">Sin Propina</button>
+                <h1 class="font-display font-bold text-xl uppercase tracking-tight leading-none text-gray-900 dark:text-white">Taquería El Apá</h1>
+                <p class="text-xs text-text-muted font-mono mt-1">FLOOR PLAN • MX-CDMX</p>
             </div>
-            <div class="tip-summary-card space-y-3">
-                <div class="flex justify-between items-center text-base">
-                    <span>Propina</span>
-                    <span id="tip-amount" class="font-semibold">$0.00</span>
-                </div>
-                <div class="border-t border-dashed border-gray-200 dark:border-gray-600 pt-3 flex items-end justify-between">
-                    <div>
-                        <span class="block text-xs tracking-wide text-gray-500 dark:text-gray-400 uppercase">Total a cobrar</span>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Incluye la propina seleccionada</span>
-                    </div>
-                    <span id="tip-grand-total" class="text-3xl font-bold text-gray-900 dark:text-gray-100">$0.00</span>
-                </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-bold font-display tracking-tight text-primary uppercase">SHIFT OPEN</span>
+                <button id="theme-toggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-none border-2 border-transparent transition-colors duration-200 ease-in-out bg-primary" role="switch">
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform bg-white ring-0 transition duration-200 ease-in-out translate-x-5 shadow-none rounded-none"></span>
+                </button>
             </div>
         </div>
-        <div class="p-4 bg-gray-50 dark:bg-gray-700 grid grid-cols-2 gap-3 rounded-b-xl">
-            <button id="tip-cancel" class="border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg bg-white hover:bg-gray-50 dark:bg-transparent dark:border-gray-500 dark:hover:bg-gray-600 dark:text-gray-100">Cancelar</button>
-            <button id="tip-confirm" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Cobrar</button>
+        <!-- KPI Strip -->
+        <div class="grid grid-cols-3 border-t border-border-color dark:border-gray-700 bg-surface dark:bg-gray-800 divide-x divide-border-color dark:divide-gray-700">
+            <div class="flex flex-col items-center justify-center py-3 px-1">
+                <span class="text-xs font-mono text-text-muted uppercase mb-1">Incidents</span>
+                <span id="kpi-incidents" class="font-display font-bold text-lg leading-none">0</span>
+            </div>
+            <div class="flex flex-col items-center justify-center py-3 px-1">
+                <span class="text-xs font-mono text-text-muted uppercase mb-1">Avg SLA</span>
+                <span id="kpi-sla" class="font-display font-bold text-lg leading-none tabular-nums">--:--</span>
+            </div>
+            <div class="flex flex-col items-center justify-center py-3 px-1">
+                <span class="text-xs font-mono text-text-muted uppercase mb-1">Net Sales</span>
+                <span id="kpi-sales" class="font-display font-bold text-lg leading-none tabular-nums">$0</span>
+            </div>
         </div>
-    </div>
-  </div>
+    </header>
 
-  <div id="report-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
-    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-      <div class="p-5 border-b flex items-center justify-between">
-        <h3 id="report-modal-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Reporte del Día</h3>
-        <button id="report-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
-      </div>
-      <div class="p-5 overflow-y-auto space-y-6">
-        <div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"></div>
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-lg font-semibold">Mesas no cobradas</h4>
-            <span id="report-unpaid-count" class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-100"></span>
-          </div>
-          <div id="report-unpaid-tables" class="space-y-2"></div>
+    <!-- Main Grid Content -->
+    <main class="flex-1 p-4 pb-24 overflow-y-auto bg-white dark:bg-gray-900">
+        <div id="floor-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Cards will be injected here by js/floor.js -->
         </div>
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-lg font-semibold">Gasto mensual</h4>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Mini línea de tiempo (6 meses)</span>
-          </div>
-          <div id="report-monthly-timeline" class="space-y-2"></div>
-        </div>
-        <div>
-          <h4 class="text-lg font-semibold mb-3">Desglose de Productos Vendidos</h4>
-          <div id="report-items-breakdown" class="space-y-2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </main>
 
-  <div id="quick-presets-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]" role="dialog" aria-modal="true" aria-labelledby="quick-presets-title">
-    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-      <div class="p-5 border-b flex items-center justify-between">
-        <div>
-          <h3 id="quick-presets-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Accesos rápidos</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Configura los botones predeterminados para agregar productos al instante.</p>
-        </div>
-        <button id="quick-presets-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
-      </div>
-      <div class="p-5 space-y-4 overflow-y-auto">
-        <div class="flex flex-wrap gap-2">
-          <button id="add-quick-preset" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-2 rounded-lg">+ Nuevo acceso</button>
-          <button id="reset-quick-presets" class="border border-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">Restablecer predeterminados</button>
-        </div>
-        <div id="preset-list" class="space-y-3"></div>
-      </div>
-      <div class="p-4 bg-gray-50 dark:bg-gray-700 flex justify-end">
-        <button id="quick-presets-done" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Listo</button>
-      </div>
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-20 right-4 z-40">
+        <button id="fab-add-table" class="bg-primary hover:bg-rose-600 text-white w-14 h-14 flex items-center justify-center shadow-none transition-transform active:scale-95 border-none rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            <span class="material-symbols-outlined text-3xl">add</span>
+        </button>
     </div>
-  </div>
 
-  <div id="table-templates-modal" class="modal hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10001]" role="dialog" aria-modal="true" aria-labelledby="table-templates-title">
-    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-      <div class="p-5 border-b flex items-center justify-between">
-        <div>
-          <h3 id="table-templates-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Configurar mesas rápidas</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Edita el nombre, nota y orden predeterminada para tus grupos.</p>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 bg-white dark:bg-gray-900 border-t border-border-color dark:border-gray-700">
+        <div class="flex gap-2 px-4 pb-4 pt-2">
+            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">grid_view</span>
+                </div>
+                <p class="text-xs font-bold font-display uppercase tracking-wider">Floor</p>
+            </a>
+            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="ticket.html">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">edit_note</span>
+                </div>
+                <p class="text-xs font-medium font-display uppercase tracking-wider">Tickets</p>
+            </a>
+            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="#">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">monitor</span>
+                </div>
+                <p class="text-xs font-medium font-display uppercase tracking-wider">KDS</p>
+            </a>
+            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="#">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">layers</span>
+                </div>
+                <p class="text-xs font-medium font-display uppercase tracking-wider">Trompo</p>
+            </a>
+            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="menu.html">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">menu_book</span>
+                </div>
+                <p class="text-xs font-medium font-display uppercase tracking-wider">Menu</p>
+            </a>
         </div>
-        <button id="table-templates-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
-      </div>
-      <div class="p-5 space-y-4 overflow-y-auto">
-        <div class="flex flex-wrap gap-2">
-          <button id="add-table-template" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-2 rounded-lg">+ Nueva mesa rápida</button>
-          <button id="reset-table-templates" class="border border-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">Restablecer predeterminados</button>
-        </div>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Orden predeterminada (JSON). Ejemplo con todos los artículos (1 c/u):</div>
-        <pre id="table-template-order-example" class="text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 overflow-x-auto text-gray-700 dark:text-gray-200"></pre>
-        <div class="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-          <div class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">IDs de artículos (para usar en el JSON)</div>
-          <pre id="table-template-items-json" class="text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 overflow-x-auto text-gray-700 dark:text-gray-200"></pre>
-        </div>
-        <div id="table-template-list" class="space-y-3"></div>
-      </div>
-      <div class="p-4 bg-gray-50 dark:bg-gray-700 flex justify-end rounded-b-xl">
-        <button id="table-templates-done" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg dark:bg-green-600 dark:hover:bg-green-500">Listo</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-[34rem] bg-white dark:bg-gray-800 shadow-2xl translate-x-full transition-transform z-[9999]" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-    <div class="h-[100svh] flex flex-col">
-      <div class="p-5 border-b flex items-center justify-between">
-        <div>
-          <h3 id="drawer-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mesa</h3>
-          <p id="drawer-note" class="text-sm text-gray-500 dark:text-gray-400"></p>
-          <div id="drawer-status" class="mt-1 text-xs"></div>
-        </div>
-        <button id="drawer-close" aria-label="Cerrar" class="text-3xl leading-none text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">&times;</button>
-      </div>
-      <div class="p-5 overflow-y-auto flex-1">
-        <div class="flex items-center justify-between gap-2 mb-3">
-          <h4 class="text-lg font-semibold">Agregar productos</h4>
-        </div>
-        <div class="mb-3">
-          <label for="menu-search" class="sr-only">Buscar producto</label>
-          <div class="relative">
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-base" aria-hidden="true">search</span>
-            <input id="menu-search" name="menuSearch" type="search" autocomplete="off" placeholder="Buscar producto…" class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-            <button id="menu-search-clear" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hidden" aria-label="Limpiar búsqueda">✕</button>
-          </div>
-        </div>
-        <div class="mb-3 flex flex-wrap gap-2 text-sm" id="menu-filters">
-          <button data-category-filter="all" class="filter-chip active">Todo</button>
-          <button data-category-filter="tacos" class="filter-chip">Tacos</button>
-          <button data-category-filter="bebidas" class="filter-chip">Bebidas</button>
-        </div>
-        <div id="quick-add" class="flex flex-wrap gap-2 mb-4"></div>
-        <div id="menu-list" class="space-y-3 mb-6"></div>
-        <h4 class="text-lg font-semibold mb-2">Detalle de la mesa</h4>
-        <div id="table-summary" class="bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg p-4"></div>
-      </div>
-      <div id="drawer-footer" class="p-5 border-t bg-gray-50 dark:bg-gray-700 dark:border-gray-600 pb-[env(safe-area-inset-bottom)]">
-        <div class="flex items-center justify-between mb-3"><span class="font-bold">Total</span><span id="table-total" class="text-xl font-extrabold">$0.00</span></div>
-        <div id="drawer-actions" class="grid grid-cols-2 gap-3"></div>
-      </div>
-    </div>
-  </div>
-  
-  <div id="backdrop" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-[9998]"></div>
-  <div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
-  <div id="mobile-action-bar" class="sm:hidden fixed bottom-0 left-0 right-0 z-[10002] bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-700 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-inner">
-    <div class="grid grid-cols-4 gap-2 text-xs font-semibold">
-      <button data-mobile-action="new-table" class="mobile-action-btn">
-        <span class="material-icons text-base" aria-hidden="true">add</span>
-        <span>Nueva</span>
-      </button>
-      <button data-mobile-action="search" class="mobile-action-btn">
-        <span class="material-icons text-base" aria-hidden="true">search</span>
-        <span>Buscar</span>
-      </button>
-      <button data-mobile-action="charge" class="mobile-action-btn">
-        <span class="material-icons text-base" aria-hidden="true">point_of_sale</span>
-        <span>Cobrar</span>
-      </button>
-      <button data-mobile-action="report" class="mobile-action-btn">
-        <span class="material-icons text-base" aria-hidden="true">assessment</span>
-        <span>Reporte</span>
-      </button>
-    </div>
-  </div>
-  <script src="js/app.js"></script>
-  <script src="js/main.js"></script>
+    </nav>
+    <script src="js/app.js"></script>
+    <script src="js/floor.js"></script>
 </body>
 </html>
