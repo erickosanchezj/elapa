@@ -58,7 +58,7 @@ Acceptance Criteria: Pass if: Clicking `Settings` either opens/navigates to an i
 
 Test: Open `menu.html` in a browser and note `window.location.href`. Click the bottom nav item labeled `Settings`. Within 100ms, confirm one of these concrete outcomes: the browser navigates to an implemented settings UI, a settings UI opens, or `window.location.href` is unchanged and the Settings control has `aria-disabled="true"`.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 6: Persist ticket modifier choices
 Files: [`ticket.html`, `js/ticket.js`, `js/app.js`]
