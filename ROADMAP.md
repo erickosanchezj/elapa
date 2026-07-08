@@ -80,7 +80,7 @@ Acceptance Criteria: Pass if: With `localStorage.tacos_stock` containing `{ "tac
 
 Test: In DevTools, run `localStorage.setItem('tacos_stock', JSON.stringify({ taco_pastor: false }))`, then open `ticket.html`. Confirm the Pastor product shows the out-of-stock visual state. Record `#tray-count`, `#tray-total`, and `#commit-total`, click Pastor, wait 100ms, and confirm all three values are unchanged.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 8: Apply modal quantity and modifiers together
 Files: [`ticket.html`, `js/ticket.js`, `js/app.js`]

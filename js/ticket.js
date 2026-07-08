@@ -123,10 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = App.AppState.prices[item.id] || 0;
 
             const btn = document.createElement('button');
-            // Check stock status (mocked as true for now)
-            const inStock = true;
+            const inStock = App.isInStock(item.id);
+            const stockClasses = inStock
+                ? "bg-white hover:bg-surface-light active:bg-surface-light"
+                : "bg-surface-light opacity-50 grayscale cursor-not-allowed";
 
-            btn.className = "group relative aspect-square bg-white border border-border-strong hover:bg-surface-light active:bg-surface-light transition-colors flex flex-col items-center justify-center p-2 select-none";
+            btn.className = `group relative aspect-square border border-border-strong transition-colors flex flex-col items-center justify-center p-2 select-none ${stockClasses}`;
+            btn.disabled = !inStock;
+            btn.setAttribute('aria-disabled', String(!inStock));
             btn.onclick = (e) => {
                 // If clicking the badge (if we had one separate), open modal?
                 // For now, simple tap = add.
@@ -144,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="absolute top-3 right-3 w-2 h-2 rounded-full ${inStock ? 'bg-success' : 'bg-red-500'}"></div>
                 <span class="font-display font-bold text-lg leading-tight mb-1 uppercase text-center">${item.label}</span>
                 <span class="font-mono text-text-muted text-sm">${App.money(price)}</span>
+                ${inStock ? '' : '<span class="font-mono text-red-600 text-xs mt-1">OUT OF STOCK</span>'}
             `;
 
             els.productGrid.appendChild(btn);
@@ -203,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actions
     function addItem(itemId) {
+        if (!App.isInStock(itemId)) return;
         if (!draftOrder[itemId]) draftOrder[itemId] = 0;
         draftOrder[itemId]++;
         renderGrid();
