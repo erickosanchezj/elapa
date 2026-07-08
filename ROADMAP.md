@@ -91,7 +91,7 @@ Acceptance Criteria: Pass if: Selecting a modifier checkbox, changing quantity t
 
 Test: Open `ticket.html` in a browser. Add Pastor to the tray, click the Pastor row in `#tray-list`, select `Sin Cebolla`, click `#modal-qty-plus` until `#modal-qty-val` is `2`, and click `#modal-update-btn`. Within 100ms, confirm `#tray-count` shows `2 ITEMS`. Reopen the Pastor row and confirm `#modal-qty-val` is `2` and `Sin Cebolla` remains checked.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 9: Fix tray expand icon state
 Files: [`ticket.html`, `js/ticket.js`]
