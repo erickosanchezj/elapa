@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tableName: document.getElementById('table-name'),
         tableMeta: document.getElementById('table-meta'),
         commitBtn: document.getElementById('commit-btn'),
-        paidDoneBtn: document.getElementById('paid-done-btn'),
         commitTotal: document.getElementById('commit-total'),
         categoryNav: document.getElementById('category-nav'),
         productGrid: document.getElementById('product-grid'),
@@ -78,11 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const hh = Math.floor(minutes / 60);
             const mm = minutes % 60;
             els.tableMeta.textContent = `INCIDENT #${tableData.id.slice(-4).toUpperCase()} • WAIT: ${pad(hh)}:${pad(mm)}`;
-            els.paidDoneBtn.classList.toggle('hidden', !!tableData.charged);
+            els.commitBtn.querySelector('span').textContent = tableData.charged ? 'Closed Ticket' : 'Finish Order';
+            els.commitBtn.disabled = !!tableData.charged;
         } else {
             els.tableName.innerHTML = `NEW TABLE <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
             els.tableMeta.textContent = `NEW TICKET • WAIT: 00:00`;
-            els.paidDoneBtn.classList.add('hidden');
+            els.commitBtn.querySelector('span').textContent = 'Commit Ticket';
+            els.commitBtn.disabled = false;
         }
     }
 
@@ -315,11 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (tableData) {
-            // Update existing
-            tableData.order = { ...draftOrder };
-            tableData.orderModifiers = { ...draftModifiers };
-            // Update timestamp only if not charged? Or keep createdAt.
-            // Usually we don't change createdAt.
+            markTablePaidDone();
+            return;
         } else {
             // Create New
             // Need a name. Design says "Table 04".
@@ -394,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Commit
         els.commitBtn.onclick = commitTicket;
-        els.paidDoneBtn.onclick = markTablePaidDone;
     }
 
     init();
