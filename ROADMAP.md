@@ -36,7 +36,7 @@ Acceptance Criteria: Pass if: Clicking `Orders` navigates to the chosen existing
 
 Test: Open `menu.html` in a browser. Click the bottom nav item labeled `Orders`. Within 100ms, confirm `window.location.href` does not end with `menu.html#` and the browser is on the chosen existing orders or floor page, such as `index.html` or `ticket.html`.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 4: Wire or disable Menu Staff nav
 Files: [`menu.html`]
