@@ -47,7 +47,7 @@ Acceptance Criteria: Pass if: Clicking `Staff` either navigates to an implemente
 
 Test: Open `menu.html` in a browser and note `window.location.href` plus the current scroll position. Click the bottom nav item labeled `Staff`. Within 100ms, confirm one of these concrete outcomes: the browser navigates to an implemented staff route, or `window.location.href` is unchanged, the scroll position is unchanged, and the Staff control has `aria-disabled="true"`.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 5: Wire or disable Menu Settings nav
 Files: [`menu.html`]
