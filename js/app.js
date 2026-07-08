@@ -1,3 +1,7 @@
+// /js/app.js
+// Shared application state, persistence, pricing, and utility helpers
+// Exists so every static page uses the same restaurant data rules
+// RELEVANT FILES: index.html, ticket.html, menu.html, precios.html
 (function() {
     'use strict';
     
@@ -75,7 +79,7 @@
     };
 
     App.isPastorPromoActive = function() {
-        return App.isMonOrWed();
+        return !!App.AppState.promoEnabled;
     };
 
     App.persist = function() {

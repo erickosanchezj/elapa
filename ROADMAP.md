@@ -113,7 +113,7 @@ Acceptance Criteria: Pass if: Toggling `#promo-toggle` from off to on updates `l
 
 Test: Open `precios.html` in a browser. Set `localStorage.tacos_promoEnabled` to `false`, reload the page, and confirm `#promo-toggle` starts off. Click `#promo-toggle`, wait 100ms, and confirm `localStorage.getItem('tacos_promoEnabled')` is `true` or `"true"`. In DevTools, run `TaqueriaApp.computeLine('taco_pastor', 2).total` and confirm the total reflects the enabled pastor promo rule on the same page load.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 11: Add active table completion flow
 Files: [`ticket.html`, `js/ticket.js`]
