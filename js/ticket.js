@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tableName: document.getElementById('table-name'),
         tableMeta: document.getElementById('table-meta'),
         commitBtn: document.getElementById('commit-btn'),
+        paidDoneBtn: document.getElementById('paid-done-btn'),
         commitTotal: document.getElementById('commit-total'),
         categoryNav: document.getElementById('category-nav'),
         productGrid: document.getElementById('product-grid'),
@@ -77,9 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const hh = Math.floor(minutes / 60);
             const mm = minutes % 60;
             els.tableMeta.textContent = `INCIDENT #${tableData.id.slice(-4).toUpperCase()} • WAIT: ${pad(hh)}:${pad(mm)}`;
+            els.paidDoneBtn.classList.toggle('hidden', !!tableData.charged);
         } else {
             els.tableName.innerHTML = `NEW TABLE <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
             els.tableMeta.textContent = `NEW TICKET • WAIT: 00:00`;
+            els.paidDoneBtn.classList.add('hidden');
         }
     }
 
@@ -345,6 +348,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = "index.html"; // Go back to floor plan
     }
 
+    function markTablePaidDone() {
+        if (!tableData || tableData.charged) return;
+        const paidAt = Date.now();
+        tableData.order = { ...draftOrder };
+        tableData.orderModifiers = { ...draftModifiers };
+        tableData.charged = true;
+        tableData.paidAt = paidAt;
+        tableData.openDurationMs = paidAt - (tableData.createdAt || paidAt);
+        App.persist();
+        window.location.href = "index.html";
+    }
+
     // Events
     function wireEvents() {
         // Tray Expand/Collapse
@@ -379,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Commit
         els.commitBtn.onclick = commitTicket;
+        els.paidDoneBtn.onclick = markTablePaidDone;
     }
 
     init();

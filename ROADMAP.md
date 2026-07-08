@@ -124,4 +124,12 @@ Acceptance Criteria: Pass if: An active table can be marked paid/done from the c
 
 Test: Open `index.html`, create a table with `#fab-add-table`, choose to go to the table, add one product on `ticket.html`, and click `#commit-btn` to save the order. Reopen that table from `index.html`, click the new paid/done action, and confirm the browser returns to `index.html`. In DevTools, run `JSON.parse(localStorage.getItem('tacos_tables')).find(t => t.name === '<table name used in test>')` and confirm `charged === true`, `typeof paidAt === 'number'`, and `typeof openDurationMs === 'number'`. Confirm the table is not rendered in `#floor-grid`, `#kpi-sales` includes that table total, and `#kpi-sla` is no longer stuck because of a missing completion timestamp.
 
-Status: [ ] Not started
+Status: [x] Done
+
+## Summary
+
+Tasks completed: 11
+
+Tasks failed: 0
+
+Files changed: ROADMAP.md, index.html, menu.html, ticket.html, js/app.js, js/precios.js, js/ticket.js
