@@ -25,7 +25,7 @@ Acceptance Criteria: Pass if: Clicking the `Trompo` nav item changes `window.loc
 
 Test: Open `index.html` in a browser. Click the bottom nav item labeled `Trompo`. Within 100ms, confirm one of these concrete outcomes: `window.location.pathname` changes to the implemented Trompo route, a Trompo panel is visible in the page, or the item is not focusable and not clickable as a link.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 3: Wire Menu Orders nav
 Files: [`menu.html`]
