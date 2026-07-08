@@ -102,7 +102,7 @@ Acceptance Criteria: Pass if: Starting with `#tray-list.hidden === true`, clicki
 
 Test: Open `ticket.html` in a browser. Confirm `document.querySelector('#tray-list').classList.contains('hidden') === true`. Click `#tray-handle`, wait 100ms, and confirm `#tray-list` does not have `hidden` and the icon inside `#tray-handle` reads `expand_less`. Click `#tray-handle` again, wait 100ms, and confirm `#tray-list` has `hidden` and the icon reads `expand_more`.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 10: Wire promo toggle state
 Files: [`precios.html`, `js/precios.js`, `js/app.js`]

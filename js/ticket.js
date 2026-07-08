@@ -352,9 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
             els.trayList.classList.toggle('hidden');
             const icon = els.trayHandle.querySelector('.material-symbols-outlined');
             if (els.trayList.classList.contains('hidden')) {
-                icon.textContent = 'expand_less';
-            } else {
                 icon.textContent = 'expand_more';
+            } else {
+                icon.textContent = 'expand_less';
             }
         };
 
