@@ -69,7 +69,7 @@ Acceptance Criteria: Pass if: Opening the modal for `taco_pastor`, checking `Sin
 
 Test: Open `ticket.html` in a browser with clean localStorage. Click the Pastor product button, open the Pastor row from `#tray-list`, check `Sin Cebolla`, and click `#modal-update-btn`. Reopen the Pastor row and confirm `Sin Cebolla` is still checked. Click `#commit-btn`, enter a table name when prompted, then run `JSON.parse(localStorage.getItem('tacos_tables'))` in DevTools and confirm the new table record contains `Sin Cebolla` for the Pastor line item.
 
-Status: [ ] Not started
+Status: [x] Done
 
 ## Task 7: Respect product stock in ticket grid
 Files: [`ticket.html`, `js/ticket.js`, `js/app.js`]

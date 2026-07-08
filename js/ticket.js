@@ -1,4 +1,4 @@
-// js/ticket.js
+// /js/ticket.js
 // Handles the logic for the Ticket Creation screen.
 // Allows adding items to a draft order and committing it to a table.
 // RELEVANT FILES: ticket.html, js/app.js
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let currentTableId = null;
     let draftOrder = {}; // { itemId: qty }
+    let draftModifiers = {}; // { itemId: ['Sin Cebolla'] }
     let currentCategory = 'tacos'; // Default category
     let tableData = null; // The table object if editing existing
     let modalItem = null; // ID of item currently in modal
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tableData) {
                 // Clone existing order to draft
                 draftOrder = { ...tableData.order };
+                draftModifiers = { ...(tableData.orderModifiers || {}) };
             } else {
                 // Table ID provided but not found? Treat as new or error.
                 // We'll treat as new with that ID (unlikely scenario), or just ignore.
@@ -169,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!item || qty <= 0) return;
 
             const line = App.computeLine(itemId, qty);
+            const modifiers = draftModifiers[itemId] || [];
             total += line.total;
             count += qty;
 
@@ -181,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="bg-border-strong text-white font-mono text-xs px-1.5 py-0.5 mt-0.5">${qty}x</span>
                     <div>
                         <p class="font-display font-bold text-sm leading-tight uppercase">${item.label}</p>
+                        ${modifiers.length ? `<p class="font-mono text-xs text-text-muted mt-0.5">${modifiers.join(', ')}</p>` : ''}
                         <p class="font-mono text-xs text-text-muted mt-0.5">TAP TO EDIT</p>
                     </div>
                 </div>
@@ -208,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQty(itemId, newQty) {
         if (newQty <= 0) {
             delete draftOrder[itemId];
+            delete draftModifiers[itemId];
         } else {
             draftOrder[itemId] = newQty;
         }
@@ -222,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalItem = itemId;
         const currentQty = draftOrder[itemId] || 1;
+        const currentModifiers = draftModifiers[itemId] || [];
 
         els.modalTitle.textContent = `CONFIG: ${item.label}`;
         els.modalQtyVal.textContent = currentQty;
@@ -255,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 // Add simple toggle behavior (visual only)
                 const checkbox = label.querySelector('input');
+                checkbox.checked = currentModifiers.includes(opt);
                 checkbox.onclick = (e) => {
                     // Logic to handle exclusive options could go here if needed
                 };
@@ -270,6 +277,28 @@ document.addEventListener('DOMContentLoaded', () => {
         modalItem = null;
     }
 
+    function getSelectedModifiers() {
+        return [...els.modalOptions.querySelectorAll('label')]
+            .filter(label => label.querySelector('input')?.checked)
+            .map(label => label.querySelector('.flex-1').textContent.trim());
+    }
+
+    function updateModifiers(itemId, modifiers) {
+        if (modifiers.length === 0) {
+            delete draftModifiers[itemId];
+            return;
+        }
+        draftModifiers[itemId] = modifiers;
+    }
+
+    function requestTableName() {
+        try {
+            return prompt("Enter Table Name / Number:", "Mesa New");
+        } catch {
+            return "Mesa New";
+        }
+    }
+
     function commitTicket() {
         const entries = Object.entries(draftOrder);
         if (entries.length === 0) {
@@ -279,13 +308,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tableData) {
             // Update existing
             tableData.order = { ...draftOrder };
+            tableData.orderModifiers = { ...draftModifiers };
             // Update timestamp only if not charged? Or keep createdAt.
             // Usually we don't change createdAt.
         } else {
             // Create New
             // Need a name. Design says "Table 04".
             // We'll prompt for name or generate one.
-            const name = prompt("Enter Table Name / Number:", "Mesa New");
+            const name = requestTableName();
             if (!name) return;
 
             const newTable = {
@@ -293,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: name,
                 note: '',
                 order: { ...draftOrder },
+                orderModifiers: { ...draftModifiers },
                 charged: false,
                 paidAt: null,
                 createdAt: Date.now(),
@@ -334,6 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         els.modalUpdate.onclick = () => {
             if (modalItem) {
                 const val = parseInt(els.modalQtyVal.textContent);
+                updateModifiers(modalItem, getSelectedModifiers());
                 updateQty(modalItem, val);
                 closeModal();
             }
