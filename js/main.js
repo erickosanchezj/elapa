@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           sortedTables.forEach(t => {
               const subtotal = App.computeTableTotal(t);
-              const finalTotal = subtotal + (t.charged ? t.tip : 0);
+              const finalTotal = t.charged && typeof t.finalTotal === 'number' ? t.finalTotal : subtotal + (t.charged ? t.tip : 0);
               const card = document.createElement('div');
               card.className = 'card bg-white dark:bg-gray-800 rounded-xl shadow p-5 cursor-pointer relative border-l-4';
               card.dataset.tableId = t.id;
@@ -579,10 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function finalizeCloseTable(tableId, tipAmount) {
         const table = App.AppState.tables.find(t => t.id === tableId);
         if (!table) return;
-        table.charged = true;
-        table.paidAt = Date.now();
-        table.openDurationMs = table.paidAt - table.createdAt;
-        table.tip = tipAmount;
+        App.finalizeTableSale(table, tipAmount);
         App.persist();
         render();
         closeTipModal();
@@ -597,6 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
         table.paidAt = null;
         table.openDurationMs = null;
         table.tip = 0;
+        delete table.finalSubtotal;
+        delete table.finalTotal;
         App.persist();
         render();
         App.toast('Mesa reabierta', 'info');
@@ -652,10 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeTables.length === 0) return alert("No hay mesas activas.");
         if (!confirm(`Cobrar & Cerrar TODAS las mesas activas (SIN propina)?`)) return;
         activeTables.forEach(t => {
-            t.charged = true;
-            t.paidAt = Date.now();
-            t.openDurationMs = t.paidAt - t.createdAt;
-            t.tip = 0;
+            App.finalizeTableSale(t, 0);
         });
         App.persist();
         render();

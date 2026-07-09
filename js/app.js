@@ -1,10 +1,14 @@
+// /js/app.js
+// Shared application state, persistence, pricing, and utility helpers
+// Exists so every static page uses the same restaurant data rules
+// RELEVANT FILES: index.html, ticket.html, menu.html, precios.html
 (function() {
     'use strict';
     
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
+    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, slaMinutes: 60, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
 
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
@@ -57,6 +61,8 @@
         App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
         App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
         if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
+        App.AppState.slaMinutes = Number(localStorage.getItem('tacos_slaMinutes') || 60);
+        if (!App.AppState.slaMinutes || App.AppState.slaMinutes < 1) App.AppState.slaMinutes = 60;
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
@@ -74,14 +80,16 @@
         App.AppState.uiHighContrast = Boolean(JSON.parse(localStorage.getItem('tacos_ui_high_contrast') || 'false'));
     };
 
-    App.isPastorPromoActive = function() {
-        return App.isMonOrWed();
+    App.isPastorPromoActive = function(date = new Date()) {
+        const day = date.getDay();
+        return !!App.AppState.promoEnabled && (day === 1 || day === 3);
     };
 
     App.persist = function() {
         localStorage.setItem('tacos_items', JSON.stringify(App.AppState.items));
         localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
         localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_slaMinutes', String(App.AppState.slaMinutes));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
         localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));
@@ -118,6 +126,10 @@
         return App.AppState.stock[itemId] !== false;
     };
 
+    App.getSlaThresholdMs = function() {
+        return (Number(App.AppState.slaMinutes) || 60) * 60 * 1000;
+    };
+
     App.toggleStock = function(itemId) {
         App.AppState.stock[itemId] = !App.isInStock(itemId);
         App.persist();
@@ -132,8 +144,26 @@
         return { unit: p, chargedQty: c, total: c * p };
     };
     
+    App.computeOrderSubtotal = function(order) {
+        return Object.entries(order || {}).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
+    };
+
     App.computeTableTotal = function(table) {
-        return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
+        if (table && table.charged && typeof table.finalSubtotal === 'number') {
+            return table.finalSubtotal;
+        }
+        return App.computeOrderSubtotal(table.order);
+    };
+
+    App.finalizeTableSale = function(table, tipAmount = 0, paidAt = Date.now()) {
+        const tip = Math.max(0, Number(tipAmount || 0));
+        const subtotal = App.computeOrderSubtotal(table.order);
+        table.charged = true;
+        table.paidAt = paidAt;
+        table.openDurationMs = paidAt - (table.createdAt || paidAt);
+        table.tip = tip;
+        table.finalSubtotal = subtotal;
+        table.finalTotal = subtotal + tip;
     };
 
     App.computeGrandTotalActive = function() {
@@ -158,6 +188,7 @@
         
         const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
         const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
+        const totalNet = todaysTables.reduce((sum, t) => sum + (typeof t.finalTotal === 'number' ? t.finalTotal : App.computeTableTotal(t) + (t.tip || 0)), 0);
 
         const itemCounts = {};
         const itemRevenue = {};
@@ -169,7 +200,7 @@
             }
         });
         
-        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
+        return { totalSubtotals, totalTips, totalNet, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
     };
 
     App.computeMonthlyTimeline = function(monthsBack = 6) {
@@ -184,12 +215,13 @@
             const monthTables = chargedTables.filter(t => t.paidAt >= start && t.paidAt < end);
             const subtotal = monthTables.reduce((s, t) => s + App.computeTableTotal(t), 0);
             const tips = monthTables.reduce((s, t) => s + (t.tip || 0), 0);
+            const total = monthTables.reduce((s, t) => s + (typeof t.finalTotal === 'number' ? t.finalTotal : App.computeTableTotal(t) + (t.tip || 0)), 0);
             timeline.push({
                 key: `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`,
                 label: `${monthNames[monthDate.getMonth()]} ${String(monthDate.getFullYear()).slice(-2)}`,
                 subtotal,
                 tips,
-                total: subtotal + tips,
+                total,
                 tablesCount: monthTables.length,
             });
         }

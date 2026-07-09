@@ -1,4 +1,4 @@
-// js/ticket.js
+// /js/ticket.js
 // Handles the logic for the Ticket Creation screen.
 // Allows adding items to a draft order and committing it to a table.
 // RELEVANT FILES: ticket.html, js/app.js
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let currentTableId = null;
     let draftOrder = {}; // { itemId: qty }
+    let draftModifiers = {}; // { itemId: ['Sin Cebolla'] }
     let currentCategory = 'tacos'; // Default category
     let tableData = null; // The table object if editing existing
     let modalItem = null; // ID of item currently in modal
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const els = {
         tableName: document.getElementById('table-name'),
         tableMeta: document.getElementById('table-meta'),
+        saveBtn: document.getElementById('save-btn'),
         commitBtn: document.getElementById('commit-btn'),
         commitTotal: document.getElementById('commit-total'),
         categoryNav: document.getElementById('category-nav'),
@@ -51,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tableData) {
                 // Clone existing order to draft
                 draftOrder = { ...tableData.order };
+                draftModifiers = { ...(tableData.orderModifiers || {}) };
             } else {
                 // Table ID provided but not found? Treat as new or error.
                 // We'll treat as new with that ID (unlikely scenario), or just ignore.
@@ -75,9 +78,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const hh = Math.floor(minutes / 60);
             const mm = minutes % 60;
             els.tableMeta.textContent = `INCIDENT #${tableData.id.slice(-4).toUpperCase()} • WAIT: ${pad(hh)}:${pad(mm)}`;
+            els.commitBtn.querySelector('span').textContent = tableData.charged ? 'Closed Ticket' : 'Finish Order';
+            els.commitBtn.disabled = !!tableData.charged;
+            if (els.saveBtn) els.saveBtn.classList.toggle('hidden', !!tableData.charged);
         } else {
             els.tableName.innerHTML = `NEW TABLE <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
             els.tableMeta.textContent = `NEW TICKET • WAIT: 00:00`;
+            els.commitBtn.querySelector('span').textContent = 'Commit Ticket';
+            els.commitBtn.disabled = false;
+            if (els.saveBtn) els.saveBtn.classList.add('hidden');
         }
     }
 
@@ -121,10 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = App.AppState.prices[item.id] || 0;
 
             const btn = document.createElement('button');
-            // Check stock status (mocked as true for now)
-            const inStock = true;
+            const inStock = App.isInStock(item.id);
+            const stockClasses = inStock
+                ? "bg-white hover:bg-surface-light active:bg-surface-light"
+                : "bg-surface-light opacity-50 grayscale cursor-not-allowed";
 
-            btn.className = "group relative aspect-square bg-white border border-border-strong hover:bg-surface-light active:bg-surface-light transition-colors flex flex-col items-center justify-center p-2 select-none";
+            btn.className = `group relative aspect-square border border-border-strong transition-colors flex flex-col items-center justify-center p-2 select-none ${stockClasses}`;
+            btn.disabled = !inStock;
+            btn.setAttribute('aria-disabled', String(!inStock));
             btn.onclick = (e) => {
                 // If clicking the badge (if we had one separate), open modal?
                 // For now, simple tap = add.
@@ -142,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="absolute top-3 right-3 w-2 h-2 rounded-full ${inStock ? 'bg-success' : 'bg-red-500'}"></div>
                 <span class="font-display font-bold text-lg leading-tight mb-1 uppercase text-center">${item.label}</span>
                 <span class="font-mono text-text-muted text-sm">${App.money(price)}</span>
+                ${inStock ? '' : '<span class="font-mono text-red-600 text-xs mt-1">OUT OF STOCK</span>'}
             `;
 
             els.productGrid.appendChild(btn);
@@ -169,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!item || qty <= 0) return;
 
             const line = App.computeLine(itemId, qty);
+            const modifiers = draftModifiers[itemId] || [];
             total += line.total;
             count += qty;
 
@@ -181,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="bg-border-strong text-white font-mono text-xs px-1.5 py-0.5 mt-0.5">${qty}x</span>
                     <div>
                         <p class="font-display font-bold text-sm leading-tight uppercase">${item.label}</p>
+                        ${modifiers.length ? `<p class="font-mono text-xs text-text-muted mt-0.5">${modifiers.join(', ')}</p>` : ''}
                         <p class="font-mono text-xs text-text-muted mt-0.5">TAP TO EDIT</p>
                     </div>
                 </div>
@@ -199,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actions
     function addItem(itemId) {
+        if (!App.isInStock(itemId)) return;
         if (!draftOrder[itemId]) draftOrder[itemId] = 0;
         draftOrder[itemId]++;
         renderGrid();
@@ -208,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQty(itemId, newQty) {
         if (newQty <= 0) {
             delete draftOrder[itemId];
+            delete draftModifiers[itemId];
         } else {
             draftOrder[itemId] = newQty;
         }
@@ -222,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalItem = itemId;
         const currentQty = draftOrder[itemId] || 1;
+        const currentModifiers = draftModifiers[itemId] || [];
 
         els.modalTitle.textContent = `CONFIG: ${item.label}`;
         els.modalQtyVal.textContent = currentQty;
@@ -255,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 // Add simple toggle behavior (visual only)
                 const checkbox = label.querySelector('input');
+                checkbox.checked = currentModifiers.includes(opt);
                 checkbox.onclick = (e) => {
                     // Logic to handle exclusive options could go here if needed
                 };
@@ -270,6 +290,46 @@ document.addEventListener('DOMContentLoaded', () => {
         modalItem = null;
     }
 
+    function getSelectedModifiers() {
+        return [...els.modalOptions.querySelectorAll('label')]
+            .filter(label => label.querySelector('input')?.checked)
+            .map(label => label.querySelector('.flex-1').textContent.trim());
+    }
+
+    function updateModifiers(itemId, modifiers) {
+        if (modifiers.length === 0) {
+            delete draftModifiers[itemId];
+            return;
+        }
+        draftModifiers[itemId] = modifiers;
+    }
+
+    function requestTableName() {
+        try {
+            return prompt("Enter Table Name / Number:", "Mesa New");
+        } catch {
+            return "Mesa New";
+        }
+    }
+
+    function requestTipAmount() {
+        try {
+            const raw = prompt("Tip amount (optional):", "0");
+            const amount = Number(raw || 0);
+            return Number.isFinite(amount) && amount > 0 ? amount : 0;
+        } catch {
+            return 0;
+        }
+    }
+
+    function saveExistingDraft() {
+        if (!tableData || tableData.charged) return;
+        tableData.order = { ...draftOrder };
+        tableData.orderModifiers = { ...draftModifiers };
+        App.persist();
+        window.location.href = "index.html";
+    }
+
     function commitTicket() {
         const entries = Object.entries(draftOrder);
         if (entries.length === 0) {
@@ -277,15 +337,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (tableData) {
-            // Update existing
-            tableData.order = { ...draftOrder };
-            // Update timestamp only if not charged? Or keep createdAt.
-            // Usually we don't change createdAt.
+            markTablePaidDone();
+            return;
         } else {
             // Create New
             // Need a name. Design says "Table 04".
             // We'll prompt for name or generate one.
-            const name = prompt("Enter Table Name / Number:", "Mesa New");
+            const name = requestTableName();
             if (!name) return;
 
             const newTable = {
@@ -293,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: name,
                 note: '',
                 order: { ...draftOrder },
+                orderModifiers: { ...draftModifiers },
                 charged: false,
                 paidAt: null,
                 createdAt: Date.now(),
@@ -308,6 +367,16 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = "index.html"; // Go back to floor plan
     }
 
+    function markTablePaidDone() {
+        if (!tableData || tableData.charged) return;
+        const tip = requestTipAmount();
+        tableData.order = { ...draftOrder };
+        tableData.orderModifiers = { ...draftModifiers };
+        App.finalizeTableSale(tableData, tip);
+        App.persist();
+        window.location.href = "index.html";
+    }
+
     // Events
     function wireEvents() {
         // Tray Expand/Collapse
@@ -315,9 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
             els.trayList.classList.toggle('hidden');
             const icon = els.trayHandle.querySelector('.material-symbols-outlined');
             if (els.trayList.classList.contains('hidden')) {
-                icon.textContent = 'expand_less';
-            } else {
                 icon.textContent = 'expand_more';
+            } else {
+                icon.textContent = 'expand_less';
             }
         };
 
@@ -334,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         els.modalUpdate.onclick = () => {
             if (modalItem) {
                 const val = parseInt(els.modalQtyVal.textContent);
+                updateModifiers(modalItem, getSelectedModifiers());
                 updateQty(modalItem, val);
                 closeModal();
             }
@@ -341,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Commit
         els.commitBtn.onclick = commitTicket;
+        if (els.saveBtn) els.saveBtn.onclick = saveExistingDraft;
     }
 
     init();
