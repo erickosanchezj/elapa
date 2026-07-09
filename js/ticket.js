@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const els = {
         tableName: document.getElementById('table-name'),
         tableMeta: document.getElementById('table-meta'),
+        saveBtn: document.getElementById('save-btn'),
         commitBtn: document.getElementById('commit-btn'),
         commitTotal: document.getElementById('commit-total'),
         categoryNav: document.getElementById('category-nav'),
@@ -79,11 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
             els.tableMeta.textContent = `INCIDENT #${tableData.id.slice(-4).toUpperCase()} • WAIT: ${pad(hh)}:${pad(mm)}`;
             els.commitBtn.querySelector('span').textContent = tableData.charged ? 'Closed Ticket' : 'Finish Order';
             els.commitBtn.disabled = !!tableData.charged;
+            if (els.saveBtn) els.saveBtn.classList.toggle('hidden', !!tableData.charged);
         } else {
             els.tableName.innerHTML = `NEW TABLE <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
             els.tableMeta.textContent = `NEW TICKET • WAIT: 00:00`;
             els.commitBtn.querySelector('span').textContent = 'Commit Ticket';
             els.commitBtn.disabled = false;
+            if (els.saveBtn) els.saveBtn.classList.add('hidden');
         }
     }
 
@@ -309,6 +312,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function requestTipAmount() {
+        try {
+            const raw = prompt("Tip amount (optional):", "0");
+            const amount = Number(raw || 0);
+            return Number.isFinite(amount) && amount > 0 ? amount : 0;
+        } catch {
+            return 0;
+        }
+    }
+
+    function saveExistingDraft() {
+        if (!tableData || tableData.charged) return;
+        tableData.order = { ...draftOrder };
+        tableData.orderModifiers = { ...draftModifiers };
+        App.persist();
+        window.location.href = "index.html";
+    }
+
     function commitTicket() {
         const entries = Object.entries(draftOrder);
         if (entries.length === 0) {
@@ -348,12 +369,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function markTablePaidDone() {
         if (!tableData || tableData.charged) return;
-        const paidAt = Date.now();
+        const tip = requestTipAmount();
         tableData.order = { ...draftOrder };
         tableData.orderModifiers = { ...draftModifiers };
-        tableData.charged = true;
-        tableData.paidAt = paidAt;
-        tableData.openDurationMs = paidAt - (tableData.createdAt || paidAt);
+        App.finalizeTableSale(tableData, tip);
         App.persist();
         window.location.href = "index.html";
     }
@@ -392,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Commit
         els.commitBtn.onclick = commitTicket;
+        if (els.saveBtn) els.saveBtn.onclick = saveExistingDraft;
     }
 
     init();

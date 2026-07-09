@@ -1,0 +1,26 @@
+<!-- /staff.html -->
+<!-- Staff operations snapshot for active shift metrics -->
+<!-- Exists so managers can see tables, SLA, tips, and net sales together -->
+<!-- RELEVANT FILES: js/ops.js, js/app.js, index.html, settings.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Taquería El Apá - Staff</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+</head>
+<body data-page="staff" class="bg-white text-gray-900 font-sans min-h-screen">
+    <header class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold uppercase">Staff</h1>
+            <p class="text-xs font-mono text-gray-500">Shift operations snapshot</p>
+        </div>
+        <a href="index.html" class="text-sm font-bold text-rose-600 uppercase">Floor</a>
+    </header>
+    <main id="ops-content" class="p-4 grid gap-3"></main>
+    <script src="js/app.js"></script>
+    <script src="js/ops.js"></script>
+</body>
+</html>

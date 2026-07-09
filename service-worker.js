@@ -1,15 +1,30 @@
-// --- service-worker.js ---
-const CACHE_VERSION = 'v1.4.2'; // ⬅️ Versión actualizada por los cambios
+// /service-worker.js
+// Offline cache and version handshake for the static PWA
+// Exists so installed devices receive updated HTML and JavaScript reliably
+// RELEVANT FILES: manifest.webmanifest, index.html, js/app.js, js/ops.js
+const CACHE_VERSION = 'v1.5.0'; // Version bumped for operations pages and ticket updates
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
   './index.html',
-  './precios.html', // <-- AÑADIDO
-  './js/app.js', // <-- AÑADIDO
-  './js/styles.css', // <-- AÑADIDO
+  './ticket.html',
+  './menu.html',
+  './precios.html',
+  './kds.html',
+  './trompo.html',
+  './staff.html',
+  './settings.html',
+  './js/app.js',
+  './js/floor.js',
+  './js/ticket.js',
+  './js/menu.js',
+  './js/precios.js',
+  './js/ops.js',
+  './js/theme.js',
+  './js/styles.css',
   './manifest.webmanifest',
-  './icons/icon-192.png', // <-- AÑADIDO
-  './icons/icon-512.png', // <-- AÑADIDO
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];

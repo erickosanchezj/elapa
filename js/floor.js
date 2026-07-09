@@ -1,7 +1,9 @@
-// js/floor.js
+// /js/floor.js
+// Floor plan rendering, table navigation, and shift KPI updates
+// Exists so staff can see active tables and daily performance at a glance
+// RELEVANT FILES: index.html, js/app.js, ticket.html, settings.html
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
-    const SLA_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
     const MIN_GRID_SLOTS = 12;
 
     function init() {
@@ -34,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Incidents: Count of active tables exceeding SLA
         const now = Date.now();
-        const incidents = activeTables.filter(t => (now - t.createdAt) > SLA_THRESHOLD_MS).length;
+        const slaThresholdMs = App.getSlaThresholdMs();
+        const incidents = activeTables.filter(t => (now - t.createdAt) > slaThresholdMs).length;
         const kpiIncidents = document.getElementById('kpi-incidents');
         if (kpiIncidents) kpiIncidents.textContent = incidents;
 
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Net Sales
         const kpiSales = document.getElementById('kpi-sales');
-        if (kpiSales) kpiSales.textContent = App.money(report.totalSubtotals);
+        if (kpiSales) kpiSales.textContent = App.money(report.totalNet);
     }
 
     function renderGrid() {
@@ -74,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const activeTables = App.AppState.tables.filter(t => !t.charged);
         const now = Date.now();
+        const slaThresholdMs = App.getSlaThresholdMs();
 
         // Sort active tables by name (alpha-numeric friendly)
         activeTables.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
@@ -81,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render Active Tables
         activeTables.forEach(table => {
             const elapsed = now - table.createdAt;
-            const isSlaBreach = elapsed > SLA_THRESHOLD_MS;
+            const isSlaBreach = elapsed > slaThresholdMs;
             const total = App.computeTableTotal(table);
 
             let cardClass = "group relative flex flex-col w-full bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 active:border-primary active:bg-gray-50 dark:active:bg-gray-700 transition-colors text-left h-32 cursor-pointer";
