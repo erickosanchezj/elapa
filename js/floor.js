@@ -11,12 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         App.loadState();
         render();
-        // Auto-refresh every 30 seconds
         setInterval(() => {
             render();
         }, 30000);
 
-        // Wire events
         const fab = document.getElementById('fab-add-table');
         if (fab) fab.addEventListener('click', promptAddTable);
 
@@ -26,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('show-open-orders')?.addEventListener('click', () => setOrderView('open'));
         document.getElementById('show-closed-orders')?.addEventListener('click', () => setOrderView('closed'));
 
-        // Theme toggle manually if needed, or rely on js/theme.js
-        // js/theme.js handles the toggle logic if the button has id="theme-toggle"
     }
 
     function render() {
@@ -62,13 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const report = App.computeDailyReport();
         const activeTables = App.AppState.tables.filter(t => !t.charged);
 
-        // Incidents: Count of active tables exceeding SLA
         const now = Date.now();
         const incidents = activeTables.filter(t => (now - t.createdAt) > SLA_THRESHOLD_MS).length;
         const kpiIncidents = document.getElementById('kpi-incidents');
         if (kpiIncidents) kpiIncidents.textContent = incidents;
 
-        // Avg SLA: Average open duration of tables closed today
         let totalDuration = 0;
         let count = 0;
         const todayStart = new Date();
@@ -83,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let avgMs = count > 0 ? totalDuration / count : 0;
 
-        // Format HH:MM
         const hours = Math.floor(avgMs / 3600000);
         const minutes = Math.floor((avgMs % 3600000) / 60000);
 
@@ -92,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const kpiSla = document.getElementById('kpi-sla');
         if (kpiSla) kpiSla.textContent = formattedSla;
 
-        // Net Sales
         const kpiSales = document.getElementById('kpi-sales');
         if (kpiSales) kpiSales.textContent = App.money(report.totalSubtotals);
     }
@@ -105,22 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeTables = App.AppState.tables.filter(t => !t.charged);
         const now = Date.now();
 
-        // Sort active tables by name (alpha-numeric friendly)
         activeTables.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
 
-        // Render Active Tables
         activeTables.forEach(table => {
             const elapsed = now - table.createdAt;
             const isSlaBreach = elapsed > SLA_THRESHOLD_MS;
             const total = App.computeTableTotal(table);
 
-            let cardClass = "group relative flex flex-col w-full bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 active:border-primary active:bg-gray-50 dark:active:bg-gray-700 transition-colors text-left h-32 cursor-pointer";
+            let cardClass = "group relative flex flex-col w-full bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 active:border-primary active:bg-gray-50 dark:active:bg-gray-700 transition-colors text-left h-40 cursor-pointer";
             let indicatorClass = "absolute left-0 top-0 bottom-0 w-1 bg-rosa";
             let titleClass = "font-display font-bold text-2xl text-text-main dark:text-white";
             let warningIcon = "";
 
             if (isSlaBreach) {
-                cardClass = "group relative flex flex-col w-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 active:border-primary active:bg-red-100 dark:active:bg-red-900/30 transition-colors text-left h-32 cursor-pointer";
+                cardClass = "group relative flex flex-col w-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 active:border-primary active:bg-red-100 dark:active:bg-red-900/30 transition-colors text-left h-40 cursor-pointer";
                 indicatorClass = "absolute left-0 top-0 bottom-0 w-1 bg-rosa";
                 titleClass = "font-display font-bold text-2xl text-primary";
                 warningIcon = `
@@ -130,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }
 
-            // Elapsed time formatting
             const elapsedHours = Math.floor(elapsed / 3600000);
             const elapsedMinutes = Math.floor((elapsed % 3600000) / 60000);
             const pad = n => n.toString().padStart(2, '0');
@@ -159,13 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="font-mono text-xs text-text-muted uppercase">Total</span>
                             <span class="font-mono font-bold text-rosa tabular-nums">${App.money(total)}</span>
                         </div>
+                        <span data-close-order="${table.id}" class="block border border-gray-300 dark:border-gray-600 py-1 text-center font-display text-xs font-bold uppercase hover:border-primary hover:text-primary">Close order</span>
                     </div>
                 </div>
             `;
             grid.appendChild(card);
         });
 
-        // Fill remaining slots
         const slotsNeeded = Math.max(0, MIN_GRID_SLOTS - activeTables.length);
         for (let i = 0; i < slotsNeeded; i++) {
             const btn = document.createElement('button');
@@ -273,7 +262,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function closeOrder(tableId) {
+        const table = App.AppState.tables.find(t => t.id === tableId && !t.charged);
+        if (!table || !confirm(`Close and charge ${table.name}?`)) return;
+        App.closeTable(table);
+        orderView = 'closed';
+        render();
+    }
+
     function handleGridClick(e) {
+        const closeButton = e.target.closest('[data-close-order]');
+        if (closeButton) return closeOrder(closeButton.dataset.closeOrder);
         const card = e.target.closest('button');
         if (!card) return;
 
