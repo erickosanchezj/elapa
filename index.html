@@ -1,3 +1,7 @@
+<!-- /index.html -->
+<!-- Shows the restaurant floor and its open or closed orders. -->
+<!-- This page exists so staff can manage and review service from one place. -->
+<!-- RELEVANT FILES: js/floor.js, js/app.js, js/styles.css -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -104,6 +108,16 @@
 
     <!-- Main Grid Content -->
     <main class="flex-1 p-4 pb-24 overflow-y-auto bg-white dark:bg-gray-900">
+        <div class="flex items-center justify-between gap-3 mb-4 border-b border-border-color dark:border-gray-700">
+            <div class="flex" role="tablist" aria-label="Order status">
+                <button id="show-open-orders" class="order-view-tab active" type="button" role="tab" aria-selected="true">
+                    Open <span id="open-orders-count" class="font-mono">0</span>
+                </button>
+                <button id="show-closed-orders" class="order-view-tab" type="button" role="tab" aria-selected="false">
+                    Closed <span id="closed-orders-count" class="font-mono">0</span>
+                </button>
+            </div>
+        </div>
         <div id="floor-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <!-- Cards will be injected here by js/floor.js -->
         </div>

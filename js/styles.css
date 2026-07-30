@@ -3,6 +3,20 @@
    Complements Tailwind CSS with specific component styles.
    RELEVANT FILES: index.html, precios.html */
 
+.order-view-tab {
+  padding: 0.75rem 1rem;
+  border-bottom: 3px solid transparent;
+  color: #9ca3af;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.order-view-tab.active {
+  border-color: #f50057;
+  color: #f50057;
+}
+
 html {
   color-scheme: light dark;
 }

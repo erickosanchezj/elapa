@@ -1,11 +1,15 @@
-// --- service-worker.js ---
-const CACHE_VERSION = 'v1.4.2'; // ⬅️ Versión actualizada por los cambios
+// /service-worker.js
+// Caches the application files and serves them when the network is unavailable.
+// This file exists so restaurant staff can keep using the PWA offline.
+// RELEVANT FILES: index.html, js/app.js, js/floor.js
+const CACHE_VERSION = 'v1.4.4'; // ⬅️ Versión actualizada por los cambios
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
   './index.html',
   './precios.html', // <-- AÑADIDO
   './js/app.js', // <-- AÑADIDO
+  './js/floor.js',
   './js/styles.css', // <-- AÑADIDO
   './manifest.webmanifest',
   './icons/icon-192.png', // <-- AÑADIDO

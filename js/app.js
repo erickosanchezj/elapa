@@ -1,11 +1,13 @@
+// /js/app.js
+// Provides shared state, pricing, persistence, and checkout helpers.
+// This file exists so every page uses the same restaurant data rules.
+// RELEVANT FILES: index.html, js/floor.js, js/ticket.js
 (function() {
     'use strict';
-    
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
     App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
-
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
     App.money = n => '$' + (n || 0).toFixed(2);
@@ -13,7 +15,6 @@
     App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
     App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
     App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
-
     const BASE_ITEMS = [
         { id: 'taco_pastor', label: 'Pastor', base: true },
         { id: 'taco_suadero', label: 'Suadero', base: true },
@@ -89,7 +90,6 @@
         localStorage.setItem('tacos_ui_dense', JSON.stringify(App.AppState.uiDense));
         localStorage.setItem('tacos_ui_high_contrast', JSON.stringify(App.AppState.uiHighContrast));
     };
-
     App.applyUiPrefs = function() {
         const body = document.body;
         if (!body) return;
@@ -131,20 +131,27 @@
         }
         return { unit: p, chargedQty: c, total: c * p };
     };
-    
     App.computeTableTotal = function(table) {
+        if (table.charged && Number.isFinite(table.checkoutSubtotal)) return table.checkoutSubtotal;
         return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
     };
-
+    App.closeTable = function(table) {
+        if (!table || table.charged) return false;
+        const paidAt = Date.now();
+        table.checkoutSubtotal = App.computeTableTotal(table);
+        table.charged = true;
+        table.paidAt = paidAt;
+        table.openDurationMs = paidAt - (table.createdAt || paidAt);
+        App.persist();
+        return true;
+    };
     App.computeGrandTotalActive = function() {
         return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0);
     };
-    
     App.computeDailyReport = function(){
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         const todayStartMs = todayStart.getTime();
-        
         const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStartMs);
         const unpaidTablesToday = App.AppState.tables
             .filter(t => !t.charged && (t.createdAt || 0) >= todayStartMs)
@@ -155,7 +162,6 @@
                 createdAt: t.createdAt,
                 total: App.computeTableTotal(t),
             }));
-        
         const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
         const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
 
@@ -168,7 +174,6 @@
                 itemRevenue[id] = (itemRevenue[id] || 0) + line.total;
             }
         });
-        
         return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
     };
 
