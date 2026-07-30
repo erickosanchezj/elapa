@@ -1,8 +1,12 @@
-// js/floor.js
+// /js/floor.js
+// Renders the floor plan and the open or closed order views.
+// This file exists so staff can quickly manage tables and review completed orders.
+// RELEVANT FILES: index.html, js/app.js, js/styles.css
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     const SLA_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
     const MIN_GRID_SLOTS = 12;
+    let orderView = 'open';
 
     function init() {
         App.loadState();
@@ -19,13 +23,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = document.getElementById('floor-grid');
         if (grid) grid.addEventListener('click', handleGridClick);
 
+        document.getElementById('show-open-orders')?.addEventListener('click', () => setOrderView('open'));
+        document.getElementById('show-closed-orders')?.addEventListener('click', () => setOrderView('closed'));
+
         // Theme toggle manually if needed, or rely on js/theme.js
         // js/theme.js handles the toggle logic if the button has id="theme-toggle"
     }
 
     function render() {
         updateKPIs();
-        renderGrid();
+        updateOrderTabs();
+        if (orderView === 'closed') renderClosedOrders();
+        else renderGrid();
+    }
+
+    function setOrderView(view) {
+        orderView = view;
+        render();
+    }
+
+    function updateOrderTabs() {
+        const openOrders = App.AppState.tables.filter(t => !t.charged);
+        const closedOrders = App.AppState.tables.filter(t => t.charged);
+        document.getElementById('open-orders-count').textContent = openOrders.length;
+        document.getElementById('closed-orders-count').textContent = closedOrders.length;
+
+        ['open', 'closed'].forEach(view => {
+            const button = document.getElementById(`show-${view}-orders`);
+            const isActive = orderView === view;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
+        });
+
+        document.getElementById('fab-add-table')?.parentElement.classList.toggle('hidden', orderView === 'closed');
     }
 
     function updateKPIs() {
@@ -162,6 +192,59 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             grid.appendChild(btn);
         }
+    }
+
+    function renderClosedOrders() {
+        const grid = document.getElementById('floor-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const closedOrders = App.AppState.tables
+            .filter(t => t.charged)
+            .sort((a, b) => (b.paidAt || 0) - (a.paidAt || 0));
+
+        if (!closedOrders.length) {
+            grid.innerHTML = `
+                <div class="col-span-full border border-dashed border-border-color dark:border-gray-700 py-12 text-center">
+                    <span class="material-symbols-outlined text-4xl text-text-muted">receipt_long</span>
+                    <p class="mt-2 font-display font-bold uppercase">No closed orders yet</p>
+                </div>`;
+            return;
+        }
+
+        closedOrders.forEach(table => {
+            const subtotal = App.computeTableTotal(table);
+            const tip = table.tip || 0;
+            const paidDate = table.paidAt ? new Date(table.paidAt).toLocaleString('es-MX', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            }) : 'Fecha no disponible';
+            const items = Object.entries(table.order || {})
+                .filter(([, qty]) => qty > 0)
+                .map(([itemId, qty]) => {
+                    const item = App.AppState.items.find(candidate => candidate.id === itemId);
+                    return `${qty}× ${item?.label || itemId}`;
+                })
+                .join(' · ');
+
+            const card = document.createElement('article');
+            card.className = 'relative flex flex-col min-h-36 bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 p-4 pl-5';
+            card.innerHTML = `
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-gray-400"></div>
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <h2 class="font-display font-bold text-xl text-text-main dark:text-white">${table.name}</h2>
+                        <p class="font-mono text-[11px] text-text-muted uppercase">${paidDate}</p>
+                    </div>
+                    <span class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-mono text-[10px] uppercase">Paid</span>
+                </div>
+                <p class="my-3 flex-1 text-sm text-gray-600 dark:text-gray-300">${items || 'No items recorded'}</p>
+                <div class="border-t border-border-color dark:border-gray-700 pt-2 font-mono text-xs">
+                    <div class="flex justify-between"><span>Subtotal</span><span>${App.money(subtotal)}</span></div>
+                    <div class="flex justify-between text-text-muted"><span>Tip</span><span>${App.money(tip)}</span></div>
+                    <div class="flex justify-between mt-1 font-bold text-rosa"><span>Total</span><span>${App.money(subtotal + tip)}</span></div>
+                </div>`;
+            grid.appendChild(card);
+        });
     }
 
     function promptAddTable() {
