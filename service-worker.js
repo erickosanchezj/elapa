@@ -13,6 +13,7 @@ const ASSETS = [
   './js/app.js', // <-- AÑADIDO
   './js/floor.js',
   './js/menu.js',
+  './js/precios.js',
   './js/ticket.js',
   './js/theme.js',
   './js/styles.css', // <-- AÑADIDO
@@ -20,6 +21,7 @@ const ASSETS = [
   './icons/icon-192.png', // <-- AÑADIDO
   './icons/icon-512.png', // <-- AÑADIDO
   'https://cdn.tailwindcss.com',
+  'https://cdn.tailwindcss.com?plugins=forms,container-queries',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
@@ -48,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         // CORREGIDO: Usa la petición 'req' como clave, no solo './'
         caches.open(CACHE_NAME).then(c => c.put(req, copy));
         return res;
-      }).catch(() => caches.match(req).then(res => res || caches.match('./index.html'))) // Fallback a la página principal
+      }).catch(() => caches.match(req, { ignoreSearch: true }).then(res => res || caches.match('./index.html'))) // Fallback a la página principal
     );
   } else { // Cache-first para otros assets
     event.respondWith(
