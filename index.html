@@ -6,7 +6,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Administra las mesas y revisa las órdenes abiertas y cobradas.">
 <title>Mesas | Taquería El Apá</title>
 <script src="js/theme.js"></script>
@@ -15,7 +15,10 @@
 <link rel="stylesheet" href="js/styles.css">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#f6f6f3">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Apá">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
 </head>
 <body class="floor-screen">
 <header class="app-header">
@@ -40,10 +43,19 @@
 <div id="floor-grid" aria-label="Mesas del restaurante"></div>
 <noscript><p>Activa JavaScript para administrar las mesas. Los datos se guardan en este dispositivo.</p></noscript>
 </main>
-<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">monitor</span><span>KDS</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">layers</span><span>Trompo</span></a></div></nav>
+<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
+<dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
+<form id="table-form" class="form-stack">
+<div class="dialog-heading"><h2 id="table-sheet-title">Abrir mesa</h2><button type="button" id="table-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<label for="table-label"><span class="field-label">Nombre de la mesa (obligatorio)</span><input id="table-label" name="tableName" type="text" placeholder="Mesa 5" required maxlength="100" autocomplete="off" enterkeyhint="next"></label>
+<label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
+<div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button">Abrir y volver</button><button type="submit" name="destination" value="ticket" class="button button-primary">Tomar orden</button></div>
+</form></dialog>
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/table-sheet.js"></script>
 <script src="js/floor.js"></script>
 </body>
 </html>

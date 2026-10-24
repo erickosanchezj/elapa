@@ -11,6 +11,22 @@
     })[char]);
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Safari resizes the visual viewport when its keyboard opens.
+        const viewport = window.visualViewport;
+        const syncViewport = () => {
+            const root = document.documentElement;
+            root.style.setProperty('--visual-height', `${viewport.height}px`);
+            root.style.setProperty('--visual-top', `${viewport.offsetTop}px`);
+            const editing = document.activeElement?.matches('input, textarea, select');
+            root.classList.toggle('keyboard-open', Boolean(editing && window.innerHeight - viewport.height > 120));
+        };
+        if (viewport) {
+            viewport.addEventListener('resize', syncViewport);
+            viewport.addEventListener('scroll', syncViewport);
+            document.addEventListener('focusin', syncViewport);
+            document.addEventListener('focusout', syncViewport);
+            syncViewport();
+        }
         const themeButton = document.getElementById('theme-toggle');
         const syncTheme = () => themeButton?.setAttribute('aria-pressed',
             String(document.documentElement.classList.contains('dark')));

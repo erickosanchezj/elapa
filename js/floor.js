@@ -5,7 +5,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     const SLA_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
-    const MIN_GRID_SLOTS = 12;
     let orderView = 'open';
 
     function init() {
@@ -124,16 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(card);
         });
 
-        const slotsNeeded = Math.max(0, MIN_GRID_SLOTS - activeTables.length);
+        const slotsNeeded = 1;
         for (let i = 0; i < slotsNeeded; i++) {
             const btn = document.createElement('button');
             btn.className = 'table-card table-free';
             btn.type = 'button';
             btn.dataset.action = 'create-table';
-            btn.setAttribute('aria-label', 'Abrir una mesa libre');
+            btn.setAttribute('aria-label', 'Abrir mesa');
             btn.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">add</span>
-                <span class="free-label">Mesa libre</span>
-                <span class="free-meta"><span>--:--</span><span>$0.00</span></span>`;
+                <span class="free-label">Abrir mesa</span>`;
             grid.appendChild(btn);
         }
     }
@@ -184,29 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function promptAddTable() {
-        const name = prompt("Nombre de la mesa (ej. Mesa 5):");
-        if (name && name.trim()) {
-            const note = prompt("Nota (opcional):") || "";
-            const newTable = {
-                id: App.uid(),
-                name: name.trim(),
-                note: note.trim(),
-                order: {},
-                charged: false,
-                paidAt: null,
-                createdAt: Date.now(),
-                openDurationMs: null,
-                tip: 0,
-                rounds: [],
-                friends: []
+        App.openTableSheet(({ name, note, destination }) => {
+            const table = {
+                id: App.uid(), name, note, order: {}, charged: false, paidAt: null,
+                createdAt: Date.now(), openDurationMs: null, tip: 0, rounds: [], friends: []
             };
-            App.AppState.tables.push(newTable);
+            App.AppState.tables.push(table);
             App.persist();
             render();
-            if(confirm("Ir a la mesa ahora?")) {
-                window.location.href = `ticket.html?tableId=${newTable.id}`;
+            if (destination === 'ticket') {
+                window.location.href = `ticket.html?tableId=${encodeURIComponent(table.id)}`;
             }
-        }
+        });
     }
 
     function closeOrder(tableId) {

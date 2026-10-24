@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "engine": "Chromium mobile emulation; physical iOS validation pending",
+  "checks": [
+    "Sheet validates blank names, saves name/note, cancels without writes; one create tile and four tabs.",
+    "Safari theme-color follows the selected light/dark canvas.",
+    "Four screens fit mobile widths 320, 375, 402, 640 and 874px.",
+    "All four screens load offline, including a tableId URL; offline order changes persist.",
+    "A newly installed worker stays waiting; the active controller and unsaved order stay unchanged.",
+    "After all app windows close, the waiting update activates and old caches are removed; saved orders remain.",
+    "New-ticket sheet cancels without losing the draft, then saves table name, note and order.",
+    "Manifest icon dimensions and all icon paths verified; Apple touch icon is 180x180.",
+    "Hallmark render sweep: 0 FAIL, 0 WARN; existing large-tile waiver retained."
+  ]
+}

@@ -206,22 +206,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tableData) {
             tableData.order = { ...draftOrder };
         } else {
-            const name = prompt("Nombre o número de mesa:", "Mesa nueva");
-            if (!name) return;
-            const newTable = {
-                id: App.uid(),
-                name: name,
-                note: '',
-                order: { ...draftOrder },
-                charged: false,
-                paidAt: null,
-                createdAt: Date.now(),
-                openDurationMs: null,
-                tip: 0,
-                rounds: [],
-                friends: []
-            };
-            App.AppState.tables.push(newTable);
+            App.openTableSheet(({ name, note }) => {
+                const newTable = {
+                    id: App.uid(),
+                    name: name,
+                    note,
+                    order: { ...draftOrder },
+                    charged: false,
+                    paidAt: null,
+                    createdAt: Date.now(),
+                    openDurationMs: null,
+                    tip: 0,
+                    rounds: [],
+                    friends: []
+                };
+                App.AppState.tables.push(newTable);
+                App.persist();
+                window.location.href = "index.html";
+            });
+            return;
         }
         App.persist();
         window.location.href = "index.html"; // Go back to floor plan

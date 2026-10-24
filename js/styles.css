@@ -23,6 +23,7 @@
 @import url('./legacy.css');
 @import url('./receipt.css');
 @import url('./ticket-layout.css');
+@import url('./ios.css');
 
 /* Shared shell and controls. Icons are functional, never decorative badges. */
 html { color-scheme: light; }

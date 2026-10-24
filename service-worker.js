@@ -2,7 +2,7 @@
 // Caches the application files and serves them when the network is unavailable.
 // This file exists so restaurant staff can keep using the PWA offline.
 // RELEVANT FILES: index.html, js/app.js, js/floor.js
-const CACHE_VERSION = 'v1.5.0'; // ⬅️ Versión actualizada por los cambios
+const CACHE_VERSION = 'v1.5.1'; // ⬅️ Versión actualizada por los cambios
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -24,21 +24,23 @@ const ASSETS = [
   './js/receipt.css',
   './js/ticket-layout.css',
   './js/ui.js',
+  './js/pwa.js',
+  './js/table-sheet.js',
+  './js/ios.css',
   './fonts/inter-0.ttf',
   './fonts/inter-1.ttf',
   './fonts/inter-2.ttf',
   './fonts/symbols-0.ttf',
   './manifest.webmanifest',
   './icons/icon-192.png', // <-- AÑADIDO
-  './icons/icon-512.png', // <-- AÑADIDO
-  'https://cdn.tailwindcss.com',
-  'https://cdn.tailwindcss.com?plugins=forms,container-queries',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png',
+  './icons/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
-  self.skipWaiting();
+  // Leave an update waiting until all existing app windows close.
 });
 
 self.addEventListener('activate', (event) => {
@@ -50,28 +52,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
+// Each worker serves its own complete shell, preventing mixed HTML/JS versions.
+self.addEventListener('fetch', event => {
   const req = event.request;
-
-  // Network-first para navegación
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        // CORREGIDO: Usa la petición 'req' como clave, no solo './'
-        caches.open(CACHE_NAME).then(c => c.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req, { ignoreSearch: true }).then(res => res || caches.match('./index.html'))) // Fallback a la página principal
-    );
-  } else { // Cache-first para otros assets
-    event.respondWith(
-      caches.match(req).then(cached => cached || fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(req, copy));
-        return res;
-      }))
-    );
-  }
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(req, { ignoreSearch: req.mode === 'navigate' });
+    if (cached) return cached;
+    try {
+      const response = await fetch(req);
+      if (response.ok) await cache.put(req, response.clone());
+      return response;
+    } catch (error) {
+      if (req.mode === 'navigate') return (await cache.match('./index.html')) || Response.error();
+      throw error;
+    }
+  })());
 });
 
 // --- Version handshake ---

@@ -6,7 +6,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Agrega productos a la orden de una mesa y revisa su total.">
 <title>Tomar orden | Taquería El Apá</title>
 <script src="js/theme.js"></script>
@@ -15,7 +15,10 @@
 <link rel="stylesheet" href="js/styles.css">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#f6f6f3">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Apá">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
 </head>
 <body class="ticket-screen">
 <header class="app-header ticket-header"><div class="app-container header-row">
@@ -36,9 +39,18 @@
 <div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
 <button id="modal-update-btn" type="button" class="button button-primary">Actualizar cantidad</button>
 </section></div>
+<dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
+<form id="table-form" class="form-stack">
+<div class="dialog-heading"><h2 id="table-sheet-title">Abrir mesa</h2><button type="button" id="table-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<label for="table-label"><span class="field-label">Nombre de la mesa (obligatorio)</span><input id="table-label" name="tableName" type="text" placeholder="Mesa 5" required maxlength="100" autocomplete="off" enterkeyhint="next"></label>
+<label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
+<div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button button-primary">Guardar orden</button></div>
+</form></dialog>
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/table-sheet.js"></script>
 <script src="js/ticket.js"></script>
 </body>
 </html>

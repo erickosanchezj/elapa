@@ -18,7 +18,12 @@
      * @param {string} theme - The theme to apply ('dark' or 'light').
      */
     function applyThemeClass(theme) {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
+        const dark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', dark);
+        // Match Safari chrome to the same role used by the app canvas.
+        const meta = document.querySelector('meta[name="theme-color"]');
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--color-paper').trim();
+        if (meta && color) meta.content = color;
     }
 
     /**
@@ -59,6 +64,7 @@
 
         // Wait for the DOM to be fully loaded before setting up the toggle and icon
         document.addEventListener('DOMContentLoaded', () => {
+            applyThemeClass(initialTheme);
             updateThemeIcon();
             setupThemeToggle();
         });

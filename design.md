@@ -13,7 +13,7 @@ This app uses one shared system. Change it intentionally across screens.
 - Palette: light neutral canvas, quiet elevated surfaces, dark neutral text.
 - Accent: amber `#f59e0b`, paired with dark ink for readable buttons.
 - Signature: the live table grid, with names, elapsed time, totals and checkout.
-- Layout: a capped 1280px container, top bar and existing bottom destinations.
+- Layout: a capped 1280px container, top bar and four working bottom destinations (Mesas, Tickets, Precios, Menú).
 - Keep product facts, storage keys, handlers and routes intact.
 
 ## Tokens
@@ -42,3 +42,10 @@ Honor reduced motion. Never animate layout dimensions.
 
 `js/tokens.css`, `js/base.css`, `js/styles.css`.
 Legacy and receipt rules remain available in separate stylesheets.
+
+## iOS and offline behavior
+
+Safe-area insets protect the status bar and home indicator, including landscape.
+A native table sheet collects names and notes on both floor and ticket screens.
+Every screen registers the local-only offline shell. Updates wait until app windows close.
+Theme metadata follows the current canvas; icon dimensions match the manifest.
