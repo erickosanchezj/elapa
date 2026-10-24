@@ -1,80 +1,40 @@
-<!DOCTYPE html>
 <!-- /precios.html -->
-<!-- Page for managing menu items and prices -->
-<!-- Provides interface to add, edit, and delete menu items -->
-<!-- RELEVANT FILES: js/precios.js, js/app.js, index.html -->
+<!-- Agrega, edita o elimina productos y precios. -->
+<!-- Gives restaurant staff a clear, consistent workspace. -->
+<!-- RELEVANT FILES: js/styles.css, js/app.js, js/precios.js -->
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Taquería "El Apá" — Administrar Precios</title>
-    <script src="js/theme.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="js/styles.css">
-    <link rel="manifest" href="./manifest.webmanifest">
-    <meta name="theme-color" content="#111827">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Agrega, edita o elimina productos y precios.">
+<title>Administrar precios | Taquería El Apá</title>
+<script src="js/theme.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
+<link rel="stylesheet" href="js/styles.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#f6f6f3">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900">
-    <div class="container mx-auto max-w-2xl p-4 md:p-8">
-        <header class="mb-8 flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-yellow-600">Administrar Menú</h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Agrega, edita o elimina productos y precios.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
-                    <span class="material-icons">arrow_back</span>
-                    Volver al panel
-                </a>
-                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-4 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-700" aria-label="Toggle dark mode">
-                    <span id="theme-icon" class="material-icons"></span>
-                </button>
-            </div>
-        </header>
-
-        <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Agregar Producto</h2>
-            <form id="add-item-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label for="item-name" class="sr-only">Nombre del producto</label>
-                <input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required class="sm:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-                <label for="item-price" class="sr-only">Precio del producto</label>
-                <input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="Precio ($)" required min="0" step="0.50" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
-                <button type="submit" class="sm:col-span-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center justify-center dark:bg-yellow-600 dark:hover:bg-yellow-500">
-                    <span class="material-icons mr-1" aria-hidden="true">add</span>
-                    Agregar al Menú
-                </button>
-            </form>
-        </section>
-
-        <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Promociones</h2>
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-                <div>
-                    <h3 class="font-semibold">Promo 2x1 en Tacos de Pastor</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Activa para aplicar la promo los Lunes y Miércoles.</p>
-                </div>
-                <label for="promo-toggle" class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="promo-toggle" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform dark:border-gray-500 peer-checked:bg-yellow-500"></div>
-                </label>
-            </div>
-        </section>
-
-        <section>
-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Productos en el Menú</h2>
-            <div id="items-list" class="space-y-3">
-                <!-- Items will be rendered here by JavaScript -->
-            </div>
-        </section>
-    </div>
-
-    <div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
-
-    <script src="js/app.js"></script>
-    <script src="js/precios.js"></script>
+<body class="prices-screen">
+<header class="app-header"><div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><a href="index.html" class="link"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Volver al panel</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div></header>
+<main class="app-container page-content" id="main">
+<div class="page-heading"><div><h1>Administrar menú</h1><p>Agrega, edita o elimina productos y precios.</p></div></div>
+<div class="price-layout">
+<div><section class="settings-panel" aria-labelledby="add-title"><h2 id="add-title">Agregar producto</h2>
+<form id="add-item-form" class="form-stack"><div class="form-row">
+<label for="item-name"><span class="field-label">Nombre (obligatorio)</span><input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required></label>
+<label for="item-price"><span class="field-label">Precio ($)</span><input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="0.00" required min="0" step="0.50"></label>
+</div><button type="submit" class="button button-primary"><span class="material-symbols-outlined" aria-hidden="true">add</span>Agregar al menú</button></form></section>
+<section class="settings-panel promo-panel" aria-labelledby="promo-title"><h2 id="promo-title">Promociones</h2><h3>Promo 2x1 en tacos de pastor</h3><p>Se aplica automáticamente los lunes y miércoles.</p><div class="promo-status"><label for="promo-toggle">Aplicación automática según el día</label><input type="checkbox" id="promo-toggle" aria-describedby="promo-note"></div><p id="promo-note">El estado se calcula automáticamente.</p></section></div>
+<section aria-labelledby="products-title"><h2 id="products-title">Productos en el menú</h2><div id="items-list" class="list-surface"></div></section>
+</div>
+</main>
+<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
+<div id="toast-wrap" aria-live="polite"></div>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/precios.js"></script>
 </body>
 </html>

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "checks": [
+    "Create table: prompts, note and localStorage persistence.",
+    "Ticket: isolated draft, add, expand, edit quantity, Escape and save existing table.",
+    "Checkout: confirmation, paid state, timestamp and closed-order view.",
+    "Prices: inline update, immutable paid subtotal, add product and disabled base-item delete.",
+    "Catalog: stock switch, quick availability, add/edit/delete, search and modal access.",
+    "Theme preference persists across routes.",
+    "Responsive: 64 route/theme/width combinations, 320–1920px, no clipped controls or page overflow.",
+    "No uncaught browser JavaScript errors.",
+    "CDN unavailable: local fonts, layout, catalog and ticket actions work without browser errors.",
+    "Keyboard: modal focus, Tab trap, Escape and focus restoration; stock toggle retains focus and visible outline."
+  ]
+}

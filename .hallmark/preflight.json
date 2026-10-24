@@ -1,0 +1,41 @@
+{
+  "scope": "app",
+  "genre": "modern-minimal",
+  "target": [
+    "index.html",
+    "ticket.html",
+    "menu.html",
+    "precios.html"
+  ],
+  "sources": [
+    {
+      "file": "AGENTS.MD:66",
+      "signal": "Named amber and gray palette and Inter"
+    },
+    {
+      "file": "js/app.js:10",
+      "signal": "Existing localStorage state and pricing"
+    },
+    {
+      "file": "js/floor.js:83",
+      "signal": "Live table grid"
+    }
+  ],
+  "preserve": [
+    "content facts",
+    "all storage keys",
+    "order and pricing logic",
+    "routes and script hooks"
+  ],
+  "introduce": [
+    "shared tokens",
+    "consistent accessible controls",
+    "local fonts",
+    "responsive composition"
+  ],
+  "material": {
+    "real": "existing table, item and price records",
+    "pictures": "none needed for this working app",
+    "absent": "no invented metrics, quotes, logos or photos"
+  }
+}

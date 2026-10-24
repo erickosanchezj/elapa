@@ -1,0 +1,81 @@
+/* /js/receipt.css
+   Preserves the existing receipt print layout.
+   Keeps printed tickets independent of screen styling.
+   RELEVANT FILES: styles.css, tokens.css, main.js */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: absolute; left: 0; top: 0; width: 100%;
+    font-family: var(--font-receipt); font-size: 10pt;
+    padding: var(--space-xs) 0;
+  }
+  h1, h2, h3, p { margin: 0; }
+  h2 { font-size: 10pt; font-weight: 700; margin: var(--space-2xs) 0; }
+  .receipt-brand { text-align: center; margin-bottom: var(--space-xs); }
+  .receipt-brand-logo {
+    width: 48px; height: 48px; object-fit: contain;
+    display: block; margin: 0 auto var(--space-2xs);
+  }
+  .receipt-brand-name { font-size: 14pt; letter-spacing: 1px; }
+  .receipt-brand-tagline {
+    font-size: 8pt; text-transform: none; letter-spacing: 1px;
+  }
+  .receipt-meta {
+    margin: var(--space-xs) 0;
+    font-size: 9pt;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .receipt-meta-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .receipt-meta-label {
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: none;
+  }
+  .receipt-table { width: 100%; border-collapse: collapse; margin-top: var(--space-2xs); }
+  .receipt-table colgroup col:first-child { width: 18%; }
+  .receipt-table colgroup col:nth-child(2) { width: 52%; }
+  .receipt-table colgroup col:last-child { width: 30%; }
+  .receipt-table th, .receipt-table td { padding: var(--space-2xs) var(--space-3xs); }
+  .receipt-table th {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: .8px;
+    text-align: left;
+    border-bottom: 1px solid var(--legacy-color-49);
+  }
+  .receipt-table td.qty { text-align: left; }
+  .receipt-table td.item { text-align: left; }
+  .receipt-table td.price { text-align: right; }
+  .receipt-table tbody tr + tr td { border-top: 1px dotted var(--legacy-color-1); }
+  .receipt-table .receipt-empty {
+    text-align: center;
+    font-style: italic;
+    padding: var(--space-xs) 0;
+  }
+  .receipt-summary {
+    margin-top: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    font-size: 10pt;
+  }
+  .receipt-summary-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .receipt-summary-row.total {
+    font-weight: 700;
+    border-top: 1px solid var(--legacy-color-49);
+    margin-top: var(--space-2xs);
+    padding-top: var(--space-2xs);
+  }
+  .text-right { text-align: right; }
+  hr { border: 0; border-top: 1px dashed var(--legacy-color-50); margin: var(--space-xs) 0; }
+}

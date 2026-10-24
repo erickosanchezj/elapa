@@ -1,0 +1,23 @@
+render tier: 40 screenshots in /workspace/elapa/.hallmark/shots (1280x800, 1440x900, 1920x1080 folds; 1440 and 375 full pages)
+http://localhost:8000/index.html
+  WAIVED 39b :1 [1440px] control height outside 32 to 52px: button.table-card 156px, button.table-card 156px, button.table-card 156px
+http://localhost:8000/ticket.html
+  WAIVED 39b :1 [1440px] control height outside 32 to 52px: button.product-button 156px, button.product-button 156px, button.product-bu…
+index.html
+  WAIVED 39b :1 [1440px] control height outside 32 to 52px: button.table-card 156px, button.table-card 156px, button.table-card 156px
+ticket.html
+  WAIVED 39b :1 [1440px] control height outside 32 to 52px: button.product-button 156px, button.product-button 156px, button.product-bu…
+  ANSWERED F4 :23 two filled buttons side by side in the hero: "arrow_back" and "Guardar orden $0.00"
+  DISMISSED 49 :28 long clickable label "expand_less Tu orden 0 productos" without nowrap
+js/styles.css
+  ANSWERED F4 :55 5 filled primary-button recipes: .icon-button + .button + .button-primary + .product…
+  DISMISSED 3 :180 3 equal icon-tile columns on #floor-grid
+  DISMISSED 25 :194 measure 28ch on .page-heading p (45-75ch range)
+js/ticket-layout.css
+  DISMISSED 3 :15 3 equal icon-tile columns on #product-grid
+js/tokens.css
+  DISMISSED 74 :54 default Tailwind palette #3b82f6 on --legacy-color-27
+  DISMISSED 74 :74 default Tailwind palette #f8fafc on --legacy-color-47
+sloplint: 0 FAIL, 0 WARN, 4 WAIVED, 2 ANSWERED, 6 DISMISSED across 11 file(s) and 4 URL(s).
+kept: links 6/6, fields 15/15, script hooks 29/29, headings 5/10 (5 dropped on record), figures 6/6; before 222 FAIL, 19 REFLEX, now 0 FAIL, 0 REFLEX
+compare: .hallmark/compare.html shows before and after side by side

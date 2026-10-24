@@ -1,0 +1,33 @@
+/* /js/fonts.css
+   Loads the bundled Inter and Material Symbols fonts.
+   Keeps text and icons available without a font CDN.
+   RELEVANT FILES: styles.css, tokens.css, ../fonts/LICENSE-Inter.txt, ../fonts/LICENSE-Material-Symbols.txt */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(../fonts/inter-0.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(../fonts/inter-1.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(../fonts/inter-2.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../fonts/symbols-0.ttf) format('truetype');
+}
+

@@ -22,28 +22,28 @@ document.addEventListener('DOMContentLoaded', () => {
         App.AppState.items.forEach(item => {
             const price = App.AppState.prices[item.id] || 0;
             const isBaseItem = item.base;
-            const emoji = item.emoji ? `${item.emoji} ` : '';
+            // Product names carry identity; emoji metadata remains stored.
 
             const itemEl = document.createElement('div');
-            itemEl.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded-lg';
+            itemEl.className = 'price-row';
             itemEl.dataset.itemId = item.id;
 
             itemEl.innerHTML = `
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="font-semibold text-gray-800 dark:text-gray-100">${emoji}${item.label}</span>
-                      ${isBaseItem ? '<span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(básico)</span>' : ''}
-                      <span class="pill text-xs">${App.describeCategory(item.category)}</span>
+                <div class="item-details">
+                    <div class="item-labels">
+                      <span class="item-name">${App.escapeHTML(item.label)}</span>
+                      ${isBaseItem ? '<span class="subtle">(básico)</span>' : ''}
+                      <span class="pill">${App.describeCategory(item.category)}</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
-                        <input type="number" name="price-${item.id}" aria-label="Precio para ${item.label}" autocomplete="off" value="${price.toFixed(2)}" min="0" step="0.50"
-                               class="price-input w-28 pl-7 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
+                <div class="item-controls">
+                    <div class="price-input-wrap">
+                        <span aria-hidden="true">$</span>
+                        <input type="number" name="price-${item.id}" aria-label="Precio para ${App.escapeHTML(item.label)}" autocomplete="off" value="${price.toFixed(2)}" min="0" step="0.50"
+                               class="price-input">
                     </div>
-                    <button ${isBaseItem ? 'disabled' : ''} aria-label="Eliminar ${item.label}" class="delete-item-btn text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed">
-                        <span class="material-icons">delete</span>
+                    <button ${isBaseItem ? 'disabled' : ''} aria-label="Eliminar ${App.escapeHTML(item.label)}" type="button" class="delete-item-btn icon-button">
+                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                     </button>
                 </div>
             `;
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (confirm(`¿Seguro que quieres eliminar "${item.label}"?`)) {
+        if (confirm(`¿Seguro que quieres eliminar "${App.escapeHTML(item.label)}"?`)) {
             App.AppState.items = App.AppState.items.filter(i => i.id !== itemId);
             delete App.AppState.prices[itemId];
             App.persist();

@@ -1,0 +1,35 @@
+/* /js/ticket-layout.css
+   Defines the product grid and order rail on the ticket screen.
+   Keeps ticket composition separate from the shared application shell.
+   RELEVANT FILES: styles.css, ../ticket.html, ticket.js */
+/* Ticket entry: products on the left, the current order in a right-hand rail. */
+.ticket-screen { min-height: 100dvh; }
+.ticket-header .header-row { min-height: 96px; }
+.ticket-heading { display: flex; align-items: center; gap: var(--space-md); min-width: 0; }
+.ticket-title { min-width: 0; }
+.ticket-title h1 { overflow-wrap: anywhere; }
+.draft-label { font-size: var(--text-sm); color: var(--color-muted); font-weight: 400; letter-spacing: normal; }
+#table-meta { margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-sm); }
+#commit-total { font-variant-numeric: tabular-nums; padding-left: var(--space-xs); border-left: 1px solid currentColor; }
+.ticket-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-xl); padding-block: var(--space-xl); align-items: start; }
+#product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); }
+.product-button { position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-width: 0; min-height: 156px; padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); text-align: left; }
+.product-button[aria-pressed='true'] { background: var(--color-accent-soft); border-color: var(--color-accent); }
+.product-name { font-size: var(--text-lg); font-weight: 600; overflow-wrap: anywhere; }
+.product-price { margin-top: var(--space-xs); color: var(--color-muted); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.product-quantity { position: absolute; top: 12px; right: 12px; font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums; }
+.order-tray { background: var(--color-paper-2); border-radius: var(--radius-card); position: sticky; top: 24px; overflow: clip; }
+#tray-handle { white-space: nowrap; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); padding: var(--space-lg); border: 0; background: transparent; color: var(--color-ink); text-align: left; }
+#tray-handle > span:first-child { display: flex; align-items: center; gap: var(--space-xs); font-weight: 600; }
+#tray-count { font-size: var(--text-sm); color: var(--color-muted); }
+#tray-list { max-height: 52dvh; overflow-y: auto; }
+.tray-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); width: 100%; padding: var(--space-md) var(--space-lg); border: 0; border-top: 1px solid var(--color-rule); background: transparent; color: var(--color-ink); text-align: left; }
+.tray-item-name { font-size: var(--text-sm); font-weight: 600; }
+.tray-item-help { display: block; font-size: var(--text-xs); color: var(--color-muted); margin-top: var(--space-2xs); }
+.tray-item-price { font-size: var(--text-sm); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tray-total-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); border-top: 1px solid var(--color-rule); padding: var(--space-lg); font-size: var(--text-sm); }
+#tray-total { font-size: var(--text-xl); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tray-empty { color: var(--color-muted); font-size: var(--text-sm); padding: var(--space-md) var(--space-lg); }
+
+
+#product-grid { margin-top: var(--space-lg); }

@@ -1,0 +1,1525 @@
+diff --git a/index.html b/index.html
+index d7f35ff..40df865 100644
+--- a/index.html
++++ b/index.html
+@@ -1,5 +1,5 @@
+ <!-- /index.html -->
+-<!-- Shows the restaurant floor and its open or closed orders. -->
+-<!-- This page exists so staff can manage and review service from one place. -->
+-<!-- RELEVANT FILES: js/floor.js, js/app.js, js/styles.css -->
++<!-- Administra las mesas y revisa las órdenes abiertas y cobradas. -->
++<!-- Gives restaurant staff a clear, consistent workspace. -->
++<!-- RELEVANT FILES: js/styles.css, js/app.js, js/floor.js -->
+ <!DOCTYPE html>
+@@ -7,164 +7,42 @@
+ <head>
+-    <meta charset="utf-8"/>
+-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+-    <title>Taquería El Apá - Floor Plan</title>
+-    <script src="js/theme.js"></script>
+-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+-    <link rel="stylesheet" href="js/styles.css">
+-    <script id="tailwind-config">
+-        tailwind.config = {
+-            darkMode: "class",
+-            theme: {
+-                extend: {
+-                    colors: {
+-                        "primary": "#F50057", // Rosa Mexicano
+-                        "background-light": "#FFFFFF",
+-                        "background-dark": "#111827",
+-                        "surface": "#F3F4F6",
+-                        "border-color": "#E5E7EB",
+-                        "text-main": "#111827",
+-                        "text-muted": "#9CA3AF",
+-                        "alert": "#F59E0B",
+-                    },
+-                    fontFamily: {
+-                        "display": ["Space Grotesk", "sans-serif"],
+-                        "body": ["Inter", "sans-serif"],
+-                        "mono": ["JetBrains Mono", "monospace"],
+-                    },
+-                    borderRadius: {
+-                        "DEFAULT": "0px",
+-                        "none": "0px",
+-                        "sm": "0px",
+-                        "md": "0px",
+-                        "lg": "0px",
+-                        "xl": "0px",
+-                        "full": "0px", // Force 0 radius as per design spec
+-                    },
+-                    spacing: {
+-                        "18": "4.5rem",
+-                    }
+-                },
+-            },
+-        }
+-    </script>
+-    <style>
+-        /* Custom Utilities for the specific brutalist look */
+-        .striped-bg {
+-            background: repeating-linear-gradient(
+-                45deg,
+-                #F50057,
+-                #F50057 10px,
+-                #ffffff 10px,
+-                #ffffff 20px
+-            );
+-        }
+-        .text-rosa {
+-            color: #F50057;
+-        }
+-        .bg-rosa {
+-            background-color: #F50057;
+-        }
+-        .border-rosa {
+-            border-color: #F50057;
+-        }
+-        body {
+-            min-height: max(884px, 100dvh);
+-        }
+-    </style>
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1.0">
++<meta name="description" content="Administra las mesas y revisa las órdenes abiertas y cobradas.">
++<title>Mesas | Taquería El Apá</title>
++<script src="js/theme.js"></script>
++<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
++<script id="tailwind-config">if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
++<link rel="stylesheet" href="js/styles.css">
++<link rel="manifest" href="./manifest.webmanifest">
++<meta name="theme-color" content="#f6f6f3">
++<link rel="apple-touch-icon" href="icons/icon-192.png">
+ </head>
+-<body class="bg-background-light text-text-main font-body antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white dark:bg-background-dark dark:text-gray-100">
+-    <!-- Sticky Header -->
+-    <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-border-color dark:border-gray-700">
+-        <div class="flex items-center justify-between px-4 py-4">
+-            <div>
+-                <h1 class="font-display font-bold text-xl uppercase tracking-tight leading-none text-gray-900 dark:text-white">Taquería El Apá</h1>
+-                <p class="text-xs text-text-muted font-mono mt-1">FLOOR PLAN • MX-CDMX</p>
+-            </div>
+-            <div class="flex items-center gap-3">
+-                <span class="text-sm font-bold font-display tracking-tight text-primary uppercase">SHIFT OPEN</span>
+-                <button id="theme-toggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-none border-2 border-transparent transition-colors duration-200 ease-in-out bg-primary" role="switch">
+-                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform bg-white ring-0 transition duration-200 ease-in-out translate-x-5 shadow-none rounded-none"></span>
+-                </button>
+-            </div>
+-        </div>
+-        <!-- KPI Strip -->
+-        <div class="grid grid-cols-3 border-t border-border-color dark:border-gray-700 bg-surface dark:bg-gray-800 divide-x divide-border-color dark:divide-gray-700">
+-            <div class="flex flex-col items-center justify-center py-3 px-1">
+-                <span class="text-xs font-mono text-text-muted uppercase mb-1">Incidents</span>
+-                <span id="kpi-incidents" class="font-display font-bold text-lg leading-none">0</span>
+-            </div>
+-            <div class="flex flex-col items-center justify-center py-3 px-1">
+-                <span class="text-xs font-mono text-text-muted uppercase mb-1">Avg SLA</span>
+-                <span id="kpi-sla" class="font-display font-bold text-lg leading-none tabular-nums">--:--</span>
+-            </div>
+-            <div class="flex flex-col items-center justify-center py-3 px-1">
+-                <span class="text-xs font-mono text-text-muted uppercase mb-1">Net Sales</span>
+-                <span id="kpi-sales" class="font-display font-bold text-lg leading-none tabular-nums">$0</span>
+-            </div>
+-        </div>
+-    </header>
+-
+-    <!-- Main Grid Content -->
+-    <main class="flex-1 p-4 pb-24 overflow-y-auto bg-white dark:bg-gray-900">
+-        <div class="flex items-center justify-between gap-3 mb-4 border-b border-border-color dark:border-gray-700">
+-            <div class="flex" role="tablist" aria-label="Order status">
+-                <button id="show-open-orders" class="order-view-tab active" type="button" role="tab" aria-selected="true">
+-                    Open <span id="open-orders-count" class="font-mono">0</span>
+-                </button>
+-                <button id="show-closed-orders" class="order-view-tab" type="button" role="tab" aria-selected="false">
+-                    Closed <span id="closed-orders-count" class="font-mono">0</span>
+-                </button>
+-            </div>
+-        </div>
+-        <div id="floor-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+-            <!-- Cards will be injected here by js/floor.js -->
+-        </div>
+-    </main>
+-
+-    <!-- Floating Action Button -->
+-    <div class="fixed bottom-20 right-4 z-40">
+-        <button id="fab-add-table" class="bg-primary hover:bg-rose-600 text-white w-14 h-14 flex items-center justify-center shadow-none transition-transform active:scale-95 border-none rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+-            <span class="material-symbols-outlined text-3xl">add</span>
+-        </button>
+-    </div>
+-
+-    <!-- Bottom Navigation -->
+-    <nav class="fixed bottom-0 left-0 w-full z-50 bg-white dark:bg-gray-900 border-t border-border-color dark:border-gray-700">
+-        <div class="flex gap-2 px-4 pb-4 pt-2">
+-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+-                <div class="flex h-6 items-center justify-center">
+-                    <span class="material-symbols-outlined text-[24px]">grid_view</span>
+-                </div>
+-                <p class="text-xs font-bold font-display uppercase tracking-wider">Floor</p>
+-            </a>
+-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="ticket.html">
+-                <div class="flex h-6 items-center justify-center">
+-                    <span class="material-symbols-outlined text-[24px]">edit_note</span>
+-                </div>
+-                <p class="text-xs font-medium font-display uppercase tracking-wider">Tickets</p>
+-            </a>
+-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="#">
+-                <div class="flex h-6 items-center justify-center">
+-                    <span class="material-symbols-outlined text-[24px]">monitor</span>
+-                </div>
+-                <p class="text-xs font-medium font-display uppercase tracking-wider">KDS</p>
+-            </a>
+-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="#">
+-                <div class="flex h-6 items-center justify-center">
+-                    <span class="material-symbols-outlined text-[24px]">layers</span>
+-                </div>
+-                <p class="text-xs font-medium font-display uppercase tracking-wider">Trompo</p>
+-            </a>
+-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted hover:text-text-main dark:hover:text-white transition-colors" href="menu.html">
+-                <div class="flex h-6 items-center justify-center">
+-                    <span class="material-symbols-outlined text-[24px]">menu_book</span>
+-                </div>
+-                <p class="text-xs font-medium font-display uppercase tracking-wider">Menu</p>
+-            </a>
+-        </div>
+-    </nav>
+-    <script src="js/app.js"></script>
+-    <script src="js/floor.js"></script>
++<body class="floor-screen">
++<header class="app-header">
++<div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><span class="header-note">Plano de mesas</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div>
++</header>
++<div class="app-container">
++<dl class="service-summary" aria-label="Resumen del servicio">
++<div class="service-stat"><dt>Mesas con más de 1 h</dt><dd id="kpi-incidents">0</dd></div>
++<div class="service-stat"><dt>Tiempo promedio</dt><dd id="kpi-sla">00:00</dd></div>
++<div class="service-stat"><dt>Ventas de hoy</dt><dd id="kpi-sales">$0.00</dd></div>
++</dl>
++</div>
++<main class="app-container page-content" id="main">
++<div class="page-heading"><div><h1>Las mesas, al día.</h1><p>Abre una mesa para tomar su orden.</p></div><a class="link" href="precios.html">Precios <span class="material-symbols-outlined" aria-hidden="true">settings</span></a></div>
++<div class="order-toolbar">
++<div class="order-tabs" role="tablist" aria-label="Estado de las órdenes">
++<button id="show-open-orders" class="order-view-tab active" type="button" role="tab" aria-selected="true" aria-controls="floor-grid">Abiertas <span id="open-orders-count" class="tab-count">0</span></button>
++<button id="show-closed-orders" class="order-view-tab" type="button" role="tab" aria-selected="false" aria-controls="floor-grid">Cobradas <span id="closed-orders-count" class="tab-count">0</span></button>
++</div>
++<div><button id="fab-add-table" class="button button-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">add</span><span>Abrir mesa</span></button></div>
++</div>
++<div id="floor-grid" aria-label="Mesas del restaurante"></div>
++<noscript><p>Activa JavaScript para administrar las mesas. Los datos se guardan en este dispositivo.</p></noscript>
++</main>
++<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">monitor</span><span>KDS</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">layers</span><span>Trompo</span></a></div></nav>
++<div id="toast-wrap" aria-live="polite"></div>
++<script src="js/app.js"></script>
++<script src="js/ui.js"></script>
++<script src="js/floor.js"></script>
+ </body>
+diff --git a/js/floor.js b/js/floor.js
+index ad57816..fbfad68 100644
+--- a/js/floor.js
++++ b/js/floor.js
+@@ -106,18 +106,4 @@ document.addEventListener('DOMContentLoaded', () => {
+ 
+-            let cardClass = "group relative flex flex-col w-full bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 active:border-primary active:bg-gray-50 dark:active:bg-gray-700 transition-colors text-left h-40 cursor-pointer";
+-            let indicatorClass = "absolute left-0 top-0 bottom-0 w-1 bg-rosa";
+-            let titleClass = "font-display font-bold text-2xl text-text-main dark:text-white";
+-            let warningIcon = "";
+-
+-            if (isSlaBreach) {
+-                cardClass = "group relative flex flex-col w-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 active:border-primary active:bg-red-100 dark:active:bg-red-900/30 transition-colors text-left h-40 cursor-pointer";
+-                indicatorClass = "absolute left-0 top-0 bottom-0 w-1 bg-rosa";
+-                titleClass = "font-display font-bold text-2xl text-primary";
+-                warningIcon = `
+-                    <div class="flex items-center text-primary">
+-                        <span class="material-symbols-outlined text-[16px]">warning</span>
+-                        <span class="font-mono text-xs ml-1">SLA</span>
+-                    </div>`;
+-            }
+-
++            const card = document.createElement('article');
++            card.className = `table-card ${isSlaBreach ? 'table-late' : ''}`;
+             const elapsedHours = Math.floor(elapsed / 3600000);
+@@ -126,30 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
+             const timeStr = `${pad(elapsedHours)}:${pad(elapsedMinutes)}`;
+-
+-            const card = document.createElement('button');
+-            card.className = cardClass;
+-            card.dataset.tableId = table.id;
++            // Keep table navigation and checkout as separate keyboard targets.
+             card.innerHTML = `
+-                <div class="${indicatorClass}"></div>
+-                <div class="flex flex-col justify-between h-full p-3 pl-4 w-full">
+-                    <div class="flex justify-between items-start w-full">
+-                        <span class="${titleClass}">${table.name}</span>
+-                        ${warningIcon || `
+-                        <div class="flex items-center text-text-muted">
+-                            <span class="material-symbols-outlined text-[16px]">group</span>
+-                            <span class="font-mono text-xs ml-1 truncate max-w-[60px]">${table.note || '-'}</span>
+-                        </div>`}
+-                    </div>
+-                    <div class="space-y-1">
+-                        <div class="flex justify-between items-end">
+-                            <span class="font-mono text-xs ${isSlaBreach ? 'text-primary font-bold' : 'text-text-muted'} uppercase">Elapsed</span>
+-                            <span class="font-mono font-bold ${isSlaBreach ? 'text-primary' : 'text-text-main dark:text-gray-200'} tabular-nums">${timeStr}</span>
+-                        </div>
+-                        <div class="flex justify-between items-end">
+-                            <span class="font-mono text-xs text-text-muted uppercase">Total</span>
+-                            <span class="font-mono font-bold text-rosa tabular-nums">${App.money(total)}</span>
+-                        </div>
+-                        <span data-close-order="${table.id}" class="block border border-gray-300 dark:border-gray-600 py-1 text-center font-display text-xs font-bold uppercase hover:border-primary hover:text-primary">Close order</span>
+-                    </div>
+-                </div>
+-            `;
++                <a class="table-open" href="ticket.html?tableId=${encodeURIComponent(table.id)}" data-table-id="${App.escapeHTML(table.id)}">
++                    <div class="table-topline"><span class="table-name">${App.escapeHTML(table.name)}</span>
++                    <span class="table-status">${isSlaBreach ? '<span class="material-symbols-outlined" aria-hidden="true">warning</span>Más de 1 h' : 'Abierta'}</span></div>
++                    <p class="table-note">${App.escapeHTML(table.note || '')}</p>
++                    <span class="table-total">${App.money(total)}</span>
++                </a>
++                <div class="table-footer"><span class="table-time">Tiempo ${timeStr}</span>
++                    <button type="button" data-close-order="${App.escapeHTML(table.id)}" class="table-close">Cobrar</button>
++                </div>`;
+             grid.appendChild(card);
+@@ -160,23 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
+             const btn = document.createElement('button');
+-            btn.className = "group relative flex flex-col w-full bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 active:border-primary active:bg-gray-50 dark:active:bg-gray-700 transition-colors text-left h-32 opacity-80 hover:opacity-100 cursor-pointer";
+-            btn.dataset.action = "create-table";
+-
+-            btn.innerHTML = `
+-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-gray-200 dark:bg-gray-600"></div>
+-                <div class="flex flex-col justify-between h-full p-3 pl-4 w-full">
+-                    <div class="flex justify-between items-start w-full">
+-                        <span class="font-display font-bold text-2xl text-text-muted dark:text-gray-500">Free</span>
+-                    </div>
+-                    <div class="space-y-1 opacity-40">
+-                        <div class="flex justify-between items-end">
+-                            <span class="font-mono text-xs text-text-muted uppercase">Elapsed</span>
+-                            <span class="font-mono font-bold text-text-muted tabular-nums">--:--</span>
+-                        </div>
+-                        <div class="flex justify-between items-end">
+-                            <span class="font-mono text-xs text-text-muted uppercase">Total</span>
+-                            <span class="font-mono font-bold text-text-muted tabular-nums">$0.00</span>
+-                        </div>
+-                    </div>
+-                </div>
+-            `;
++            btn.className = 'table-card table-free';
++            btn.type = 'button';
++            btn.dataset.action = 'create-table';
++            btn.setAttribute('aria-label', 'Abrir una mesa libre');
++            btn.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">add</span>
++                <span class="free-label">Mesa libre</span>
++                <span class="free-meta"><span>--:--</span><span>$0.00</span></span>`;
+             grid.appendChild(btn);
+@@ -196,5 +151,5 @@ document.addEventListener('DOMContentLoaded', () => {
+             grid.innerHTML = `
+-                <div class="col-span-full border border-dashed border-border-color dark:border-gray-700 py-12 text-center">
+-                    <span class="material-symbols-outlined text-4xl text-text-muted">receipt_long</span>
+-                    <p class="mt-2 font-display font-bold uppercase">No closed orders yet</p>
++                <div class="empty-state">
++                    <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
++                    <p >Aún no hay órdenes cobradas</p>
+                 </div>`;
+@@ -215,21 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
+                 })
+-                .join(' · ');
++                .join(', ');
+ 
+             const card = document.createElement('article');
+-            card.className = 'relative flex flex-col min-h-36 bg-white dark:bg-gray-800 border border-border-color dark:border-gray-700 p-4 pl-5';
++            card.className = 'table-card closed-order';
+             card.innerHTML = `
+-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-gray-400"></div>
+-                <div class="flex items-start justify-between gap-2">
+-                    <div>
+-                        <h2 class="font-display font-bold text-xl text-text-main dark:text-white">${table.name}</h2>
+-                        <p class="font-mono text-[11px] text-text-muted uppercase">${paidDate}</p>
+-                    </div>
+-                    <span class="border border-gray-300 dark:border-gray-600 px-2 py-1 font-mono text-[10px] uppercase">Paid</span>
+-                </div>
+-                <p class="my-3 flex-1 text-sm text-gray-600 dark:text-gray-300">${items || 'No items recorded'}</p>
+-                <div class="border-t border-border-color dark:border-gray-700 pt-2 font-mono text-xs">
+-                    <div class="flex justify-between"><span>Subtotal</span><span>${App.money(subtotal)}</span></div>
+-                    <div class="flex justify-between text-text-muted"><span>Tip</span><span>${App.money(tip)}</span></div>
+-                    <div class="flex justify-between mt-1 font-bold text-rosa"><span>Total</span><span>${App.money(subtotal + tip)}</span></div>
+-                </div>`;
++                <div class="table-topline"><h2 class="table-name">${App.escapeHTML(table.name)}</h2><span class="table-status">Pagada</span></div>
++                <p class="subtle">${paidDate}</p>
++                <p class="subtle">${App.escapeHTML(items || 'Sin productos registrados')}</p>
++                <dl><div><dt>Subtotal</dt><dd>${App.money(subtotal)}</dd></div>
++                    <div><dt>Propina</dt><dd>${App.money(tip)}</dd></div>
++                    <div class="closed-total"><dt>Total</dt><dd>${App.money(subtotal + tip)}</dd></div></dl>`;
+             grid.appendChild(card);
+@@ -266,3 +213,3 @@ document.addEventListener('DOMContentLoaded', () => {
+         const table = App.AppState.tables.find(t => t.id === tableId && !t.charged);
+-        if (!table || !confirm(`Close and charge ${table.name}?`)) return;
++        if (!table || !confirm(`¿Cerrar y cobrar ${table.name}?`)) return;
+         App.closeTable(table);
+diff --git a/js/menu.js b/js/menu.js
+index c320d38..d9e650f 100644
+--- a/js/menu.js
++++ b/js/menu.js
+@@ -2,4 +2,4 @@
+ // Manages the logic for the menu management page (menu.html).
++// Keeps catalog editing and availability controls together.
+ // RELEVANT FILES: menu.html, js/app.js
+-
+ document.addEventListener('DOMContentLoaded', () => {
+@@ -10,4 +10,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // --- Local state ---
+     let activeCategory = 'tacos';
+@@ -15,4 +13,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     let quickToggleMode = false;
+-
+-    // --- DOM refs ---
+     const itemsList       = App.$('#items-list');
+@@ -35,5 +31,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     const modalDelete     = App.$('#modal-delete');
+-
+-    // --- Helpers ---
+-
+     function getFilteredItems() {
+@@ -45,3 +38,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function categoryLabel(cat) {
+@@ -52,5 +44,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // --- Render ---
+-
+     function renderTabs() {
+@@ -60,3 +49,3 @@ document.addEventListener('DOMContentLoaded', () => {
+             tab.classList.toggle('bg-primary', isActive);
+-            tab.classList.toggle('text-white', isActive);
++            tab.setAttribute('aria-current', isActive ? 'true' : 'false');
+             tab.classList.toggle('hover:bg-slate-100', !isActive);
+@@ -65,16 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function renderItems() {
+         if (!itemsList) return;
+-
+         const items = getFilteredItems();
+         headerText.textContent = searchQuery
+-            ? `Search results for "${searchQuery}"`
+-            : `Master Inventory / Category: ${categoryLabel(activeCategory)}`;
+-
++            ? `Resultados para “${searchQuery}”`
++            : `${categoryLabel(activeCategory)}`;
+         if (items.length === 0) {
+             itemsList.innerHTML = `
+-                <div class="px-4 py-8 text-center text-slate-400">
+-                    <span class="material-symbols-outlined text-4xl mb-2 block">inventory_2</span>
+-                    <p class="text-sm font-display uppercase">No items found</p>
++                <div class="empty-state">
++                    <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
++                    <p >No hay productos en esta selección</p>
+                 </div>`;
+@@ -82,3 +68,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         }
+-
+         itemsList.innerHTML = '';
+@@ -87,47 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
+             const price = App.AppState.prices[item.id] || 0;
+-
+-            const rowClass = inStock
+-                ? 'bg-white dark:bg-background-dark'
+-                : 'bg-slate-50 dark:bg-slate-900/50 opacity-60 grayscale';
+-            const labelClass = inStock
+-                ? 'text-slate-900 dark:text-slate-100'
+-                : 'text-slate-500 line-through decoration-primary';
+-            const priceClass = inStock
+-                ? 'text-primary'
+-                : 'text-slate-500';
+-            const statusLabel = inStock ? 'IN STOCK' : 'OOS';
+-            const statusTextClass = inStock
+-                ? 'text-slate-900 dark:text-slate-100'
+-                : 'text-slate-500';
+-            const toggleBg = inStock
+-                ? 'bg-primary border-slate-900'
+-                : 'bg-slate-300 dark:bg-slate-700 border-slate-400';
+-            const knobPos = inStock
+-                ? 'right-0 border-l border-slate-900'
+-                : 'left-0 border-r border-slate-400';
+-            const editBorder = inStock
+-                ? 'border-slate-900 hover:bg-slate-900 hover:text-white'
+-                : 'border-slate-400';
+-
+             const row = document.createElement('div');
+-            row.className = `flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 ${rowClass}`;
++            row.className = `inventory-row ${inStock ? '' : 'is-unavailable'}`;
+             row.dataset.itemId = item.id;
+             row.innerHTML = `
+-                <div class="flex flex-col">
+-                    <span class="text-base font-bold font-display uppercase ${labelClass}">${item.emoji ? item.emoji + ' ' : ''}${item.label}</span>
+-                    <span class="text-xs font-mono ${priceClass} font-bold tracking-tight">${App.money(price)}</span>
+-                </div>
+-                <div class="flex items-center gap-6">
+-                    <div class="flex flex-col items-end gap-1">
+-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
+-                        <div class="flex items-center gap-2">
+-                            <span class="text-[10px] font-bold font-display ${statusTextClass}">${statusLabel}</span>
+-                            <div class="stock-toggle w-10 h-5 ${toggleBg} relative cursor-pointer border">
+-                                <div class="absolute ${knobPos} top-0 bottom-0 w-4 bg-white"></div>
+-                            </div>
+-                        </div>
++                <div><span class="item-name">${App.escapeHTML(item.label)}</span><span class="item-price">${App.money(price)}</span></div>
++                <div class="item-controls">
++                    <div class="stock-control"><span class="stock-label">${inStock ? 'Disponible' : 'Agotado'}</span>
++                        <button type="button" class="stock-toggle" role="switch" aria-checked="${inStock}" aria-label="Disponibilidad de ${App.escapeHTML(item.label)}">
++                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
++                        </button>
+                     </div>
+-                    <button class="edit-btn p-2 border ${editBorder} transition-all">
+-                        <span class="material-symbols-outlined text-[20px]">edit</span>
+-                    </button>
++                    <button type="button" class="edit-btn icon-button" aria-label="Editar ${App.escapeHTML(item.label)}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+                 </div>`;
+@@ -136,3 +88,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function renderQuickToggleGrid() {
+@@ -143,10 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
+             const inStock = App.isInStock(item.id);
+-            const bg = inStock ? 'bg-primary text-white border-slate-900' : 'bg-slate-300 text-slate-600 border-slate-400';
+-            const action = inStock ? 'Kill Item' : 'Revive';
++            const action = inStock ? 'Marcar agotado' : 'Marcar disponible';
+             const btn = document.createElement('button');
+-            btn.className = `aspect-square border flex flex-col items-center justify-center p-4 ${bg} transition-colors`;
++            btn.className = "quick-stock";
++            btn.type = "button";
++            btn.setAttribute("aria-pressed", String(inStock));
+             btn.dataset.itemId = item.id;
+             btn.innerHTML = `
+-                <span class="text-lg font-bold font-display uppercase leading-tight">${item.label}</span>
+-                <span class="text-[10px] uppercase font-mono mt-2">${action}</span>`;
++                <span class="item-name">${App.escapeHTML(item.label)}</span>
++                <span class="subtle">${action}</span>`;
+             quickGrid.appendChild(btn);
+@@ -154,5 +106,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // --- Modal ---
+-
+     function openModal() {
+@@ -161,3 +110,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function closeModal() {
+@@ -169,5 +117,4 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function openAddModal() {
+-        modalTitle.textContent = 'Add New Item';
++        modalTitle.textContent = 'Agregar producto';
+         modalItemId.value = '';
+@@ -180,3 +127,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function openEditModal(itemId) {
+@@ -185,4 +131,3 @@ document.addEventListener('DOMContentLoaded', () => {
+         const price = App.AppState.prices[itemId] || 0;
+-
+-        modalTitle.textContent = 'Edit Item';
++        modalTitle.textContent = 'Editar producto';
+         modalItemId.value = itemId;
+@@ -191,3 +136,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         modalItemCat.value = item.category || 'otros';
+-
+         if (item.base) {
+@@ -197,3 +141,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         }
+-
+         openModal();
+@@ -201,5 +144,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // --- CRUD handlers ---
+-
+     function handleSaveItem(e) {
+@@ -210,8 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
+         const category = modalItemCat.value;
+-
+         if (!name || isNaN(price)) {
+-            App.toast('Enter a valid name and price', 'error');
++            App.toast('Ingresa un nombre y precio válidos', 'error');
+             return;
+         }
+-
+         if (id) {
+@@ -225,3 +163,3 @@ document.addEventListener('DOMContentLoaded', () => {
+             App.persist();
+-            App.toast('Item updated', 'success');
++            App.toast('Producto actualizado', 'success');
+         } else {
+@@ -233,5 +171,4 @@ document.addEventListener('DOMContentLoaded', () => {
+             App.persist();
+-            App.toast('Item added', 'success');
++            App.toast('Producto agregado', 'success');
+         }
+-
+         closeModal();
+@@ -240,3 +177,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function handleDeleteItem(itemId) {
+@@ -244,6 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
+         if (!item || item.base) {
+-            App.toast('Cannot delete base items', 'error');
++            App.toast('No se pueden eliminar los productos básicos', 'error');
+             return;
+         }
+-        if (confirm(`Delete "${item.label}"?`)) {
++        if (confirm(`¿Eliminar “${item.label}”?`)) {
+             App.AppState.items = App.AppState.items.filter(i => i.id !== itemId);
+@@ -255,7 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
+             if (quickToggleMode) renderQuickToggleGrid();
+-            App.toast('Item deleted', 'info');
++            App.toast('Producto eliminado', 'info');
+         }
+     }
+-
+     function handleToggleStock(itemId) {
++        const focus = document.activeElement?.closest('.stock-toggle, .quick-stock');
++        const target = focus?.classList.contains('quick-stock') ? '#quick-toggle-grid' : '#items-list';
+         App.toggleStock(itemId);
+@@ -263,9 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
+         if (quickToggleMode) renderQuickToggleGrid();
++        if (focus) document.querySelector(`${target} [data-item-id="${CSS.escape(itemId)}"]${target === '#items-list' ? ' .stock-toggle' : ''}`)?.focus();
+         const item = App.AppState.items.find(i => i.id === itemId);
+-        const status = App.isInStock(itemId) ? 'in stock' : 'out of stock';
+-        App.toast(`${item.label} → ${status}`, 'info');
++        const status = App.isInStock(itemId) ? 'disponible' : 'agotado';
++        App.toast(`${item.label}: ${status}`, 'info');
+     }
+-
+-    // --- Event wiring ---
+-
+     function wireEvents() {
+@@ -281,3 +216,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         });
+-
+         // Search with debounce
+@@ -292,3 +226,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         });
+-
+         // Item list — event delegation for toggle and edit
+@@ -298,3 +231,2 @@ document.addEventListener('DOMContentLoaded', () => {
+             const itemId = row.dataset.itemId;
+-
+             if (e.target.closest('.stock-toggle')) {
+@@ -305,6 +237,4 @@ document.addEventListener('DOMContentLoaded', () => {
+         });
+-
+         // FAB — add item
+         btnAddItem.addEventListener('click', openAddModal);
+-
+         // Quick Toggle Mode
+@@ -319,3 +249,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         });
+-
+         // Quick toggle grid — event delegation
+@@ -325,3 +254,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         });
+-
+         // Modal events
+@@ -336,5 +264,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // --- Init ---
+-
+     function init() {
+@@ -346,3 +271,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     init();
+diff --git a/js/precios.js b/js/precios.js
+index 003a758..6272f23 100644
+--- a/js/precios.js
++++ b/js/precios.js
+@@ -24,6 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
+             const isBaseItem = item.base;
+-            const emoji = item.emoji ? `${item.emoji} ` : '';
++            // Product names carry identity; emoji metadata remains stored.
+ 
+             const itemEl = document.createElement('div');
+-            itemEl.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded-lg';
++            itemEl.className = 'price-row';
+             itemEl.dataset.itemId = item.id;
+@@ -31,17 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
+             itemEl.innerHTML = `
+-                <div class="flex-1">
+-                    <div class="flex items-center gap-2 flex-wrap">
+-                      <span class="font-semibold text-gray-800 dark:text-gray-100">${emoji}${item.label}</span>
+-                      ${isBaseItem ? '<span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(básico)</span>' : ''}
+-                      <span class="pill text-xs">${App.describeCategory(item.category)}</span>
++                <div class="item-details">
++                    <div class="item-labels">
++                      <span class="item-name">${App.escapeHTML(item.label)}</span>
++                      ${isBaseItem ? '<span class="subtle">(básico)</span>' : ''}
++                      <span class="pill">${App.describeCategory(item.category)}</span>
+                     </div>
+                 </div>
+-                <div class="flex items-center gap-3">
+-                    <div class="relative">
+-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+-                        <input type="number" name="price-${item.id}" aria-label="Precio para ${item.label}" autocomplete="off" value="${price.toFixed(2)}" min="0" step="0.50"
+-                               class="price-input w-28 pl-7 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
++                <div class="item-controls">
++                    <div class="price-input-wrap">
++                        <span aria-hidden="true">$</span>
++                        <input type="number" name="price-${item.id}" aria-label="Precio para ${App.escapeHTML(item.label)}" autocomplete="off" value="${price.toFixed(2)}" min="0" step="0.50"
++                               class="price-input">
+                     </div>
+-                    <button ${isBaseItem ? 'disabled' : ''} aria-label="Eliminar ${item.label}" class="delete-item-btn text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed">
+-                        <span class="material-icons">delete</span>
++                    <button ${isBaseItem ? 'disabled' : ''} aria-label="Eliminar ${App.escapeHTML(item.label)}" type="button" class="delete-item-btn icon-button">
++                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                     </button>
+@@ -94,3 +94,3 @@ document.addEventListener('DOMContentLoaded', () => {
+ 
+-        if (confirm(`¿Seguro que quieres eliminar "${item.label}"?`)) {
++        if (confirm(`¿Seguro que quieres eliminar "${App.escapeHTML(item.label)}"?`)) {
+             App.AppState.items = App.AppState.items.filter(i => i.id !== itemId);
+diff --git a/js/ticket.js b/js/ticket.js
+index caaeace..e9fcfe9 100644
+--- a/js/ticket.js
++++ b/js/ticket.js
+@@ -4,3 +4,2 @@
+ // RELEVANT FILES: ticket.html, js/app.js
+-
+ document.addEventListener('DOMContentLoaded', () => {
+@@ -11,4 +10,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // State
+     let currentTableId = null;
+@@ -18,4 +15,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     let modalItem = null; // ID of item currently in modal
+-
+-    // DOM Elements
+     const els = {
+@@ -40,10 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
+     };
+-
+     function init() {
+         App.loadState();
+-
+-        // Parse URL
+         const urlParams = new URLSearchParams(window.location.search);
+         currentTableId = urlParams.get('tableId');
+-
+         if (currentTableId) {
+@@ -51,7 +42,4 @@ document.addEventListener('DOMContentLoaded', () => {
+             if (tableData) {
+-                // Clone existing order to draft
+                 draftOrder = { ...tableData.order };
+             } else {
+-                // Table ID provided but not found? Treat as new or error.
+-                // We'll treat as new with that ID (unlikely scenario), or just ignore.
+                 currentTableId = null;
+@@ -59,3 +47,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         }
+-
+         renderHeader();
+@@ -66,6 +53,5 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function renderHeader() {
+         if (tableData) {
+-            els.tableName.innerHTML = `${tableData.name} <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
++            els.tableName.innerHTML = `${App.escapeHTML(tableData.name)} <span class="draft-label">Borrador</span>`;
+             const now = Date.now();
+@@ -76,17 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
+             const mm = minutes % 60;
+-            els.tableMeta.textContent = `INCIDENT #${tableData.id.slice(-4).toUpperCase()} • WAIT: ${pad(hh)}:${pad(mm)}`;
++            els.tableMeta.textContent = `Orden #${tableData.id.slice(-4).toUpperCase()} / Tiempo ${pad(hh)}:${pad(mm)}`;
+         } else {
+-            els.tableName.innerHTML = `NEW TABLE <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span>`;
+-            els.tableMeta.textContent = `NEW TICKET • WAIT: 00:00`;
++            els.tableName.innerHTML = `Nueva mesa <span class="draft-label">Borrador</span>`;
++            els.tableMeta.textContent = `Nueva orden / Tiempo 00:00`;
+         }
+     }
+-
+     function renderCategories() {
+         const categories = ['tacos', 'bebidas', 'postres', 'extras']; // Fixed list from design or dynamic?
+-        // Let's use dynamic but ensure Tacos is first as per design
+         const dynCategories = [...new Set(App.AppState.items.map(i => i.category || 'otros'))];
+-        // Merge/Sort
+         const order = ['tacos', 'bebidas', 'postres', 'extras', 'otros'];
+         const sortedCats = Array.from(new Set([...order, ...dynCategories])).filter(c => dynCategories.includes(c) || order.includes(c));
+-
+         els.categoryNav.innerHTML = '';
+@@ -97,5 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
+             const inactiveClasses = "border-transparent text-text-muted hover:bg-surface-light/50 hover:text-text-main";
+-
+-            btn.className = `flex-1 min-w-[100px] py-3 text-center border-b-4 font-display font-bold text-sm tracking-wide transition-colors uppercase ${isActive ? activeClasses : inactiveClasses}`;
+-            btn.textContent = cat;
++            btn.className = isActive ? 'bg-primary' : '';
++            btn.type = 'button';
++            btn.setAttribute('aria-pressed', String(isActive));
++            btn.textContent = cat === 'extras' ? 'Extras' : App.describeCategory(cat);
+             btn.onclick = () => {
+@@ -108,3 +91,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function renderGrid() {
+@@ -112,8 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
+         const items = App.AppState.items.filter(i => (i.category || 'otros') === currentCategory);
+-
+         if (items.length === 0) {
+-            els.productGrid.innerHTML = '<div class="col-span-full text-center text-text-muted py-10 font-mono">NO ITEMS IN CATEGORY</div>';
++            els.productGrid.innerHTML = '<div class="empty-state">No hay productos en esta categoría.</div>';
+             return;
+         }
+-
+         items.forEach(item => {
+@@ -121,27 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
+             const price = App.AppState.prices[item.id] || 0;
+-
+             const btn = document.createElement('button');
+-            // Check stock status (mocked as true for now)
+             const inStock = true;
+-
+-            btn.className = "group relative aspect-square bg-white border border-border-strong hover:bg-surface-light active:bg-surface-light transition-colors flex flex-col items-center justify-center p-2 select-none";
++            btn.className = 'product-button';
++            btn.type = 'button';
++            btn.setAttribute('aria-pressed', String(qty > 0));
++            btn.setAttribute('aria-label', `Agregar ${item.label}, ${App.money(price)}. Cantidad: ${qty}`);
+             btn.onclick = (e) => {
+-                // If clicking the badge (if we had one separate), open modal?
+-                // For now, simple tap = add.
+                 addItem(item.id);
+             };
+-
+-            // HTML Structure
+             let badgeHtml = '';
+             if (qty > 0) {
+-                badgeHtml = `<div class="absolute top-2 left-2 bg-black text-white font-mono text-xs w-6 h-6 flex items-center justify-center">${qty}</div>`;
++                badgeHtml = `<span class="product-quantity">${qty} en la orden</span>`;
+             }
+-
+             btn.innerHTML = `
+                 ${badgeHtml}
+-                <div class="absolute top-3 right-3 w-2 h-2 rounded-full ${inStock ? 'bg-success' : 'bg-red-500'}"></div>
+-                <span class="font-display font-bold text-lg leading-tight mb-1 uppercase text-center">${item.label}</span>
+-                <span class="font-mono text-text-muted text-sm">${App.money(price)}</span>
++                <span class="product-name">${App.escapeHTML(item.label)}</span>
++                <span class="product-price">${App.money(price)}</span>
+             `;
+-
+             els.productGrid.appendChild(btn);
+@@ -149,3 +122,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function renderTray() {
+@@ -154,14 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
+         let count = 0;
+-
+         const entries = Object.entries(draftOrder);
+-        // Show Tray list if not empty (or always show but handle empty state)
+         if (entries.length === 0) {
+-            els.trayList.innerHTML = '<div class="p-4 text-center text-text-muted font-mono text-sm">TRAY IS EMPTY</div>';
+-            els.trayList.classList.add('hidden'); // Hide list
++            els.trayList.innerHTML = '<p class="tray-empty">Aún no hay productos en la orden.</p>';
++            els.trayList.classList.add('hidden'); // Keep the existing empty state collapsed
+         } else {
+-            // els.trayList.classList.remove('hidden'); // Only show if expanded?
+-            // The design has a "collapsed view" and a "scrollable list".
+-            // We'll toggle visibility on header click, but update content always.
+         }
+-
+         entries.forEach(([itemId, qty]) => {
+@@ -169,3 +135,2 @@ document.addEventListener('DOMContentLoaded', () => {
+             if (!item || qty <= 0) return;
+-
+             const line = App.computeLine(itemId, qty);
+@@ -173,24 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
+             count += qty;
+-
+-            const row = document.createElement('div');
+-            row.className = "flex items-center justify-between p-4 border-b border-border-subtle group hover:bg-surface-light/50 relative overflow-hidden cursor-pointer";
++            const row = document.createElement('button');
++            row.type = 'button';
++            row.className = 'tray-item';
+             row.onclick = () => openModal(itemId);
+-
+-            row.innerHTML = `
+-                <div class="flex items-start gap-3">
+-                    <span class="bg-border-strong text-white font-mono text-xs px-1.5 py-0.5 mt-0.5">${qty}x</span>
+-                    <div>
+-                        <p class="font-display font-bold text-sm leading-tight uppercase">${item.label}</p>
+-                        <p class="font-mono text-xs text-text-muted mt-0.5">TAP TO EDIT</p>
+-                    </div>
+-                </div>
+-                <div class="flex items-center gap-4">
+-                    <span class="font-mono text-sm font-medium">${App.money(line.total)}</span>
+-                    <div class="w-1 h-8 bg-border-subtle rounded-full"></div>
+-                </div>
+-            `;
++            row.innerHTML = `<span><span class="tray-item-name">${qty} × ${App.escapeHTML(item.label)}</span>
++                <span class="tray-item-help">Editar cantidad</span></span><span class="tray-item-price">${App.money(line.total)}</span>`;
+             els.trayList.appendChild(row);
+         });
+-
+-        els.trayCount.textContent = `${count} ITEMS`;
++        els.trayCount.textContent = `${count} productos`;
+         els.trayTotal.textContent = App.money(total);
+@@ -198,4 +150,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // Actions
+     function addItem(itemId) {
+@@ -206,3 +156,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function updateQty(itemId, newQty) {
+@@ -216,4 +165,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // Modal
+     function openModal(itemId) {
+@@ -221,14 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
+         if (!item) return;
+-
+         modalItem = itemId;
+         const currentQty = draftOrder[itemId] || 1;
+-
+-        els.modalTitle.textContent = `CONFIG: ${item.label}`;
++        els.modalTitle.textContent = `Editar ${item.label}`;
+         els.modalQtyVal.textContent = currentQty;
+-
+-        // Render Modifiers based on category
+         els.modalOptions.innerHTML = '';
+         const category = item.category || 'otros';
+-
+-        // Define modifiers per category
+         const MODIFIERS = {
+@@ -239,7 +180,5 @@ document.addEventListener('DOMContentLoaded', () => {
+         };
+-
+         const options = MODIFIERS[category] || [];
+-
+         if (options.length === 0) {
+-             els.modalOptions.innerHTML = '<p class="text-center text-text-muted text-sm italic">No modifiers available for this item.</p>';
++             els.modalOptions.innerHTML = '<p class="subtle">No hay opciones adicionales para este producto.</p>';
+         } else {
+@@ -247,14 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
+                 const label = document.createElement('label');
+-                label.className = "flex items-center gap-3 p-3 border border-border-subtle cursor-pointer hover:bg-surface-light group select-none";
+-                label.innerHTML = `
+-                    <div class="relative flex items-center">
+-                        <input class="peer h-5 w-5 appearance-none border-2 border-border-strong bg-white checked:bg-primary checked:border-primary transition-colors cursor-pointer" type="checkbox"/>
+-                        <span class="material-symbols-outlined absolute text-white text-sm pointer-events-none hidden peer-checked:block left-[2px]">check</span>
+-                    </div>
+-                    <span class="font-display font-bold text-sm uppercase flex-1">${opt}</span>
+-                `;
+-                // Add simple toggle behavior (visual only)
++                label.className = "modifier-option";
++                label.innerHTML = `<input type="checkbox"><span>${opt}</span>`;
+                 const checkbox = label.querySelector('input');
+                 checkbox.onclick = (e) => {
+-                    // Logic to handle exclusive options could go here if needed
+                 };
+@@ -263,6 +194,4 @@ document.addEventListener('DOMContentLoaded', () => {
+         }
+-
+         els.modal.classList.remove('hidden');
+     }
+-
+     function closeModal() {
+@@ -271,3 +200,2 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+     function commitTicket() {
+@@ -275,17 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
+         if (entries.length === 0) {
+-            return alert("Ticket is empty!");
++            return alert("Agrega productos antes de guardar la orden.");
+         }
+-
+         if (tableData) {
+-            // Update existing
+             tableData.order = { ...draftOrder };
+-            // Update timestamp only if not charged? Or keep createdAt.
+-            // Usually we don't change createdAt.
+         } else {
+-            // Create New
+-            // Need a name. Design says "Table 04".
+-            // We'll prompt for name or generate one.
+-            const name = prompt("Enter Table Name / Number:", "Mesa New");
++            const name = prompt("Nombre o número de mesa:", "Mesa nueva");
+             if (!name) return;
+-
+             const newTable = {
+@@ -305,3 +225,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         }
+-
+         App.persist();
+@@ -309,8 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
+     }
+-
+-    // Events
+     function wireEvents() {
+-        // Tray Expand/Collapse
+         els.trayHandle.onclick = () => {
+             els.trayList.classList.toggle('hidden');
++            els.trayHandle.setAttribute('aria-expanded', String(!els.trayList.classList.contains('hidden')));
+             const icon = els.trayHandle.querySelector('.material-symbols-outlined');
+@@ -322,4 +239,2 @@ document.addEventListener('DOMContentLoaded', () => {
+         };
+-
+-        // Modal Controls
+         els.modalClose.onclick = closeModal;
+@@ -340,7 +255,4 @@ document.addEventListener('DOMContentLoaded', () => {
+         };
+-
+-        // Commit
+         els.commitBtn.onclick = commitTicket;
+     }
+-
+     init();
+diff --git a/menu.html b/menu.html
+index e26f431..43691ab 100644
+--- a/menu.html
++++ b/menu.html
+@@ -1,179 +1,49 @@
++<!-- /menu.html -->
++<!-- Edita el catálogo y la disponibilidad de los productos. -->
++<!-- Gives restaurant staff a clear, consistent workspace. -->
++<!-- RELEVANT FILES: js/styles.css, js/app.js, js/menu.js -->
+ <!DOCTYPE html>
+-<html lang="en"><head>
+-<meta charset="utf-8"/>
+-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+-<title>[05 Menu Management] - Anafre OS</title>
++<html lang="es">
++<head>
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1.0">
++<meta name="description" content="Edita el catálogo y la disponibilidad de los productos.">
++<title>Menú | Taquería El Apá</title>
++<script src="js/theme.js"></script>
+ <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+-<script id="tailwind-config">
+-        tailwind.config = {
+-            darkMode: "class",
+-            theme: {
+-                extend: {
+-                    colors: {
+-                        "primary": "#ef0658",
+-                        "background-light": "#f8f5f6",
+-                        "background-dark": "#230f16",
+-                    },
+-                    fontFamily: {
+-                        "display": ["Space Grotesk", "sans-serif"],
+-                        "sans": ["Inter", "sans-serif"],
+-                        "mono": ["JetBrains Mono", "monospace"]
+-                    },
+-                    borderRadius: {
+-                        "DEFAULT": "0px",
+-                        "lg": "0px",
+-                        "xl": "0px",
+-                        "full": "0.75rem"
+-                    },
+-                },
+-            },
+-        }
+-    </script>
+-<style>
+-        body { font-family: 'Inter', sans-serif; }
+-        .font-display { font-family: 'Space Grotesk', sans-serif; }
+-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+-        .border-1 { border-width: 1px; }
+-        ::-webkit-scrollbar { width: 4px; }
+-        ::-webkit-scrollbar-track { background: #f8f5f6; }
+-        ::-webkit-scrollbar-thumb { background: #ef0658; }
+-    </style>
+-<style>
+-    body {
+-      min-height: max(884px, 100dvh);
+-    }
+-  </style>
++<script id="tailwind-config">if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
++<link rel="stylesheet" href="js/styles.css">
++<link rel="manifest" href="./manifest.webmanifest">
++<meta name="theme-color" content="#f6f6f3">
++<link rel="apple-touch-icon" href="icons/icon-192.png">
+ </head>
+-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+-<!-- Header Section -->
+-<header class="sticky top-0 z-50 bg-white dark:bg-background-dark border-b border-slate-900 dark:border-slate-700">
+-<div class="flex items-center justify-between px-4 py-3">
+-<div class="flex items-center gap-3">
+-<span class="material-symbols-outlined text-slate-900 dark:text-slate-100">menu_open</span>
+-<h1 class="text-xl font-bold font-display tracking-tight uppercase">[05 Menu Management]</h1>
+-</div>
+-<div class="flex items-center gap-2">
+-<button id="btn-quick-toggle" class="px-3 py-1 bg-slate-900 text-white text-xs font-bold font-display uppercase hover:bg-primary transition-colors">
+-                    Quick Toggle Mode
+-                </button>
+-</div>
+-</div>
+-<!-- Search Bar -->
+-<div class="px-4 pb-4">
+-<div class="relative flex items-center border border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-800">
+-<span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+-<input id="menu-search" class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm font-display uppercase tracking-wider placeholder:text-slate-400" placeholder="SEARCH SERVICE CATALOG..." type="text"/>
+-</div>
+-</div>
+-<!-- Tabs Navigation -->
+-<nav id="category-tabs" class="flex overflow-x-auto border-t border-slate-900 dark:border-slate-700 no-scrollbar">
+-<a data-category="tacos" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
+-                TACOS
+-            </a>
+-<a data-category="bebidas" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
+-                BEBIDAS
+-            </a>
+-<a data-category="postres" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display border-r border-slate-900 dark:border-slate-700 cursor-pointer" href="#">
+-                POSTRES
+-            </a>
+-<a data-category="otros" class="flex-1 min-w-[100px] py-3 text-center text-xs font-bold font-display cursor-pointer" href="#">
+-                EXTRAS
+-            </a>
++<body class="catalog-screen">
++<header class="app-header"><div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><a class="link" href="precios.html">Precios</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div></header>
++<main class="app-container page-content" id="main">
++<div class="page-heading"><div><h1>El menú, listo para servir.</h1><p>Productos, precios y disponibilidad.</p></div><button id="btn-add-item" class="button button-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">add</span><span>Agregar</span></button></div>
++<div class="catalog-tools"><div class="search-field"><label for="menu-search" class="sr-only">Buscar producto</label><span class="material-symbols-outlined" aria-hidden="true">search</span><input id="menu-search" type="text" placeholder="Buscar producto" autocomplete="off"></div><button id="btn-quick-toggle" class="button" type="button">Disponibilidad rápida</button></div>
++<nav id="category-tabs" class="category-tabs" aria-label="Categorías del menú">
++<a data-category="tacos" href="#">Tacos</a><a data-category="bebidas" href="#">Bebidas</a><a data-category="postres" href="#">Postres</a><a data-category="otros" href="#">Extras</a>
+ </nav>
+-</header>
+-<!-- Main Content Area -->
+-<main class="p-0 mb-24">
+-<!-- Item List Section -->
+-<div class="flex flex-col">
+-<div class="bg-slate-100 dark:bg-slate-900 px-4 py-2 border-b border-slate-900 dark:border-slate-700">
+-<p id="items-header-text" class="text-[10px] font-bold font-display text-slate-500 uppercase tracking-widest">Master Inventory / Category: Tacos</p>
+-</div>
+-<div id="items-list">
+-<!-- Dynamically rendered by menu.js -->
+-</div>
+-</div>
+-<!-- Quick Toggle Grid -->
+-<div id="quick-toggle-section" class="mt-8 px-4 hidden">
+-<div class="flex items-center justify-between border-t border-slate-900 pt-4 mb-4">
+-<h3 class="text-sm font-bold font-display uppercase italic">Kitchen Quick Kill View</h3>
+-<button id="btn-exit-quick" class="px-3 py-1 border border-slate-900 text-xs font-bold font-display uppercase hover:bg-slate-900 hover:text-white transition-colors">Exit</button>
+-</div>
+-<div id="quick-toggle-grid" class="grid grid-cols-2 gap-2">
+-<!-- Dynamically rendered -->
+-</div>
+-</div>
++<section class="list-surface" aria-labelledby="items-header-text"><h2 id="items-header-text" class="list-heading">Tacos</h2><div id="items-list"></div></section>
++<section id="quick-toggle-section" class="hidden" aria-labelledby="quick-title"><div class="page-heading"><h2 id="quick-title">Disponibilidad en cocina</h2><button id="btn-exit-quick" class="button" type="button">Salir</button></div><div id="quick-toggle-grid"></div></section>
+ </main>
+-<!-- Add/Edit Modal Overlay -->
+-<div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden items-end justify-center" style="display:none;">
+-<div class="bg-white dark:bg-background-dark border-t border-slate-900 w-full max-w-lg p-6">
+-<h2 id="modal-title" class="text-lg font-bold font-display uppercase mb-4"></h2>
+-<form id="modal-form" class="flex flex-col gap-4">
+-<input type="hidden" id="modal-item-id" />
+-<div>
+-<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Name</label>
+-<input id="modal-item-name" type="text" required autocomplete="off"
+-    class="w-full border border-slate-900 px-3 py-2 bg-transparent font-display uppercase text-sm focus:ring-0 focus:border-primary" />
+-</div>
+-<div>
+-<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Price ($)</label>
+-<input id="modal-item-price" type="number" required min="0" step="0.50" autocomplete="off"
+-    class="w-full border border-slate-900 px-3 py-2 bg-transparent font-mono text-sm focus:ring-0 focus:border-primary" />
+-</div>
+-<div>
+-<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</label>
+-<select id="modal-item-category"
+-    class="w-full border border-slate-900 px-3 py-2 bg-white dark:bg-background-dark font-display uppercase text-sm focus:ring-0 focus:border-primary">
+-    <option value="tacos">Tacos</option>
+-    <option value="bebidas">Bebidas</option>
+-    <option value="postres">Postres</option>
+-    <option value="otros">Extras / Otros</option>
+-</select>
+-</div>
+-<div class="flex gap-2">
+-<button type="submit" class="flex-1 bg-primary text-white font-bold font-display uppercase py-3 text-sm hover:opacity-90">Save</button>
+-<button type="button" id="modal-cancel" class="flex-1 border border-slate-900 font-bold font-display uppercase py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+-</div>
+-<button type="button" id="modal-delete" class="hidden w-full border border-red-600 text-red-600 font-bold font-display uppercase py-2 text-xs hover:bg-red-600 hover:text-white">Delete Item</button>
++<div id="modal-overlay" class="modal-overlay hidden" style="display:none;">
++<section class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
++<div class="dialog-heading"><h2 id="modal-title">Producto</h2></div>
++<form id="modal-form" class="form-stack">
++<input type="hidden" id="modal-item-id">
++<label for="modal-item-name"><span class="field-label">Nombre (obligatorio)</span><input id="modal-item-name" type="text" required autocomplete="off"></label>
++<label for="modal-item-price"><span class="field-label">Precio en pesos (obligatorio)</span><input id="modal-item-price" type="number" required min="0" step="0.50" autocomplete="off"></label>
++<label for="modal-item-category"><span class="field-label">Categoría</span><select id="modal-item-category"><option value="tacos">Tacos</option><option value="bebidas">Bebidas</option><option value="postres">Postres</option><option value="otros">Extras / Otros</option></select></label>
++<div class="inline-actions"><button type="submit" class="button button-primary">Guardar</button><button type="button" id="modal-cancel" class="button">Cancelar</button></div>
++<button type="button" id="modal-delete" class="button button-danger hidden">Eliminar producto</button>
+ </form>
+-</div>
+-</div>
+-<!-- Floating Action Button -->
+-<button id="btn-add-item" class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50 border border-white">
+-<span class="material-symbols-outlined text-3xl">add</span>
+-</button>
+-<!-- Toast container -->
+-<div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-28 space-y-2 z-[10000] pointer-events-none"></div>
+-<!-- Bottom Navigation Bar -->
+-<footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-background-dark border-t border-slate-900 z-40">
+-<div class="flex gap-2 px-4 pb-3 pt-2 max-w-full overflow-hidden">
+-<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+-<div class="flex h-8 items-center justify-center">
+-<span class="material-symbols-outlined">receipt_long</span>
+-</div>
+-<p class="text-[10px] font-bold font-display uppercase leading-normal tracking-wider">Orders</p>
+-</a>
+-<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+-<div class="flex h-8 items-center justify-center">
+-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">menu_book</span>
+-</div>
+-<p class="text-[10px] font-bold font-display uppercase leading-normal tracking-wider">Catalog</p>
+-</a>
+-<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+-<div class="flex h-8 items-center justify-center">
+-<span class="material-symbols-outlined">badge</span>
+-</div>
+-<p class="text-[10px] font-bold font-display uppercase leading-normal tracking-wider">Staff</p>
+-</a>
+-<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+-<div class="flex h-8 items-center justify-center">
+-<span class="material-symbols-outlined">settings</span>
+-</div>
+-<p class="text-[10px] font-bold font-display uppercase leading-normal tracking-wider">Settings</p>
+-</a>
+-</div>
+-</footer>
++</section></div>
++<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">badge</span><span>Personal</span></a><a class="nav-link" href="#" aria-disabled="true" tabindex="-1" title="Sin conexión configurada"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Ajustes</span></a></div></nav>
++<div id="toast-wrap" aria-live="polite"></div>
+ <script src="js/app.js"></script>
++<script src="js/ui.js"></script>
+ <script src="js/menu.js"></script>
+-</body></html>
++</body>
++</html>
+diff --git a/precios.html b/precios.html
+index 6619fc2..4d76511 100644
+--- a/precios.html
++++ b/precios.html
+@@ -1,79 +1,39 @@
+-<!DOCTYPE html>
+ <!-- /precios.html -->
+-<!-- Page for managing menu items and prices -->
+-<!-- Provides interface to add, edit, and delete menu items -->
+-<!-- RELEVANT FILES: js/precios.js, js/app.js, index.html -->
++<!-- Agrega, edita o elimina productos y precios. -->
++<!-- Gives restaurant staff a clear, consistent workspace. -->
++<!-- RELEVANT FILES: js/styles.css, js/app.js, js/precios.js -->
++<!DOCTYPE html>
+ <html lang="es">
+ <head>
+-    <meta charset="UTF-8" />
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Taquería "El Apá" — Administrar Precios</title>
+-    <script src="js/theme.js"></script>
+-    <script src="https://cdn.tailwindcss.com"></script>
+-    <script>tailwind.config = { darkMode: 'class' }</script>
+-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+-    <link rel="stylesheet" href="js/styles.css">
+-    <link rel="manifest" href="./manifest.webmanifest">
+-    <meta name="theme-color" content="#111827">
+-    <link rel="apple-touch-icon" href="icons/icon-192.png">
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1.0">
++<meta name="description" content="Agrega, edita o elimina productos y precios.">
++<title>Administrar precios | Taquería El Apá</title>
++<script src="js/theme.js"></script>
++<script src="https://cdn.tailwindcss.com"></script>
++<script>if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
++<link rel="stylesheet" href="js/styles.css">
++<link rel="manifest" href="./manifest.webmanifest">
++<meta name="theme-color" content="#f6f6f3">
++<link rel="apple-touch-icon" href="icons/icon-192.png">
+ </head>
+-<body class="bg-gray-100 dark:bg-gray-900">
+-    <div class="container mx-auto max-w-2xl p-4 md:p-8">
+-        <header class="mb-8 flex items-center justify-between">
+-            <div>
+-                <h1 class="text-3xl md:text-4xl font-bold text-yellow-600">Administrar Menú</h1>
+-                <p class="text-gray-600 dark:text-gray-400 mt-1">Agrega, edita o elimina productos y precios.</p>
+-            </div>
+-            <div class="flex items-center gap-4">
+-                <a href="index.html" class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
+-                    <span class="material-icons">arrow_back</span>
+-                    Volver al panel
+-                </a>
+-                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-4 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-700" aria-label="Toggle dark mode">
+-                    <span id="theme-icon" class="material-icons"></span>
+-                </button>
+-            </div>
+-        </header>
+-
+-        <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
+-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Agregar Producto</h2>
+-            <form id="add-item-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+-                <label for="item-name" class="sr-only">Nombre del producto</label>
+-                <input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required class="sm:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+-                <label for="item-price" class="sr-only">Precio del producto</label>
+-                <input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="Precio ($)" required min="0" step="0.50" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400">
+-                <button type="submit" class="sm:col-span-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg inline-flex items-center justify-center dark:bg-yellow-600 dark:hover:bg-yellow-500">
+-                    <span class="material-icons mr-1" aria-hidden="true">add</span>
+-                    Agregar al Menú
+-                </button>
+-            </form>
+-        </section>
+-
+-        <section class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
+-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Promociones</h2>
+-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+-                <div>
+-                    <h3 class="font-semibold">Promo 2x1 en Tacos de Pastor</h3>
+-                    <p class="text-sm text-gray-600 dark:text-gray-300">Activa para aplicar la promo los Lunes y Miércoles.</p>
+-                </div>
+-                <label for="promo-toggle" class="relative inline-flex items-center cursor-pointer">
+-                    <input type="checkbox" id="promo-toggle" class="sr-only peer">
+-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform dark:border-gray-500 peer-checked:bg-yellow-500"></div>
+-                </label>
+-            </div>
+-        </section>
+-
+-        <section>
+-            <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Productos en el Menú</h2>
+-            <div id="items-list" class="space-y-3">
+-                <!-- Items will be rendered here by JavaScript -->
+-            </div>
+-        </section>
+-    </div>
+-
+-    <div id="toast-wrap" aria-live="polite" class="fixed left-1/2 -translate-x-1/2 bottom-4 space-y-2 z-[10000] pointer-events-none"></div>
+-
+-    <script src="js/app.js"></script>
+-    <script src="js/precios.js"></script>
++<body class="prices-screen">
++<header class="app-header"><div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><a href="index.html" class="link"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Volver al panel</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div></header>
++<main class="app-container page-content" id="main">
++<div class="page-heading"><div><h1>Administrar menú</h1><p>Agrega, edita o elimina productos y precios.</p></div></div>
++<div class="price-layout">
++<div><section class="settings-panel" aria-labelledby="add-title"><h2 id="add-title">Agregar producto</h2>
++<form id="add-item-form" class="form-stack"><div class="form-row">
++<label for="item-name"><span class="field-label">Nombre (obligatorio)</span><input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required></label>
++<label for="item-price"><span class="field-label">Precio ($)</span><input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="0.00" required min="0" step="0.50"></label>
++</div><button type="submit" class="button button-primary"><span class="material-symbols-outlined" aria-hidden="true">add</span>Agregar al menú</button></form></section>
++<section class="settings-panel promo-panel" aria-labelledby="promo-title"><h2 id="promo-title">Promociones</h2><h3>Promo 2x1 en tacos de pastor</h3><p>Se aplica automáticamente los lunes y miércoles.</p><div class="promo-status"><label for="promo-toggle">Aplicación automática según el día</label><input type="checkbox" id="promo-toggle" aria-describedby="promo-note"></div><p id="promo-note">El estado se calcula automáticamente.</p></section></div>
++<section aria-labelledby="products-title"><h2 id="products-title">Productos en el menú</h2><div id="items-list" class="list-surface"></div></section>
++</div>
++</main>
++<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
++<div id="toast-wrap" aria-live="polite"></div>
++<script src="js/app.js"></script>
++<script src="js/ui.js"></script>
++<script src="js/precios.js"></script>
+ </body>
+diff --git a/ticket.html b/ticket.html
+index c49e548..8a9e516 100644
+--- a/ticket.html
++++ b/ticket.html
+@@ -1,151 +1,44 @@
+-<!DOCTYPE html>
+ <!-- /ticket.html -->
+-<!-- Ticket creation and order management interface -->
+-<!-- Allows staff to create orders for tables with a visual grid -->
+-<!-- RELEVANT FILES: js/ticket.js, js/app.js, js/theme.js -->
+-<html lang="en">
++<!-- Agrega productos a la orden de una mesa y revisa su total. -->
++<!-- Gives restaurant staff a clear, consistent workspace. -->
++<!-- RELEVANT FILES: js/styles.css, js/app.js, js/ticket.js -->
++<!DOCTYPE html>
++<html lang="es">
+ <head>
+-<meta charset="utf-8"/>
+-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+-<title>Anafre - Ticket Creation</title>
+-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1.0">
++<meta name="description" content="Agrega productos a la orden de una mesa y revisa su total.">
++<title>Tomar orden | Taquería El Apá</title>
++<script src="js/theme.js"></script>
+ <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+-<script id="tailwind-config">
+-        tailwind.config = {
+-            darkMode: "class",
+-            theme: {
+-                extend: {
+-                    colors: {
+-                        "primary": "#F50057", // Rosa Mexicano
+-                        "background-light": "#FFFFFF",
+-                        "background-dark": "#111827",
+-                        "surface-light": "#F3F4F6",
+-                        "text-main": "#111827",
+-                        "text-muted": "#9CA3AF",
+-                        "border-subtle": "#E5E7EB",
+-                        "border-strong": "#111827",
+-                        "alert": "#F59E0B",
+-                        "success": "#10B981",
+-                    },
+-                    fontFamily: {
+-                        "display": ["Space Grotesk", "sans-serif"],
+-                        "body": ["Inter", "sans-serif"],
+-                        "mono": ["JetBrains Mono", "monospace"],
+-                    },
+-                    borderRadius: {
+-                        "DEFAULT": "0px",
+-                        "sm": "2px",
+-                        "lg": "0px",
+-                        "xl": "0px",
+-                        "full": "9999px"
+-                    },
+-                },
+-            },
+-        }
+-    </script>
+-<style>
+-        /* Custom scrollbar to match the industrial feel */
+-        ::-webkit-scrollbar {
+-            width: 4px;
+-            height: 4px;
+-        }
+-        ::-webkit-scrollbar-track {
+-            background: #F3F4F6;
+-        }
+-        ::-webkit-scrollbar-thumb {
+-            background: #9CA3AF;
+-        }
+-        ::-webkit-scrollbar-thumb:hover {
+-            background: #111827;
+-        }
+-        body {
+-            min-height: max(884px, 100dvh);
+-        }
+-    </style>
+-    <!-- App Scripts -->
+-    <script src="js/theme.js"></script>
+-    <script src="js/app.js"></script>
+-    <script src="js/ticket.js"></script>
++<script id="tailwind-config">if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
++<link rel="stylesheet" href="js/styles.css">
++<link rel="manifest" href="./manifest.webmanifest">
++<meta name="theme-color" content="#f6f6f3">
++<link rel="apple-touch-icon" href="icons/icon-192.png">
+ </head>
+-<body class="bg-background-light text-text-main h-screen flex flex-col overflow-hidden font-body">
+-<!-- Top Bar: Sticky Header -->
+-<header class="shrink-0 border-b border-border-strong bg-white z-20">
+-<div class="flex items-center justify-between p-4">
+-<div>
+-<div class="flex items-center gap-2">
+-<span class="material-symbols-outlined text-xl">table_restaurant</span>
+-<h1 id="table-name" class="font-display font-bold text-2xl tracking-tight leading-none">LOADING... <span class="text-text-muted font-mono text-sm align-middle ml-1">[DRAFT]</span></h1>
+-</div>
+-<p id="table-meta" class="text-xs text-text-muted font-mono mt-1">INCIDENT #0000 • WAIT: 00:00</p>
+-</div>
+-<button id="commit-btn" class="bg-primary hover:bg-primary/90 text-white font-display font-bold text-base px-6 py-3 uppercase tracking-wide flex items-center gap-2 transition-colors">
+-<span>Commit Ticket</span>
+-<span id="commit-total" class="font-mono bg-black/20 px-1.5 py-0.5 text-sm rounded-sm">$0.00</span>
+-</button>
+-</div>
+-<!-- Categories Rail (Horizontal on Mobile/Tablet) -->
+-<nav id="category-nav" class="flex overflow-x-auto border-t border-border-subtle hide-scrollbar">
+-    <!-- Categories will be injected here -->
+-</nav>
+-</header>
+-<!-- Main Content Area: Grid + Modal Overlay -->
+-<main class="flex-1 relative flex overflow-hidden">
+-<!-- Product Grid -->
+-<div class="flex-1 overflow-y-auto p-4 pb-32">
+-<div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+-    <!-- Products will be injected here -->
+-</div>
+-</div>
+-
+-<!-- Modifier Modal -->
+-<div id="modifier-modal" class="hidden absolute bottom-0 right-0 left-0 top-0 z-30 bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-4">
+-<div class="bg-white border-2 border-border-strong w-full max-w-md shadow-2xl pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-200">
+-<div class="bg-border-strong text-white p-3 flex justify-between items-center">
+-<h3 id="modal-title" class="font-display font-bold uppercase tracking-wide">Config: Item</h3>
+-<button id="modal-close" class="text-white hover:text-primary transition-colors">
+-<span class="material-symbols-outlined">close</span>
+-</button>
+-</div>
+-<div id="modal-options" class="p-4 space-y-3">
+-    <!-- Options injected here -->
+-</div>
+-<div class="p-4 pt-0">
+-    <div class="flex items-center justify-between mb-4">
+-        <span class="font-mono text-sm">QUANTITY</span>
+-        <div class="flex items-center gap-3">
+-             <button id="modal-qty-minus" class="w-8 h-8 flex items-center justify-center bg-surface-light border border-border-strong font-bold text-lg hover:bg-border-strong hover:text-white transition-colors">-</button>
+-             <span id="modal-qty-val" class="font-mono font-bold text-xl w-8 text-center">1</span>
+-             <button id="modal-qty-plus" class="w-8 h-8 flex items-center justify-center bg-surface-light border border-border-strong font-bold text-lg hover:bg-border-strong hover:text-white transition-colors">+</button>
+-        </div>
+-    </div>
+-<button id="modal-update-btn" class="w-full bg-border-strong text-white font-display font-bold uppercase py-3 hover:bg-black transition-colors">
+-                        Update Configuration
+-                    </button>
+-</div>
+-</div>
+-</div>
+-</main>
+-<!-- Tray Summary / Mini-Cart -->
+-<footer class="bg-white border-t-2 border-border-strong shrink-0 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+-<!-- Handle / Collapsed View -->
+-<div id="tray-handle" class="flex items-center justify-between px-4 py-3 cursor-pointer bg-surface-light border-b border-border-subtle">
+-<div class="flex items-center gap-2 text-text-muted text-sm font-mono uppercase">
+-<span class="material-symbols-outlined text-lg">expand_less</span>
+-<span>Tray Summary</span>
+-</div>
+-<div class="text-right">
+-<span id="tray-count" class="font-display font-bold text-text-main">0 ITEMS</span>
+-</div>
+-</div>
+-<!-- Scrollable List (Limited Height) -->
+-<div id="tray-list" class="max-h-48 overflow-y-auto hidden">
+-    <!-- Cart items injected here -->
+-</div>
+-<!-- Total Row -->
+-<div class="p-4 bg-background-light flex justify-between items-center border-t border-border-strong">
+-<span class="font-display font-bold text-lg text-text-muted">TOTAL PENDING</span>
+-<span id="tray-total" class="font-mono font-bold text-xl tracking-tight">$0.00</span>
+-</div>
++<body class="ticket-screen">
++<header class="app-header ticket-header"><div class="app-container header-row">
++<div class="ticket-heading"><a href="index.html" class="icon-button" aria-label="Volver a las mesas"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span></a><div class="ticket-title"><h1 id="table-name">Cargando…</h1><p id="table-meta">Preparando la orden</p></div></div>
++<button id="commit-btn" class="button button-primary" type="button"><span>Guardar orden</span><span id="commit-total">$0.00</span></button>
++</div></header>
++<main class="app-container ticket-workspace" id="main">
++<section aria-label="Productos del menú"><nav id="category-nav" class="category-tabs" aria-label="Categorías de productos"></nav><div id="product-grid"></div></section>
++<footer class="order-tray" aria-label="Resumen de la orden">
++<button id="tray-handle" type="button" aria-expanded="false" aria-controls="tray-list"><span><span class="material-symbols-outlined" aria-hidden="true">expand_less</span>Tu orden</span><span id="tray-count">0 productos</span></button>
++<div id="tray-list" class="hidden"></div>
++<div class="tray-total-row"><span>Total pendiente</span><span id="tray-total">$0.00</span></div>
+ </footer>
+-</body></html>
+\ No newline at end of file
++</main>
++<div id="modifier-modal" class="modal-overlay hidden"><section class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
++<div class="dialog-heading"><h2 id="modal-title">Editar producto</h2><button id="modal-close" type="button" class="icon-button" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
++<div id="modal-options"></div>
++<div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
++<button id="modal-update-btn" type="button" class="button button-primary">Actualizar cantidad</button>
++</section></div>
++<div id="toast-wrap" aria-live="polite"></div>
++<script src="js/app.js"></script>
++<script src="js/ui.js"></script>
++<script src="js/ticket.js"></script>
++</body>
++</html>

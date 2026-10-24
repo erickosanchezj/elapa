@@ -1,20 +1,16 @@
 // /js/menu.js
 // Manages the logic for the menu management page (menu.html).
+// Keeps catalog editing and availability controls together.
 // RELEVANT FILES: menu.html, js/app.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     if (!App) {
         console.error('TaqueriaApp not found!');
         return;
     }
-
-    // --- Local state ---
     let activeCategory = 'tacos';
     let searchQuery = '';
     let quickToggleMode = false;
-
-    // --- DOM refs ---
     const itemsList       = App.$('#items-list');
     const headerText      = App.$('#items-header-text');
     const searchInput     = App.$('#menu-search');
@@ -33,9 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalItemCat    = App.$('#modal-item-category');
     const modalCancel     = App.$('#modal-cancel');
     const modalDelete     = App.$('#modal-delete');
-
-    // --- Helpers ---
-
     function getFilteredItems() {
         return App.AppState.items.filter(item => {
             const matchCat = item.category === activeCategory;
@@ -43,123 +36,78 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchCat && matchSearch;
         });
     }
-
     function categoryLabel(cat) {
         if (cat === 'tacos') return 'Tacos';
         if (cat === 'bebidas') return 'Bebidas';
         if (cat === 'postres') return 'Postres';
         return 'Extras';
     }
-
-    // --- Render ---
-
     function renderTabs() {
         const tabs = categoryTabs.querySelectorAll('[data-category]');
         tabs.forEach(tab => {
             const isActive = tab.dataset.category === activeCategory;
             tab.classList.toggle('bg-primary', isActive);
-            tab.classList.toggle('text-white', isActive);
+            tab.setAttribute('aria-current', isActive ? 'true' : 'false');
             tab.classList.toggle('hover:bg-slate-100', !isActive);
             tab.classList.toggle('dark:hover:bg-slate-800', !isActive);
         });
     }
-
     function renderItems() {
         if (!itemsList) return;
-
         const items = getFilteredItems();
         headerText.textContent = searchQuery
-            ? `Search results for "${searchQuery}"`
-            : `Master Inventory / Category: ${categoryLabel(activeCategory)}`;
-
+            ? `Resultados para “${searchQuery}”`
+            : `${categoryLabel(activeCategory)}`;
         if (items.length === 0) {
             itemsList.innerHTML = `
-                <div class="px-4 py-8 text-center text-slate-400">
-                    <span class="material-symbols-outlined text-4xl mb-2 block">inventory_2</span>
-                    <p class="text-sm font-display uppercase">No items found</p>
+                <div class="empty-state">
+                    <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+                    <p >No hay productos en esta selección</p>
                 </div>`;
             return;
         }
-
         itemsList.innerHTML = '';
         items.forEach(item => {
             const inStock = App.isInStock(item.id);
             const price = App.AppState.prices[item.id] || 0;
-
-            const rowClass = inStock
-                ? 'bg-white dark:bg-background-dark'
-                : 'bg-slate-50 dark:bg-slate-900/50 opacity-60 grayscale';
-            const labelClass = inStock
-                ? 'text-slate-900 dark:text-slate-100'
-                : 'text-slate-500 line-through decoration-primary';
-            const priceClass = inStock
-                ? 'text-primary'
-                : 'text-slate-500';
-            const statusLabel = inStock ? 'IN STOCK' : 'OOS';
-            const statusTextClass = inStock
-                ? 'text-slate-900 dark:text-slate-100'
-                : 'text-slate-500';
-            const toggleBg = inStock
-                ? 'bg-primary border-slate-900'
-                : 'bg-slate-300 dark:bg-slate-700 border-slate-400';
-            const knobPos = inStock
-                ? 'right-0 border-l border-slate-900'
-                : 'left-0 border-r border-slate-400';
-            const editBorder = inStock
-                ? 'border-slate-900 hover:bg-slate-900 hover:text-white'
-                : 'border-slate-400';
-
             const row = document.createElement('div');
-            row.className = `flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800 ${rowClass}`;
+            row.className = `inventory-row ${inStock ? '' : 'is-unavailable'}`;
             row.dataset.itemId = item.id;
             row.innerHTML = `
-                <div class="flex flex-col">
-                    <span class="text-base font-bold font-display uppercase ${labelClass}">${item.emoji ? item.emoji + ' ' : ''}${item.label}</span>
-                    <span class="text-xs font-mono ${priceClass} font-bold tracking-tight">${App.money(price)}</span>
-                </div>
-                <div class="flex items-center gap-6">
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Status</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold font-display ${statusTextClass}">${statusLabel}</span>
-                            <div class="stock-toggle w-10 h-5 ${toggleBg} relative cursor-pointer border">
-                                <div class="absolute ${knobPos} top-0 bottom-0 w-4 bg-white"></div>
-                            </div>
-                        </div>
+                <div><span class="item-name">${App.escapeHTML(item.label)}</span><span class="item-price">${App.money(price)}</span></div>
+                <div class="item-controls">
+                    <div class="stock-control"><span class="stock-label">${inStock ? 'Disponible' : 'Agotado'}</span>
+                        <button type="button" class="stock-toggle" role="switch" aria-checked="${inStock}" aria-label="Disponibilidad de ${App.escapeHTML(item.label)}">
+                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+                        </button>
                     </div>
-                    <button class="edit-btn p-2 border ${editBorder} transition-all">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
+                    <button type="button" class="edit-btn icon-button" aria-label="Editar ${App.escapeHTML(item.label)}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
                 </div>`;
             itemsList.appendChild(row);
         });
     }
-
     function renderQuickToggleGrid() {
         if (!quickGrid) return;
         const items = getFilteredItems();
         quickGrid.innerHTML = '';
         items.forEach(item => {
             const inStock = App.isInStock(item.id);
-            const bg = inStock ? 'bg-primary text-white border-slate-900' : 'bg-slate-300 text-slate-600 border-slate-400';
-            const action = inStock ? 'Kill Item' : 'Revive';
+            const action = inStock ? 'Marcar agotado' : 'Marcar disponible';
             const btn = document.createElement('button');
-            btn.className = `aspect-square border flex flex-col items-center justify-center p-4 ${bg} transition-colors`;
+            btn.className = "quick-stock";
+            btn.type = "button";
+            btn.setAttribute("aria-pressed", String(inStock));
             btn.dataset.itemId = item.id;
             btn.innerHTML = `
-                <span class="text-lg font-bold font-display uppercase leading-tight">${item.label}</span>
-                <span class="text-[10px] uppercase font-mono mt-2">${action}</span>`;
+                <span class="item-name">${App.escapeHTML(item.label)}</span>
+                <span class="subtle">${action}</span>`;
             quickGrid.appendChild(btn);
         });
     }
-
-    // --- Modal ---
-
     function openModal() {
         modalOverlay.style.display = 'flex';
         modalOverlay.classList.remove('hidden');
     }
-
     function closeModal() {
         modalOverlay.style.display = 'none';
         modalOverlay.classList.add('hidden');
@@ -167,9 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalItemId.value = '';
         modalDelete.classList.add('hidden');
     }
-
     function openAddModal() {
-        modalTitle.textContent = 'Add New Item';
+        modalTitle.textContent = 'Agregar producto';
         modalItemId.value = '';
         modalItemName.value = '';
         modalItemPrice.value = '';
@@ -178,42 +125,33 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal();
         modalItemName.focus();
     }
-
     function openEditModal(itemId) {
         const item = App.AppState.items.find(i => i.id === itemId);
         if (!item) return;
         const price = App.AppState.prices[itemId] || 0;
-
-        modalTitle.textContent = 'Edit Item';
+        modalTitle.textContent = 'Editar producto';
         modalItemId.value = itemId;
         modalItemName.value = item.label;
         modalItemPrice.value = price.toFixed(2);
         modalItemCat.value = item.category || 'otros';
-
         if (item.base) {
             modalDelete.classList.add('hidden');
         } else {
             modalDelete.classList.remove('hidden');
         }
-
         openModal();
         modalItemName.focus();
     }
-
-    // --- CRUD handlers ---
-
     function handleSaveItem(e) {
         e.preventDefault();
         const id = modalItemId.value;
         const name = modalItemName.value.trim();
         const price = parseFloat(modalItemPrice.value);
         const category = modalItemCat.value;
-
         if (!name || isNaN(price)) {
-            App.toast('Enter a valid name and price', 'error');
+            App.toast('Ingresa un nombre y precio válidos', 'error');
             return;
         }
-
         if (id) {
             // Update existing
             const item = App.AppState.items.find(i => i.id === id);
@@ -223,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 App.AppState.prices[id] = price;
             }
             App.persist();
-            App.toast('Item updated', 'success');
+            App.toast('Producto actualizado', 'success');
         } else {
             // Create new
             const newId = 'custom_' + name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
@@ -231,21 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
             App.AppState.prices[newId] = price;
             App.AppState.stock[newId] = true;
             App.persist();
-            App.toast('Item added', 'success');
+            App.toast('Producto agregado', 'success');
         }
-
         closeModal();
         renderItems();
         if (quickToggleMode) renderQuickToggleGrid();
     }
-
     function handleDeleteItem(itemId) {
         const item = App.AppState.items.find(i => i.id === itemId);
         if (!item || item.base) {
-            App.toast('Cannot delete base items', 'error');
+            App.toast('No se pueden eliminar los productos básicos', 'error');
             return;
         }
-        if (confirm(`Delete "${item.label}"?`)) {
+        if (confirm(`¿Eliminar “${item.label}”?`)) {
             App.AppState.items = App.AppState.items.filter(i => i.id !== itemId);
             delete App.AppState.prices[itemId];
             delete App.AppState.stock[itemId];
@@ -253,21 +189,20 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
             renderItems();
             if (quickToggleMode) renderQuickToggleGrid();
-            App.toast('Item deleted', 'info');
+            App.toast('Producto eliminado', 'info');
         }
     }
-
     function handleToggleStock(itemId) {
+        const focus = document.activeElement?.closest('.stock-toggle, .quick-stock');
+        const target = focus?.classList.contains('quick-stock') ? '#quick-toggle-grid' : '#items-list';
         App.toggleStock(itemId);
         renderItems();
         if (quickToggleMode) renderQuickToggleGrid();
+        if (focus) document.querySelector(`${target} [data-item-id="${CSS.escape(itemId)}"]${target === '#items-list' ? ' .stock-toggle' : ''}`)?.focus();
         const item = App.AppState.items.find(i => i.id === itemId);
-        const status = App.isInStock(itemId) ? 'in stock' : 'out of stock';
-        App.toast(`${item.label} → ${status}`, 'info');
+        const status = App.isInStock(itemId) ? 'disponible' : 'agotado';
+        App.toast(`${item.label}: ${status}`, 'info');
     }
-
-    // --- Event wiring ---
-
     function wireEvents() {
         // Category tabs
         categoryTabs.addEventListener('click', (e) => {
@@ -279,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderItems();
             if (quickToggleMode) renderQuickToggleGrid();
         });
-
         // Search with debounce
         let searchTimer;
         searchInput.addEventListener('input', (e) => {
@@ -290,23 +224,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quickToggleMode) renderQuickToggleGrid();
             }, 150);
         });
-
         // Item list — event delegation for toggle and edit
         itemsList.addEventListener('click', (e) => {
             const row = e.target.closest('[data-item-id]');
             if (!row) return;
             const itemId = row.dataset.itemId;
-
             if (e.target.closest('.stock-toggle')) {
                 handleToggleStock(itemId);
             } else if (e.target.closest('.edit-btn')) {
                 openEditModal(itemId);
             }
         });
-
         // FAB — add item
         btnAddItem.addEventListener('click', openAddModal);
-
         // Quick Toggle Mode
         btnQuickToggle.addEventListener('click', () => {
             quickToggleMode = !quickToggleMode;
@@ -317,13 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
             quickToggleMode = false;
             quickSection.classList.add('hidden');
         });
-
         // Quick toggle grid — event delegation
         quickGrid.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-item-id]');
             if (btn) handleToggleStock(btn.dataset.itemId);
         });
-
         // Modal events
         modalForm.addEventListener('submit', handleSaveItem);
         modalCancel.addEventListener('click', closeModal);
@@ -334,9 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === modalOverlay) closeModal();
         });
     }
-
-    // --- Init ---
-
     function init() {
         App.loadState();
         App.applyUiPrefs();
@@ -344,6 +269,5 @@ document.addEventListener('DOMContentLoaded', () => {
         renderItems();
         wireEvents();
     }
-
     init();
 });

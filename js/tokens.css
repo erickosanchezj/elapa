@@ -1,0 +1,87 @@
+/* /js/tokens.css
+   Defines the shared light and dark design tokens.
+   Gives all four screens one palette, type scale and spacing system.
+   RELEVANT FILES: styles.css, base.css, design.md */
+:root {
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
+  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(52% 0.19 27); --color-success: oklch(50% 0.12 150);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  --legacy-ink: #151713; --legacy-paper: #fdfdfb;
+  --color-paper: #f6f6f3; --color-paper-2: #eeeeea; --color-paper-3: #e4e4de;
+  --color-surface: #fdfdfb; --color-ink: #252824; --color-ink-2: #42473f;
+  --color-muted: #63695f; --color-rule: #d9dcd3; --color-field-edge: #848b7c;
+  --color-accent: #f59e0b; --color-accent-ink: #2b210c; --color-accent-soft: #fff0d1;
+  --color-focus: #77500a; --color-success: #356345; --color-success-soft: #e8f0e7;
+  --color-error: #a43f31; --color-error-soft: #faeae5; --color-overlay: #20251e99;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: var(--font-body); --font-icons: "Material Symbols Outlined";
+  --font-receipt: "Courier New", Courier, monospace;
+  --radius-card: 12px; --radius-input: 8px; --radius-pill: 999px;
+  --rule-hair: 1px; --shadow-card: none; --tracking-display: -0.035em;
+  --container: 1280px; --gutter: 40px; --gap-columns: 16px;
+  --legacy-color-1: #9ca3af;
+  --legacy-color-2: #f50057;
+  --legacy-color-3: #fefce8;
+  --legacy-color-4: #fef9c3;
+  --legacy-color-5: #92400e;
+  --legacy-color-6: #f59e0b;
+  --legacy-color-7: rgba(255, 255, 255, 0.6);
+  --legacy-color-8: #1f2937;
+  --legacy-color-9: #111827;
+  --legacy-color-10: #fcd34d;
+  --legacy-color-11: #e5e7eb;
+  --legacy-color-12: #fff;
+  --legacy-color-13: #374151;
+  --legacy-color-14: #fef3c7;
+  --legacy-color-15: rgba(234, 179, 8, 0.2);
+  --legacy-color-16: #4b5563;
+  --legacy-color-17: #2d3748;
+  --legacy-color-18: #facc15;
+  --legacy-color-19: rgba(250, 204, 21, 0.25);
+  --legacy-color-20: #f9fafb;
+  --legacy-color-21: rgba(234, 179, 8, 0.3);
+  --legacy-color-22: rgba(250, 204, 21, 0.35);
+  --legacy-color-23: #15803d;
+  --legacy-color-24: #16a34a;
+  --legacy-color-25: #22c55e;
+  --legacy-color-26: #2563eb;
+  --legacy-color-27: #3b82f6;
+  --legacy-color-28: #dc2626;
+  --legacy-color-29: #ef4444;
+  --legacy-color-30: #b45309;
+  --legacy-color-31: #d97706;
+  --legacy-color-32: #a16207;
+  --legacy-color-33: #ca8a04;
+  --legacy-color-34: #eab308;
+  --legacy-color-35: #6b7280;
+  --legacy-color-36: #f3f4f6;
+  --legacy-color-37: #d1d5db;
+  --legacy-color-38: #bbf7d0;
+  --legacy-color-39: #dcfce7;
+  --legacy-color-40: #fbbf24;
+  --legacy-color-41: #fde68a;
+  --legacy-color-42: #ffffff;
+  --legacy-color-43: rgb(55 65 81 / 0.5);
+  --legacy-color-44: rgba(0,0,0,.1);
+  --legacy-color-45: rgba(0,0,0,.05);
+  --legacy-color-46: #0b1120;
+  --legacy-color-47: #f8fafc;
+  --legacy-color-48: rgba(250, 204, 21, 0.2);
+  --legacy-color-49: #000;
+  --legacy-color-50: black;
+}
+:root.dark {
+  color-scheme: dark;
+  --color-paper: #1c201c; --color-paper-2: #272d27; --color-paper-3: #353c34;
+  --color-surface: #242a24; --color-ink: #f1f2e9; --color-ink-2: #d1d5c9;
+  --color-muted: #acb4a3; --color-rule: #414a3d; --color-field-edge: #7d8974;
+  --color-accent-soft: #3b311e; --color-focus: #f8ba4d;
+  --color-success: #afd1ad; --color-success-soft: #283b2c;
+  --color-error: #f0b4a6; --color-error-soft: #402d28;
+}
