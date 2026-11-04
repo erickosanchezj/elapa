@@ -46,3 +46,8 @@
   .report-columns { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .report-table th, .report-table td { padding-inline: var(--space-sm); }
 }
+/* Smallest phones: six-figure amounts still fit two tiles per row. */
+@media (max-width: 360px) {
+  .report-kpi { padding: var(--space-sm); }
+  .report-kpi dd { font-size: var(--text-md); }
+}

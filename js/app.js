@@ -10,7 +10,9 @@
     App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, lateMinutes: 60, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
-    App.money = n => '$' + (n || 0).toFixed(2);
+    // "$1,026.00": es-MX grouping for display only. Inputs and CSV keep plain numbers (toFixed).
+    const MONEY = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    App.money = n => '$' + MONEY.format(n || 0);
     App.uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
     App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
     // "Late table" threshold label for the floor plan and precios.html: 45 → "45 min", 60 → "1 h", 90 → "1 h 30 min".
