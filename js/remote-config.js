@@ -121,11 +121,13 @@
         if (!form) return;
         const status = document.getElementById('central-status');
         const disconnect = document.getElementById('central-disconnect');
+        const refreshButton = document.getElementById('central-refresh');
         const source = read(SOURCE_KEY);
         form.elements.centralUrl.value = source?.url || '';
         form.elements.centralKey.placeholder = source ? 'Guardada en este dispositivo' : '';
         form.elements.centralKey.required = !source;
         disconnect.hidden = !source;
+        refreshButton.hidden = !source;
         // Status line; shown again once the background update above finishes.
         const showStatus = () => {
             const copy = read(CACHE_KEY);
@@ -148,6 +150,18 @@
             write(SOURCE_KEY, { url, key }); // saved only after a successful download
             App.toast('Configuración central conectada', 'success');
             setTimeout(() => location.reload(), 600); // reload to apply and lock the managed settings
+        });
+
+        // Manual update: download now instead of waiting for the next screen change.
+        refreshButton.addEventListener('click', async () => {
+            refreshButton.disabled = true;
+            status.textContent = 'Actualizando…';
+            const result = await refresh(source);
+            refreshButton.disabled = false;
+            if (!result.ok) return showStatus();
+            if (!result.changed) { showStatus(); return App.toast('Ya estaba al día', 'info'); }
+            App.toast('Ajustes actualizados', 'success');
+            setTimeout(() => location.reload(), 600); // apply the new values and locks
         });
 
         disconnect.addEventListener('click', () => {

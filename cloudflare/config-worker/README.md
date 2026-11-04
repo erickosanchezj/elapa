@@ -99,6 +99,10 @@ To stop using it, tap **Desconectar**. The current values stay on the device and
 
 Edit `config.json` on github.com and commit. Each device downloads it the next time a screen opens. It then applies on the following screen change, so an order in progress is never interrupted.
 
+To get it right away, open Precios → **Configuración central** → **Actualizar ahora**.
+
+**How updates reach the device:** the Worker doesn't run on a schedule and never pushes anything. It only wakes up when the app asks: each time a screen opens, or when you tap "Actualizar ahora". Each request reads the file from GitHub at that moment.
+
 Every key is optional. **A key that is not in the file stays editable on each device.**
 
 | Key | What it controls | Rules |
