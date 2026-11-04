@@ -1,6 +1,6 @@
 // /js/receipt.js
 // Builds a printable receipt for one table and prints it. Open tables print a pre-bill ("Cuenta");
-// paid tables print the final ticket with tip. On iOS home-screen apps, opens recibo.html instead.
+// paid tables print the final ticket with tip. iOS home-screen apps share an image of it instead.
 // RELEVANT FILES: receipt.css, floor.js, app.js, ../recibo.html
 (function () {
     'use strict';
@@ -68,9 +68,15 @@
     // Safari ignores print requests that come after waiting for something.
     App.printReceipt = table => {
         const data = receiptData(table);
-        // iOS home-screen apps can't print. Open the receipt as a normal page (it can't read this
-        // app's storage on iOS, so the data travels in the link) and print it from there.
+        // iOS home-screen apps can't print at all. Share the receipt as an image instead: the share
+        // sheet offers Imprimir (AirPrint), printer apps, saving it, or sending it by message.
         if (window.navigator.standalone === true) {
+            const file = App.receiptImageFile?.(data);
+            if (file && navigator.canShare?.({ files: [file] })) {
+                navigator.share({ files: [file], title: `Recibo ${data.mesa}` }).catch(() => {}); // cancelling is fine
+                return;
+            }
+            // No image sharing: show the receipt as a page (the data travels in the link).
             window.open(`recibo.html#${encodeURIComponent(JSON.stringify(data))}`, '_blank');
             return;
         }
