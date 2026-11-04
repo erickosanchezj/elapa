@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </dl>
                 <h3 class="subtle">Productos vendidos</h3>
                 ${sold ? `<dl>${sold}</dl>` : '<p class="subtle">Aún no hay ventas hoy.</p>'}
+                ${report.estimated ? '<p class="subtle">Algunos importes son aproximados: órdenes cobradas antes de guardar importes por producto.</p>' : ''}
                 <h3 class="subtle">Mesas sin cobrar</h3>
                 ${unpaid ? `<dl>${unpaid}</dl>` : '<p class="subtle">No hay mesas abiertas de hoy.</p>'}
             </div>`;

@@ -6,22 +6,18 @@
     'use strict';
     const App = window.TaqueriaApp;
 
-    // Amount for one line. Paid tables use the amounts saved at checkout (floor.js),
-    // so a reprint matches what was charged even if prices or the 2x1 day changed.
-    function lineTotal(table, itemId, qty) {
-        const saved = table.charged ? table.checkoutLines?.[itemId] : undefined;
-        return Number.isFinite(saved) ? saved : App.computeLine(itemId, qty).total;
-    }
-
     function receiptHtml(table) {
         const esc = App.escapeHTML;
         const entries = Object.entries(table.order || {}).filter(([, qty]) => qty > 0);
+        // Charged amounts per line (app.js). Older paid orders never saved them, so their lines
+        // print without amounts instead of showing today's prices as if they were charged.
+        const lines = App.lineAmounts(table);
         const rows = entries.length ? entries.map(([itemId, qty]) => {
             const item = App.AppState.items.find(i => i.id === itemId);
             const mods = table.modifiers?.[itemId] || [];
             const modsHtml = mods.length ? `<span class="receipt-mods">${esc(mods.join(', '))}</span>` : '';
             return `<tr><td>${qty}x</td><td>${esc(item?.label || itemId)}${modsHtml}</td>
-                <td class="price">${App.money(lineTotal(table, itemId, qty))}</td></tr>`;
+                <td class="price">${lines.estimated ? '' : App.money(lines.amounts[itemId])}</td></tr>`;
         }).join('') : '<tr><td class="receipt-empty" colspan="3">Sin productos</td></tr>';
 
         const subtotal = App.computeTableTotal(table);
@@ -53,6 +49,7 @@
                 ${tip ? sum('Propina', tip) : ''}
                 ${sum('Total', subtotal + tip, 'total')}
             </div>
+            ${lines.estimated ? '<p class="receipt-note">Importes por producto no disponibles para esta orden.</p>' : ''}
             <p class="receipt-note">${table.charged ? '¡Gracias por su visita!' : 'Cuenta por pagar. Propina no incluida.'}</p>`;
     }
 

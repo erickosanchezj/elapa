@@ -137,6 +137,20 @@
         if (table.charged && Number.isFinite(table.checkoutSubtotal)) return table.checkoutSubtotal;
         return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
     };
+    // Amount per product for one table. Paid tables use what checkout saved (checkoutLines).
+    // Older paid tables (before checkoutLines) split their frozen subtotal in proportion to today's
+    // prices, so the parts still add up to what was charged; `estimated` marks that case.
+    App.lineAmounts = function(table) {
+        const entries = Object.entries(table.order || {}).filter(([, qty]) => qty > 0);
+        const saved = table.charged && table.checkoutLines;
+        const amounts = Object.fromEntries(entries.map(([id, qty]) =>
+            [id, saved && Number.isFinite(saved[id]) ? saved[id] : App.computeLine(id, qty).total]));
+        if (!table.charged || saved) return { amounts, estimated: false };
+        const sum = Object.values(amounts).reduce((a, b) => a + b, 0);
+        const scale = sum ? App.computeTableTotal(table) / sum : 0;
+        Object.keys(amounts).forEach(id => { amounts[id] *= scale; });
+        return { amounts, estimated: true };
+    };
     App.closeTable = function(table) {
         if (!table || table.charged) return false;
         const paidAt = Date.now();
@@ -166,14 +180,16 @@
 
         const itemCounts = {};
         const itemRevenue = {};
+        let estimated = false; // true when an older paid table's breakdown had to be estimated
         todaysTables.forEach(t => {
-            for (const [id, qty] of Object.entries(t.order)) {
-                itemCounts[id] = (itemCounts[id] || 0) + qty;
-                const line = App.computeLine(id, qty);
-                itemRevenue[id] = (itemRevenue[id] || 0) + line.total;
+            const lines = App.lineAmounts(t); // charged amounts, not today's prices
+            estimated = estimated || lines.estimated;
+            for (const [id, amount] of Object.entries(lines.amounts)) {
+                itemCounts[id] = (itemCounts[id] || 0) + t.order[id];
+                itemRevenue[id] = (itemRevenue[id] || 0) + amount;
             }
         });
-        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
+        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday, estimated };
     };
 
     App.computeMonthlyTimeline = function(monthsBack = 6) {
