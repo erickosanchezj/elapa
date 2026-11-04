@@ -25,11 +25,12 @@ Then open http://localhost:8000.
 | `ticket.html` (Tickets) | Add products and quick shortcuts to a table's order, with options like "Sin cebolla" |
 | `menu.html` (Menú) | Edit products and mark them sold out |
 | `precios.html` (Precios) | Prices, the 2x1 pastor promo switch, the late-table time, quick shortcuts and frequent tables |
+| `reporte.html` (Reporte) | Sales by period and hour, products, 2x1 promo cost, last 6 months, CSV export (opened from "Reporte del día") |
 
 ## Where things live
 
 - `js/app.js`: shared data, prices, promo rule, sales report and saving to `localStorage`.
-- One script per screen: `floor.js`, `ticket.js`, `menu.js`, `precios.js`. Each dialog or feature has its own small file, such as `checkout.js`, `receipt.js`, `report.js`, `templates.js` and `presets-editor.js`.
+- One script per screen: `floor.js`, `ticket.js`, `menu.js`, `precios.js`. Each dialog or feature has its own small file, such as `checkout.js`, `receipt.js`, `report.js`, `report-page.js`, `options-dialog.js`, `templates.js` and `presets-editor.js`.
 - `js/styles.css` imports the design tokens and the other stylesheets. See `design.md` for the visual rules.
 - `service-worker.js` caches every file for offline use. **Bump `CACHE_VERSION` and add new files to `ASSETS` whenever you change or add a file.**
 

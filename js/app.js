@@ -173,42 +173,64 @@
         if (!table || table.charged) return false;
         const paidAt = Date.now();
         table.checkoutSubtotal = App.computeTableTotal(table);
+        // Freeze what each line cost and the 2x1 savings, so receipts and reports never use later prices.
+        table.checkoutLines = Object.fromEntries(Object.entries(table.order || {})
+            .map(([itemId, qty]) => [itemId, App.computeLine(itemId, qty).total]));
+        const pastorQty = (table.order || {}).taco_pastor || 0;
+        const pastor = App.computeLine('taco_pastor', pastorQty);
+        table.checkoutPromo = { qty: pastorQty - pastor.chargedQty, value: (pastorQty - pastor.chargedQty) * pastor.unit };
         table.charged = true;
         table.paidAt = paidAt;
         table.openDurationMs = paidAt - (table.createdAt || paidAt);
         App.persist();
         return true;
     };
-    App.computeDailyReport = function(){
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayStartMs = todayStart.getTime();
-        const todaysTables = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt && t.paidAt >= todayStartMs); // Archived = excluded from sales
-        const unpaidTablesToday = App.AppState.tables
-            .filter(t => !t.charged && (t.createdAt || 0) >= todayStartMs)
-            .map(t => ({
-                id: t.id,
-                name: t.name,
-                note: t.note,
-                createdAt: t.createdAt,
-                total: App.computeTableTotal(t),
-            }));
-        const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
-        const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
+    // 2x1 savings saved at checkout: { qty: free pastor tacos, value: pesos }. Tables paid before
+    // checkoutPromo existed used the old always-on Monday/Wednesday rule, so it is rebuilt from the paid day.
+    App.promoSaved = function(t, lines = App.lineAmounts(t)) {
+        if (t.checkoutPromo) return t.checkoutPromo;
+        const qty = (t.order || {}).taco_pastor || 0;
+        const day = new Date(t.paidAt).getDay();
+        if (!qty || (day !== 1 && day !== 3)) return { qty: 0, value: 0 };
+        const charged = Math.ceil(qty / 2);
+        return { qty: qty - charged, value: (qty - charged) * (lines.amounts.taco_pastor / charged) };
+    };
 
-        const itemCounts = {};
-        const itemRevenue = {};
-        let estimated = false; // true when an older paid table's breakdown had to be estimated
-        todaysTables.forEach(t => {
+    // Sales report for tables paid in [startMs, endMs); archived tables are left out.
+    // Used by the floor KPIs, the "Reporte del día" dialog (report.js) and reporte.html.
+    App.computeReport = function(startMs, endMs) {
+        const inRange = ms => ms >= startMs && ms < endMs;
+        const paid = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt && inRange(t.paidAt));
+        const report = { tables: paid, tablesCount: paid.length, totalSubtotals: 0, totalTips: 0, durationMs: 0,
+            itemCounts: {}, itemRevenue: {}, byHour: Array(24).fill(0), tablesByHour: Array(24).fill(0),
+            promo: { qty: 0, value: 0, days: new Set() }, estimated: false };
+        paid.forEach(t => {
+            const subtotal = App.computeTableTotal(t);
+            const hour = new Date(t.paidAt).getHours();
+            report.totalSubtotals += subtotal;
+            report.totalTips += t.tip || 0;
+            report.durationMs += t.openDurationMs || 0;
+            report.byHour[hour] += subtotal;
+            report.tablesByHour[hour] += 1;
             const lines = App.lineAmounts(t); // charged amounts, not today's prices
-            estimated = estimated || lines.estimated;
+            report.estimated = report.estimated || lines.estimated;
             for (const [id, amount] of Object.entries(lines.amounts)) {
-                itemCounts[id] = (itemCounts[id] || 0) + t.order[id];
-                itemRevenue[id] = (itemRevenue[id] || 0) + amount;
+                report.itemCounts[id] = (report.itemCounts[id] || 0) + t.order[id];
+                report.itemRevenue[id] = (report.itemRevenue[id] || 0) + amount;
+            }
+            const promo = App.promoSaved(t, lines);
+            if (promo.qty > 0) {
+                report.promo.qty += promo.qty;
+                report.promo.value += promo.value;
+                report.promo.days.add(new Date(t.paidAt).toDateString());
             }
         });
-        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday, estimated };
+        report.unpaidTables = App.AppState.tables.filter(t => !t.charged && inRange(t.createdAt || 0))
+            .map(t => ({ id: t.id, name: t.name, note: t.note, createdAt: t.createdAt, total: App.computeTableTotal(t) }));
+        report.unpaidTablesToday = report.unpaidTables; // name kept for report.js
+        return report;
     };
+    App.computeDailyReport = () => App.computeReport(new Date().setHours(0, 0, 0, 0), Infinity);
 
     App.computeMonthlyTimeline = function(monthsBack = 6) {
         const now = new Date();

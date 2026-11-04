@@ -1,0 +1,48 @@
+/* /js/report-layout.css
+   Layout and chart styles for the sales report page (reporte.html).
+   Keeps report-only rules out of the shared styles; charts follow the dataviz mark specs.
+   RELEVANT FILES: ../reporte.html, report-charts.js, report-page.js, tokens.css */
+.report-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-lg); }
+.report-filters .button[aria-pressed='true'] { background: var(--color-accent-soft); border-color: var(--color-accent); }
+.report-day input { width: auto; min-width: 150px; }
+.report-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); margin: 0 0 var(--space-xl); }
+.report-kpi { padding: var(--space-md); border-radius: var(--radius-card); background: var(--color-surface); }
+.report-kpi dt { font-size: var(--text-sm); color: var(--color-muted); }
+.report-kpi dd { margin: var(--space-2xs) 0 0; font-size: var(--text-xl); font-weight: 600; }
+.report-section { margin-bottom: var(--space-xl); }
+.report-section h2 { margin-bottom: var(--space-md); }
+.report-history > .subtle { margin: calc(var(--space-sm) * -1) 0 var(--space-md); }
+.report-columns { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-xl); }
+.report-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); background: var(--color-surface); border-radius: var(--radius-card); overflow: hidden; }
+.report-table th, .report-table td { padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-rule); text-align: left; }
+.report-table th { color: var(--color-muted); font-weight: 600; }
+.report-table tr:last-child td { border-bottom: 0; }
+.report-table .num, .chart-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.report-table + .subtle { margin-top: var(--space-sm); }
+.report-meter { height: 8px; border-radius: var(--radius-pill); background: var(--color-paper-3); overflow: hidden; margin-top: var(--space-xs); }
+.report-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--color-chart); }
+.report-warning { margin-top: var(--space-xs); color: var(--color-error); font-size: var(--text-sm); }
+
+/* Column chart (report-charts.js): thin bars, hairline grid, muted axis text, tooltip on hover/focus. */
+.chart-plot { position: relative; padding: var(--space-sm) 0; background: var(--color-surface); border-radius: var(--radius-card); }
+.chart-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-bar { fill: var(--color-chart); }
+.chart-bar.is-active { opacity: .75; }
+.chart-grid { stroke: var(--color-rule); stroke-width: 1; }
+.chart-axis { fill: var(--color-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart-value { fill: var(--color-ink); font-size: 12px; font-weight: 600; }
+.chart-hit { fill: transparent; cursor: default; outline: none; }
+.chart-hit:focus-visible { stroke: var(--color-focus); stroke-width: 2; }
+.chart-tip { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; gap: 2px; padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-input); background: var(--color-ink); color: var(--color-paper); font-size: var(--text-xs); white-space: nowrap; pointer-events: none; z-index: 2; }
+.chart-tip strong { font-size: var(--text-sm); }
+.chart-table { margin-top: var(--space-xs); font-size: var(--text-sm); }
+.chart-table summary { min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; color: var(--color-ink-2); }
+.chart-table table { width: 100%; border-collapse: collapse; }
+.chart-table td { padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-rule); }
+
+@media (max-width: 640px) {
+  .report-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
+  .report-kpi dd { font-size: var(--text-lg); }
+  .report-columns { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .report-table th, .report-table td { padding-inline: var(--space-sm); }
+}

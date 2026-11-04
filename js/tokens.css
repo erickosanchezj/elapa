@@ -15,6 +15,7 @@
   --color-surface: #fdfdfb; --color-ink: #252824; --color-ink-2: #42473f;
   --color-muted: #63695f; --color-rule: #d9dcd3; --color-field-edge: #848b7c;
   --color-accent: #f59e0b; --color-accent-ink: #2b210c; --color-accent-soft: #fff0d1;
+  --color-chart: #d97706; /* chart bars: amber step with 3:1 contrast on the surface (dataviz validator) */
   --color-focus: #77500a; --color-success: #356345; --color-success-soft: #e8f0e7;
   --color-error: #a43f31; --color-error-soft: #faeae5; --color-overlay: #20251e99;
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -31,6 +32,7 @@
   --color-surface: #242a24; --color-ink: #f1f2e9; --color-ink-2: #d1d5c9;
   --color-muted: #acb4a3; --color-rule: #414a3d; --color-field-edge: #7d8974;
   --color-accent-soft: #3b311e; --color-focus: #f8ba4d;
+  --color-chart: #c08014; /* dark-mode chart step, validated against #242a24 */
   --color-success: #afd1ad; --color-success-soft: #283b2c;
   --color-error: #f0b4a6; --color-error-soft: #402d28;
 }

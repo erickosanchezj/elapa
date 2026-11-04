@@ -222,10 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!table) return;
         App.openCheckout(table, tip => {
             if (table.charged) return;
-            table.tip = tip; // App.closeTable() saves it together with the checkout.
-            // Freeze each line's amount so a reprinted ticket matches what was charged.
-            table.checkoutLines = Object.fromEntries(Object.entries(table.order)
-                .map(([itemId, qty]) => [itemId, App.computeLine(itemId, qty).total]));
+            table.tip = tip; // App.closeTable() saves it with the line amounts and 2x1 savings.
             App.closeTable(table);
             orderView = 'closed';
             render();
@@ -242,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         table.tip = 0;
         delete table.checkoutSubtotal;
         delete table.checkoutLines;
+        delete table.checkoutPromo;
         App.persist();
         orderView = 'open';
         render();
