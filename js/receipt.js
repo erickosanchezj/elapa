@@ -68,11 +68,32 @@
     //  - "Guardar recibo como imagen": the share sheet (save, AirPrint, printer apps, send) or a download;
     //  - "Imprimir": direct printing, only outside iOS home-screen apps (iOS blocks printing there).
     let current = null; // { data, file, url } for the receipt shown in the preview
+
+    // Paper receipt from the data, printed right inside the tap.
+    function printPaper(data) {
+        let area = document.getElementById('print-area');
+        if (!area) {
+            area = document.createElement('div');
+            area.id = 'print-area';
+            document.body.appendChild(area);
+        }
+        area.innerHTML = App.receiptHtml(data);
+        window.print();
+    }
+
+    // The image can fail to export when index.html is opened from disk (file://): the logo then counts
+    // as another origin. Try without the logo, and as a last resort print on paper as before.
+    function imageFile(data) {
+        try { return App.receiptImageFile(data); } catch { /* try without the logo */ }
+        try { return App.receiptImageFile(data, { withLogo: false }); } catch { return null; }
+    }
+
     App.printReceipt = table => {
         const sheet = document.getElementById('receipt-sheet');
         if (current) URL.revokeObjectURL(current.url);
         const data = receiptData(table);
-        const file = App.receiptImageFile(data);
+        const file = imageFile(data);
+        if (!file) { current = null; printPaper(data); return; }
         current = { data, file, url: URL.createObjectURL(file) };
         const img = document.getElementById('receipt-preview');
         img.src = current.url;
@@ -105,17 +126,6 @@
             link.click();
         });
 
-        // Paper receipt from the same data, printed right inside the tap.
-        document.getElementById('receipt-print-now').addEventListener('click', () => {
-            if (!current) return;
-            let area = document.getElementById('print-area');
-            if (!area) {
-                area = document.createElement('div');
-                area.id = 'print-area';
-                document.body.appendChild(area);
-            }
-            area.innerHTML = App.receiptHtml(current.data);
-            window.print();
-        });
+        document.getElementById('receipt-print-now').addEventListener('click', () => { if (current) printPaper(current.data); });
     });
 })();
