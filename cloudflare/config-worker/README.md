@@ -159,9 +159,11 @@ Every table and sale lives only in the device's browser. Backups copy them to yo
 | el Worker respondió 502: config.json is not valid JSON | A typo in the file (a missing comma or quote) |
 | no se pudo contactar al Worker | No internet, or a wrong address |
 | el Worker no tiene respaldos configurados | `BACKUP_REPO` is missing in the Worker |
-| No se pudo respaldar (… Could not prepare the "backups" branch …) | The token is still read-only: give it **Contents: Read and write** |
-| No se pudo respaldar (el Worker respondió 502: GitHub answered 403) | Same: the token can't write |
-| No se pudo respaldar (el Worker respondió 502: GitHub answered 404) | Wrong `BACKUP_REPO` |
+| … GitHub answered 403 (the token needs Contents: Read and write) | The token is read-only: edit it to **Contents: Read and write** |
+| … GitHub answered 401 (the token is wrong or expired) | Replace the `GITHUB_TOKEN` secret with a valid token |
+| … GitHub answered 404 (check BACKUP_REPO …) | `BACKUP_REPO` has a typo, or the token wasn't given access to that repo |
+
+Backup errors name the step that failed, e.g. *creating the "backups" branch* or *Saving the backup*.
 
 ## Security notes
 

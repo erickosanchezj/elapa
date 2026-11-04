@@ -52,7 +52,7 @@
                 headers: { 'X-Config-Key': source.key, ...(options.body ? { 'Content-Type': 'application/json' } : {}) } });
             if (res.status === 401) throw new Error('clave incorrecta');
             if (res.status === 501) throw new Error('el Worker no tiene respaldos configurados');
-            if (!res.ok) throw new Error(`el Worker respondió ${res.status}: ${(await res.text()).slice(0, 80)}`);
+            if (!res.ok) throw new Error(`el Worker respondió ${res.status}: ${(await res.text()).slice(0, 200)}`); // long enough for the Worker's hint
             return res.json();
         } catch (e) {
             throw new Error(e.name === 'AbortError' || e instanceof TypeError ? 'no se pudo contactar al Worker' : e.message);
