@@ -174,3 +174,43 @@ test('backup restore is all-or-nothing and backups never include the device key'
     assert.ok(saved.every(body => !body.includes('secret-key')), 'device key never sent in a backup');
     await context.close();
 });
+
+test('"Liberar espacio" removes only old paid tables, and only with an earlier-day backup', { skip }, async () => {
+    const DAY = 864e5;
+    const paid = (id, daysAgo) => ({ id, name: id, note: '', order: { cerveza: 1 }, charged: true, paidAt: at(13) - daysAgo * DAY, checkoutSubtotal: 35, checkoutLines: { cerveza: 35 }, createdAt: at(12) - daysAgo * DAY, tip: 0 });
+    const tables = [paid('viejo', 400), paid('medio', 200), paid('reciente', 10), openTable('abierta', 'Abierta', { refresco: 1 }, { createdAt: at(12) - 500 * DAY })];
+    const ids = page => page.evaluate(() => JSON.parse(localStorage.getItem('tacos_tables')).map(t => t.id).join(','));
+
+    // Not connected: disabled, with the reason.
+    let { page, context } = await open('reporte.html', { tables });
+    assert.equal(await page.isDisabled('#cleanup-run'), true);
+    assert.match(await page.textContent('#cleanup-status'), /conecta la configuración central/);
+    await context.close();
+
+    // Connected: the Worker's backup list decides whether an earlier-day backup exists.
+    for (const [files, expectRemoved] of [[[], false], [['2026-11-01_DEVICE.json'], true]]) {
+        ({ page, context } = await open('reporte.html', { tables, seed: { tacos_config_source: JSON.stringify({ url: 'https://w.test/', key: 'k' }), tacos_device_id: 'd-dev12345' } }));
+        const order = [];
+        await context.route('https://w.test/**', route => {
+            const p = new URL(route.request().url()).pathname;
+            order.push(`${route.request().method()} ${p}`);
+            if (p === '/backups') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(files.map(n => ({ name: n.replace('DEVICE', 'd-dev12345'), size: 1 }))) });
+            if (p === '/backup') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"name":"x","bytes":1}' });
+            return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+        });
+        await page.reload();
+        assert.match(await page.textContent('#cleanup-count'), /^1 mesa cobrada/); // 12 months: only "viejo" (open tables never count)
+        await page.selectOption('#cleanup-age', '6');
+        assert.match(await page.textContent('#cleanup-count'), /^2 mesas cobradas/); // 6 months: "viejo" + "medio"
+        await page.click('#cleanup-run');
+        await page.waitForFunction(() => /Se quitaron|No se liberó/.test(document.getElementById('cleanup-status').textContent));
+        if (expectRemoved) {
+            assert.equal(await ids(page), 'reciente,abierta');
+            assert.ok(order.indexOf('PUT /backup') > order.indexOf('GET /backups'), 'fresh backup before removing');
+        } else {
+            assert.match(await page.textContent('#cleanup-status'), /de un día anterior/);
+            assert.equal(await ids(page), 'viejo,medio,reciente,abierta');
+        }
+        await context.close();
+    }
+});

@@ -114,6 +114,9 @@
         return true;
     }
 
+    // For other screens (cleanup.js on reporte.html): back up now, list saved backups, this device's id.
+    App.backup = { now: backupNow, list: () => worker('backups'), deviceId };
+
     // Panel on precios.html.
     document.addEventListener('DOMContentLoaded', () => {
         const status = document.getElementById('backup-status');

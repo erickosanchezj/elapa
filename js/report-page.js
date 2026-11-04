@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => { period = b.dataset.period; render(); }));
     $('report-day').max = isoDay(Date.now());
     $('report-day').addEventListener('change', () => { if ($('report-day').value) { period = 'dia'; render(); } });
-    render();
-    renderMonths();
-    renderStorage();
+    // Everything on the page; cleanup.js calls it again after removing old tables.
+    App.renderReportPage = () => { render(); renderMonths(); renderStorage(); };
+    App.renderReportPage();
 });
