@@ -43,6 +43,6 @@ With central config connected, also `tacos_config_source` (Worker address and de
 
 ## Central config (optional)
 
-Prices, products, the promo, the late-table time, shortcuts and frequent tables can come from a private `config.json` on GitHub, served by a Cloudflare Worker. `js/remote-config.js` applies it on every device. The same Worker can save automatic backups to a second private repo (`js/backup.js`). Setup steps are in `cloudflare/config-worker/README.md`.
+Prices, products, the promo, the late-table time, shortcuts and frequent tables can come from a private `config.json` on GitHub, served by a Cloudflare Worker. `js/remote-config.js` applies it on every device. The same Worker can save automatic backups to a `backups` branch of that private repo (`js/backup.js`). Setup steps are in `cloudflare/config-worker/README.md`.
 
 See `AGENTS.MD` for coding rules (file headers, the 300-line limit, keeping things simple).

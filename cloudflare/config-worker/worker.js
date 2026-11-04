@@ -1,15 +1,16 @@
 // /cloudflare/config-worker/worker.js
 // Cloudflare Worker for El Apá: serves config.json from a PRIVATE repo and saves/restores device backups
-// in another PRIVATE repo, so settings and sales history live on GitHub without being public.
+// (by default on a separate "backups" branch of the same repo), so settings and sales stay private on GitHub.
 // RELEVANT FILES: wrangler.toml, README.md, ../../js/remote-config.js, ../../js/backup.js
 //
 // Routes (all need the X-Config-Key header = DEVICE_KEY):
 //   GET  /                      → config.json from GITHUB_REPO (read-only GITHUB_TOKEN)
-//   PUT  /backup                → writes backups/<day>_<device>.json to BACKUP_REPO (GITHUB_BACKUP_TOKEN)
+//   PUT  /backup                → writes backups/<day>_<device>.json to BACKUP_REPO on BACKUP_BRANCH
 //   GET  /backups               → lists saved backups (newest first)
 //   GET  /backups/<file>.json   → downloads one backup
 // Settings: GITHUB_REPO, GITHUB_BRANCH, CONFIG_PATH, ALLOWED_ORIGINS, BACKUP_REPO, BACKUP_BRANCH.
-// Secrets: GITHUB_TOKEN, DEVICE_KEY, GITHUB_BACKUP_TOKEN (read-write, backup repo only).
+// Secrets: GITHUB_TOKEN, DEVICE_KEY, and optionally GITHUB_BACKUP_TOKEN. Without it, backups use
+// GITHUB_TOKEN, which then needs Contents: Read and write. The Worker only ever writes backups/<day>_<device>.json.
 
 const MAX_BACKUP_BYTES = 6 * 1024 * 1024; // browser storage is ~5 MB, so a backup never needs more
 const BACKUP_FILE = /^\d{4}-\d{2}-\d{2}_d-[a-z0-9]{4,32}\.json$/; // e.g. 2026-11-04_d-ab12cd34.json
@@ -32,11 +33,9 @@ function toBase64(text) {
     return btoa(binary);
 }
 
-// One place for GitHub API calls: repo is "owner/name", path is inside the repo, ref is the branch.
-function github(token, repo, path, { ref, method = 'GET', raw = false, body } = {}) {
-    const safePath = path.split('/').map(encodeURIComponent).join('/');
-    const query = ref ? `?ref=${encodeURIComponent(ref)}` : '';
-    return fetch(`https://api.github.com/repos/${repo}/contents/${safePath}${query}`, {
+// Any GitHub repo API call: path starts with "owner/name", e.g. "owner/name/branches/main".
+function api(token, path, { method = 'GET', raw = false, body } = {}) {
+    return fetch(`https://api.github.com/repos/${path}`, {
         method,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -47,6 +46,33 @@ function github(token, repo, path, { ref, method = 'GET', raw = false, body } = 
         },
         body: body ? JSON.stringify(body) : undefined,
     });
+}
+
+// A file in a repo through the contents API; ref is the branch.
+function github(token, repo, path, { ref, ...options } = {}) {
+    const safePath = path.split('/').map(encodeURIComponent).join('/');
+    const query = ref ? `?ref=${encodeURIComponent(ref)}` : '';
+    return api(token, `${repo}/contents/${safePath}${query}`, options);
+}
+
+// Make sure the backups branch exists; create it from the repo's default branch the first time.
+// Remembered per Worker instance so most backups skip this check.
+let readyBranch = '';
+async function ensureBranch(token, repo, branch) {
+    if (readyBranch === `${repo}#${branch}`) return true;
+    const found = await api(token, `${repo}/branches/${encodeURIComponent(branch)}`);
+    if (found.status === 404) {
+        const info = await api(token, repo);
+        if (!info.ok) return false;
+        const base = await api(token, `${repo}/git/ref/heads/${encodeURIComponent((await info.json()).default_branch)}`);
+        if (!base.ok) return false;
+        const made = await api(token, `${repo}/git/refs`, { method: 'POST', body: { ref: `refs/heads/${branch}`, sha: (await base.json()).object.sha } });
+        if (!made.ok && made.status !== 422) return false; // 422: it was just created by another request
+    } else if (!found.ok) {
+        return false;
+    }
+    readyBranch = `${repo}#${branch}`;
+    return true;
 }
 
 export default {
@@ -77,11 +103,12 @@ export default {
                 return reply(text, 200, { 'Content-Type': 'application/json; charset=utf-8' });
             }
 
-            // --- Backups (read-write, separate repo and token) ---
+            // --- Backups (read-write; own branch, and optionally own repo and token) ---
             if (path.startsWith('/backup')) {
-                if (!env.BACKUP_REPO || !env.GITHUB_BACKUP_TOKEN) return reply('Backups are not configured', 501);
-                const branch = env.BACKUP_BRANCH || 'main';
-                const call = (file, opts = {}) => github(env.GITHUB_BACKUP_TOKEN, env.BACKUP_REPO, file, opts);
+                const token = env.GITHUB_BACKUP_TOKEN || env.GITHUB_TOKEN;
+                if (!env.BACKUP_REPO || !token) return reply('Backups are not configured', 501);
+                const branch = env.BACKUP_BRANCH || 'backups';
+                const call = (file, opts = {}) => github(token, env.BACKUP_REPO, file, opts);
 
                 if (path === '/backup' && request.method === 'PUT') {
                     if (Number(request.headers.get('Content-Length') || 0) > MAX_BACKUP_BYTES) return reply('Backup too large', 413);
@@ -91,6 +118,7 @@ export default {
                     try { body = JSON.parse(text); } catch { return reply('Backup is not valid JSON', 400); }
                     const name = `${body?.day}_${body?.device}.json`;
                     if (!BACKUP_FILE.test(name) || !body.data || typeof body.data !== 'object') return reply('Backup needs day, device and data', 400);
+                    if (!(await ensureBranch(token, env.BACKUP_REPO, branch))) return reply(`Could not prepare the "${branch}" branch (check the token can write)`, 502);
                     // Updating a file needs its current sha; retry once if another save landed in between.
                     for (let attempt = 0; attempt < 2; attempt++) {
                         const meta = await call(`backups/${name}`, { ref: branch });
