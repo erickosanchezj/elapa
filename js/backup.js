@@ -114,8 +114,8 @@
         return true;
     }
 
-    // For other screens (cleanup.js on reporte.html): back up now, list saved backups, this device's id.
-    App.backup = { now: backupNow, list: () => worker('backups'), deviceId };
+    // For other screens (cleanup.js on reporte.html): back up now, list or download saved backups, this device's id.
+    App.backup = { now: backupNow, list: () => worker('backups'), get: name => worker(`backups/${encodeURIComponent(name)}`), deviceId };
 
     // Panel on precios.html.
     document.addEventListener('DOMContentLoaded', () => {

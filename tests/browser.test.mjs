@@ -196,6 +196,8 @@ test('"Liberar espacio" removes only old paid tables, and only with an earlier-d
             order.push(`${route.request().method()} ${p}`);
             if (p === '/backups') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(files.map(n => ({ name: n.replace('DEVICE', 'd-dev12345'), size: 1 }))) });
             if (p === '/backup') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"name":"x","bytes":1}' });
+            // The earlier-day backup holds every table, like a real one from yesterday.
+            if (p.startsWith('/backups/')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: { tacos_tables: JSON.stringify(tables) } }) });
             return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
         });
         await page.reload();
@@ -206,7 +208,7 @@ test('"Liberar espacio" removes only old paid tables, and only with an earlier-d
         await page.waitForFunction(() => /Se quitaron|No se liberó/.test(document.getElementById('cleanup-status').textContent));
         if (expectRemoved) {
             assert.equal(await ids(page), 'reciente,abierta');
-            assert.ok(order.indexOf('PUT /backup') > order.indexOf('GET /backups'), 'fresh backup before removing');
+            assert.ok(order.indexOf('PUT /backup') > order.indexOf('GET /backups/2026-11-01_d-dev12345.json'), 'kept backup checked, then a fresh backup, before removing');
         } else {
             assert.match(await page.textContent('#cleanup-status'), /de un día anterior/);
             assert.equal(await ids(page), 'viejo,medio,reciente,abierta');
@@ -242,4 +244,33 @@ test('Trompo: pastor in open tables, the options mix, oldest table first, and it
     const floor = await open('index.html');
     assert.ok(await floor.page.$('a.link[href="trompo.html"]'));
     await floor.context.close();
+});
+
+test('"Liberar espacio" keeps orders made after the page opened, and only removes tables a kept backup really has', { skip }, async () => {
+    const DAY = 864e5;
+    const paid = (id, daysAgo) => ({ id, name: id, note: '', order: { cerveza: 1 }, charged: true, paidAt: at(13) - daysAgo * DAY, checkoutSubtotal: 35, checkoutLines: { cerveza: 35 }, createdAt: at(12) - daysAgo * DAY, tip: 0 });
+    const tables = [paid('viejo', 400), paid('viejo2', 420), paid('reciente', 10)];
+    // The earlier-day backup only has "viejo" (e.g. "viejo2" was restored today from another device).
+    const kept = { day: '2026-11-03', device: 'd-dev12345', data: { tacos_tables: JSON.stringify([paid('viejo', 400), paid('reciente', 10)]) } };
+    const { page, context } = await open('reporte.html', { tables, seed: { tacos_config_source: JSON.stringify({ url: 'https://w.test/', key: 'k' }), tacos_device_id: 'd-dev12345' } });
+    await context.route('https://w.test/**', route => {
+        const p = new URL(route.request().url()).pathname;
+        if (p === '/backups') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ name: '2026-11-03_d-dev12345.json', size: 1 }]) });
+        if (p.startsWith('/backups/')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(kept) });
+        if (p === '/backup') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"name":"x","bytes":1}' });
+        return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+    await page.reload();
+    // Another tab opens a new table after this page loaded.
+    await page.evaluate(() => {
+        const t = JSON.parse(localStorage.getItem('tacos_tables'));
+        t.push({ id: 'nueva', name: 'Nueva', note: '', order: { refresco: 1 }, charged: false, createdAt: Date.now(), tip: 0 });
+        localStorage.setItem('tacos_tables', JSON.stringify(t));
+    });
+    await page.click('#cleanup-run');
+    await page.waitForFunction(() => /Se quitaron|No se liberó/.test(document.getElementById('cleanup-status').textContent));
+    const ids = await page.evaluate(() => JSON.parse(localStorage.getItem('tacos_tables')).map(t => t.id).sort().join(','));
+    assert.equal(ids, 'nueva,reciente,viejo2', 'only "viejo" (in the kept backup) is removed; the new order stays');
+    assert.match(await page.textContent('#cleanup-status'), /1 mesa[\s\S]*1 mesa/); // removed 1, kept 1 not yet in a backup
+    await context.close();
 });

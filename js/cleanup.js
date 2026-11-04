@@ -1,6 +1,6 @@
 // /js/cleanup.js
 // "Liberar espacio" on reporte.html: removes paid tables older than 6 or 12 months from this device.
-// Browser storage is ~5 MB; it only runs when an earlier-day cloud backup exists and a fresh backup succeeds.
+// Browser storage is ~5 MB; it only removes tables an earlier-day cloud backup really contains, after a fresh backup.
 // RELEVANT FILES: ../reporte.html, backup.js, report-page.js, app.js
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
@@ -23,26 +23,37 @@ document.addEventListener('DOMContentLoaded', () => {
     age.addEventListener('change', show);
 
     run.addEventListener('click', async () => {
-        const remove = oldTables();
-        if (!remove.length || !confirm(`¿Quitar ${remove.length} mesas cobradas antes del ${short(cutoff())} de este dispositivo? Primero se guarda un respaldo.`)) return;
+        const preview = oldTables().length;
+        if (!preview || !confirm(`¿Quitar ${preview} mesas cobradas antes del ${short(cutoff())} de este dispositivo? Primero se guarda un respaldo.`)) return;
         run.disabled = true;
         try {
-            // Today's backup file is overwritten during the day, so the removed tables must also be in a
-            // backup from an earlier day (those files are never overwritten).
+            // Today's backup file is overwritten during the day, so removed tables must be in a backup of this
+            // device from an earlier day (never overwritten). Check its contents, not just its name.
             status.textContent = 'Revisando respaldos…';
             const mine = App.backup.deviceId();
-            const files = await App.backup.list();
-            if (!files.some(f => f.name.includes(mine) && f.name.slice(0, 10) < day(Date.now()))) {
-                throw new Error('aún no hay un respaldo de este dispositivo de un día anterior; inténtalo mañana');
-            }
+            const earlier = (await App.backup.list())
+                .filter(f => f.name.includes(mine) && f.name.slice(0, 10) < day(Date.now()))
+                .sort((x, y) => y.name.localeCompare(x.name));
+            if (!earlier.length) throw new Error('aún no hay un respaldo de este dispositivo de un día anterior; inténtalo mañana');
+            const kept = await App.backup.get(earlier[0].name);
+            let keptIds;
+            try { keptIds = new Set(JSON.parse(kept.data.tacos_tables || '[]').map(t => t.id)); } catch { keptIds = new Set(); }
+
             status.textContent = 'Respaldando…';
             const result = await App.backup.now(true);
             if (!result.ok) throw new Error(result.message);
-            const ids = new Set(remove.map(t => t.id));
+
+            // Re-read storage: another screen or tab may have changed tables while we waited.
+            App.loadState();
+            const candidates = oldTables();
+            const ids = new Set(candidates.filter(t => keptIds.has(t.id)).map(t => t.id));
+            const notBackedUp = candidates.length - ids.size;
+            if (!ids.size) throw new Error(`el respaldo del ${short(new Date(`${earlier[0].name.slice(0, 10)}T12:00:00`).getTime())} no tiene esas mesas; inténtalo mañana`);
             App.AppState.tables = App.AppState.tables.filter(t => !ids.has(t.id));
             App.persist();
             App.renderReportPage();
-            status.textContent = `Se quitaron ${remove.length} mesas. Siguen en tus respaldos anteriores de GitHub.`;
+            status.textContent = `Se quitaron ${ids.size} ${ids.size === 1 ? 'mesa' : 'mesas'}; siguen en el respaldo del ${short(new Date(`${earlier[0].name.slice(0, 10)}T12:00:00`).getTime())}.`
+                + (notBackedUp ? ` ${notBackedUp} ${notBackedUp === 1 ? 'mesa se quedó' : 'mesas se quedaron'} porque aún no ${notBackedUp === 1 ? 'está' : 'están'} en un respaldo anterior.` : '');
             App.toast('Espacio liberado', 'success');
         } catch (e) {
             status.textContent = `No se liberó espacio (${e.message}).`;
