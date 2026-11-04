@@ -100,8 +100,16 @@
         if (!data || typeof data !== 'object' || Object.values(data).some(v => typeof v !== 'string')) throw new Error('el respaldo no tiene el formato esperado');
         const safety = await backupNow(true); // the replaced data stays in today's file and in GitHub's history
         if (!safety.ok && !confirm(`No se pudo respaldar los datos actuales (${safety.message}). ¿Restaurar de todos modos?`)) return false;
-        Object.keys(localStorage).filter(backedUp).forEach(k => localStorage.removeItem(k));
-        Object.entries(data).filter(([k]) => backedUp(k)).forEach(([k, v]) => localStorage.setItem(k, v));
+        // Replace all-or-nothing: if the backup doesn't fit (storage quota), put every original value back.
+        const original = Object.fromEntries(Object.keys(localStorage).filter(backedUp).map(k => [k, localStorage.getItem(k)]));
+        try {
+            Object.keys(original).forEach(k => localStorage.removeItem(k));
+            Object.entries(data).filter(([k]) => backedUp(k)).forEach(([k, v]) => localStorage.setItem(k, v));
+        } catch {
+            Object.keys(localStorage).filter(backedUp).forEach(k => localStorage.removeItem(k));
+            Object.entries(original).forEach(([k, v]) => localStorage.setItem(k, v));
+            throw new Error('el respaldo no cabe en el almacenamiento de este dispositivo; no se cambió nada');
+        }
         write(STATE_KEY, {}); // back up the restored data on the next page load
         return true;
     }

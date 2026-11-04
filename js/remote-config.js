@@ -42,10 +42,14 @@
         return out;
     }
 
+    // What this page actually applied, so "Actualizar ahora" can tell if the screen is out of date.
+    let appliedJson = null;
+
     // Overlay the last good copy on local data. app.js calls this at the end of App.loadState().
     App.applyRemoteConfig = function () {
         let d;
         try { d = validate(read(CACHE_KEY)?.data); } catch { return; }
+        appliedJson = JSON.stringify(d);
         const S = App.AppState;
         if (d.items) { // the file's list is the product list; base products always stay
             const byId = Object.fromEntries(S.items.map(i => [i.id, i]));
@@ -159,7 +163,10 @@
             const result = await refresh(source);
             refreshButton.disabled = false;
             if (!result.ok) return showStatus();
-            if (!result.changed) { showStatus(); return App.toast('Ya estaba al día', 'info'); }
+            // Compare with what this page applied (the background update may have cached newer values already).
+            let latest = null;
+            try { latest = JSON.stringify(validate(read(CACHE_KEY)?.data)); } catch { /* keep null */ }
+            if (latest === appliedJson) { showStatus(); return App.toast('Ya estaba al día', 'info'); }
             App.toast('Ajustes actualizados', 'success');
             setTimeout(() => location.reload(), 600); // apply the new values and locks
         });
