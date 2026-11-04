@@ -26,7 +26,7 @@
   
 # DATABASE  
 - Client-side only using localStorage  
-- Key storage items: tacos_tables, tacos_items, tacos_prices, tacos_promo_on (promo switch, ON when missing; the old tacos_promoEnabled is no longer read), tacos_late_minutes (late-table threshold, default 60)  
+- Key storage items: tacos_tables, tacos_items, tacos_prices, tacos_promo_on (promo switch, ON when missing; the old tacos_promoEnabled is no longer read), tacos_late_minutes (late-table threshold, default 60), tacos_config_source + tacos_remote_config (optional central config, see cloudflare/config-worker/README.md)  
 - No server-side database - everything persists locally in browser  
   
 # API  

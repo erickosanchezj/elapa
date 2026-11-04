@@ -30,6 +30,7 @@ Then open http://localhost:8000.
 ## Where things live
 
 - `js/app.js`: shared data, prices, promo rule, sales report and saving to `localStorage`.
+- `js/remote-config.js`: optional central config; loaded right after `app.js` on every page.
 - One script per screen: `floor.js`, `ticket.js`, `menu.js`, `precios.js`. Each dialog or feature has its own small file, such as `checkout.js`, `receipt.js`, `report.js`, `report-page.js`, `options-dialog.js`, `templates.js` and `presets-editor.js`.
 - `js/styles.css` imports the design tokens and the other stylesheets. See `design.md` for the visual rules.
 - `service-worker.js` caches every file for offline use. **Bump `CACHE_VERSION` and add new files to `ASSETS` whenever you change or add a file.**
@@ -37,5 +38,11 @@ Then open http://localhost:8000.
 ## Saved data (per device)
 
 `tacos_tables`, `tacos_items`, `tacos_prices`, `tacos_stock`, `tacos_promo_on`, `tacos_late_minutes`, `tacos_quick_presets`, `tacos_table_templates`, `theme`.
+
+With central config connected, also `tacos_config_source` (Worker address and device key) and `tacos_remote_config` (last good copy of the file).
+
+## Central config (optional)
+
+Prices, products, the promo, the late-table time, shortcuts and frequent tables can come from a private `config.json` on GitHub, served by a Cloudflare Worker. `js/remote-config.js` applies it on every device. Setup steps are in `cloudflare/config-worker/README.md`.
 
 See `AGENTS.MD` for coding rules (file headers, the 300-line limit, keeping things simple).

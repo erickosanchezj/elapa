@@ -263,6 +263,12 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
 .template-qty-grid label { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); font-size: var(--text-sm); }
 .template-qty-grid label input[data-item] { width: 72px; flex-shrink: 0; } /* beats the global 100% input width */
 .template-editor-body .button-danger { align-self: flex-start; }
+/* Central config (remote-config.js): managed editors stay visible but inert. */
+.is-managed { opacity: .6; }
+.managed-banner { margin: calc(var(--space-sm) * -1) 0 var(--space-lg); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-input); background: var(--color-accent-soft); color: var(--color-ink); font-size: var(--text-sm); }
+.catalog-screen.managed-menu #btn-add-item, .catalog-screen.managed-menu .edit-btn { display: none; }
+.central-form { margin-top: var(--space-md); }
+#central-status:empty { display: none; }
 /* "Abrir mesa" sheet: template buttons (templates.js). */
 #template-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 /* Checkout sheet: tip choices are native radios styled as pill buttons. */

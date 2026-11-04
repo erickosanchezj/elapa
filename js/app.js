@@ -76,6 +76,7 @@
         App.AppState.stock = JSON.parse(localStorage.getItem('tacos_stock') || '{}');
         App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
         App.AppState.uiHighContrast = Boolean(JSON.parse(localStorage.getItem('tacos_ui_high_contrast') || 'false'));
+        App.applyRemoteConfig?.(); // central config from GitHub wins for the settings it lists (remote-config.js)
     };
 
     App.isPastorPromoActive = function() {
