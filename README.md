@@ -27,6 +27,19 @@ Then open http://localhost:8000.
 | `precios.html` (Precios) | Prices, the 2x1 pastor promo switch, the late-table time, quick shortcuts, frequent tables, central config and cloud backups |
 | `reporte.html` (Reporte) | Sales by period and hour, products, 2x1 promo cost, last 6 months, CSV export (opened from "Reporte del día") |
 
+## Tests
+
+```bash
+node --test tests/*.test.mjs
+```
+
+- `tests/app.test.mjs`: prices, the 2x1 promo and its switch, checkout, reports, archive, taco options, saved settings.
+- `tests/config.test.mjs`: central config (valid, invalid and partial files).
+- `tests/worker.test.mjs`: the Cloudflare Worker against a simulated GitHub.
+- `tests/browser.test.mjs`: real screens in Chromium. It needs Playwright and skips itself when it isn't installed.
+
+No build step and no dependencies for the app. GitHub runs all of them on every pull request (`.github/workflows/tests.yml`).
+
 ## Where things live
 
 - `js/app.js`: shared data, prices, promo rule, sales report and saving to `localStorage`.

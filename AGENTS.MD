@@ -43,6 +43,7 @@
 - To run: Open index.html in web browser  
 - To test PWA: Serve files via local HTTP server (python -m http.server)  
 - Service worker updates automatically on version changes  
+- To test: `node --test tests/*.test.mjs` (browser tests need Playwright and skip without it). Add or update a test with every change.  
   
 # COMMENTS  
 - every file should have clear Header Comments at the top, explaining where the file is, and what it does  
