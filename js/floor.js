@@ -4,7 +4,8 @@
 // RELEVANT FILES: index.html, js/app.js, js/styles.css
 document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
-    const SLA_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
+    // A table open longer than this is "late" (red card, top KPI). Minutes are set on precios.html.
+    const lateMs = () => App.AppState.lateMinutes * 60000;
     let orderView = 'open';
 
     function init() {
@@ -60,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeTables = App.AppState.tables.filter(t => !t.charged);
 
         const now = Date.now();
-        const incidents = activeTables.filter(t => (now - t.createdAt) > SLA_THRESHOLD_MS).length;
+        const incidents = activeTables.filter(t => (now - t.createdAt) > lateMs()).length;
+        document.getElementById('kpi-incidents-label').textContent = `Mesas con más de ${App.formatLateTime(App.AppState.lateMinutes)}`;
         const kpiIncidents = document.getElementById('kpi-incidents');
         if (kpiIncidents) kpiIncidents.textContent = incidents;
 
@@ -102,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         activeTables.forEach(table => {
             const elapsed = now - table.createdAt;
-            const isSlaBreach = elapsed > SLA_THRESHOLD_MS;
+            const isSlaBreach = elapsed > lateMs();
             const total = App.computeTableTotal(table);
 
             const card = document.createElement('article');
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <a class="table-open" href="ticket.html?tableId=${encodeURIComponent(table.id)}" data-table-id="${App.escapeHTML(table.id)}">
                     <div class="table-topline"><span class="table-name">${App.escapeHTML(table.name)}</span>
-                    <span class="table-status">${isSlaBreach ? '<span class="material-symbols-outlined" aria-hidden="true">warning</span>Más de 1 h' : 'Abierta'}</span></div>
+                    <span class="table-status">${isSlaBreach ? `<span class="material-symbols-outlined" aria-hidden="true">warning</span>Más de ${App.formatLateTime(App.AppState.lateMinutes)}` : 'Abierta'}</span></div>
                     <p class="table-note">${App.escapeHTML(table.note || '')}</p>
                     <span class="table-total">${App.money(total)}</span>
                 </a>

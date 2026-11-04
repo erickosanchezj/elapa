@@ -67,6 +67,26 @@ document.addEventListener('DOMContentLoaded', () => {
         App.toast(promoToggle.checked ? 'Promo 2x1 activada' : 'Promo 2x1 desactivada', 'info');
     }
 
+    // "Late table" time: open tables older than this turn red on the floor plan and count in its top KPI.
+    const lateInput = App.$('#late-minutes');
+    function renderLateMinutes() {
+        if (!lateInput) return;
+        lateInput.value = App.AppState.lateMinutes;
+        App.$('#late-note').textContent = `Las mesas abiertas más de ${App.formatLateTime(App.AppState.lateMinutes)} se marcan en rojo.`;
+    }
+
+    function handleLateMinutes() {
+        const minutes = Math.round(Number(lateInput.value));
+        if (!(minutes >= 5 && minutes <= 600)) {
+            renderLateMinutes(); // put the saved value back
+            return App.toast('Usa entre 5 y 600 minutos', 'error');
+        }
+        App.AppState.lateMinutes = minutes;
+        App.persist();
+        renderLateMinutes();
+        App.toast('Tiempo guardado', 'success');
+    }
+
     function handleAddItem(e) {
         e.preventDefault();
         const name = itemNameInput.value.trim();
@@ -118,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addItemForm.addEventListener('submit', handleAddItem);
         }
         promoToggle?.addEventListener('change', handlePromoToggle);
+        lateInput?.addEventListener('change', handleLateMinutes);
 
         if (itemsList) {
             itemsList.addEventListener('change', (e) => {
@@ -143,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         App.applyUiPrefs();
         renderItems();
         renderPromoToggle();
+        renderLateMinutes();
         wireEvents();
     }
 

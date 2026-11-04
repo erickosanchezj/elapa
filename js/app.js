@@ -7,14 +7,14 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
+    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, lateMinutes: 60, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
     App.money = n => '$' + (n || 0).toFixed(2);
     App.uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
     App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
-    App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
-    App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
+    // "Late table" threshold label for the floor plan and precios.html: 45 → "45 min", 60 → "1 h", 90 → "1 h 30 min".
+    App.formatLateTime = m => m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`;
     const BASE_ITEMS = [
         { id: 'taco_pastor', label: 'Pastor', base: true },
         { id: 'taco_suadero', label: 'Suadero', base: true },
@@ -58,6 +58,7 @@
         App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
         // Promo switch (precios.html). New key, ON unless staff turned it off: the old 'tacos_promoEnabled' was always saved as false.
         App.AppState.promoEnabled = localStorage.getItem('tacos_promo_on') !== 'false';
+        App.AppState.lateMinutes = Number(localStorage.getItem('tacos_late_minutes')) || 60; // set on precios.html
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) ? storedPresets : DEFAULT_QUICK_PRESETS.slice(); // [] = staff deleted all
@@ -83,6 +84,7 @@
         localStorage.setItem('tacos_items', JSON.stringify(App.AppState.items));
         localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
         localStorage.setItem('tacos_promo_on', String(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_late_minutes', String(App.AppState.lateMinutes));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
         localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));
@@ -144,9 +146,6 @@
         table.openDurationMs = paidAt - (table.createdAt || paidAt);
         App.persist();
         return true;
-    };
-    App.computeGrandTotalActive = function() {
-        return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0);
     };
     App.computeDailyReport = function(){
         const todayStart = new Date();
