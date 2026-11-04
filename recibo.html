@@ -1,0 +1,22 @@
+<!-- /recibo.html -->
+<!-- Página de recibo para imprimir desde el navegador (la usan las apps de pantalla de inicio de iOS). -->
+<!-- iOS home-screen apps can't print, so receipt.js opens this page with the receipt data in the link. -->
+<!-- RELEVANT FILES: js/recibo.js, js/receipt.js, js/receipt.css, index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Recibo | Taquería El Apá</title>
+<link rel="stylesheet" href="js/styles.css">
+</head>
+<body class="receipt-page">
+<div class="receipt-actions"><button id="receipt-print" class="button button-primary" type="button">Imprimir</button><p class="subtle">Si no se abre el diálogo, toca Compartir y luego Imprimir.</p></div>
+<div id="print-area" aria-live="polite"></div>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/receipt.js"></script>
+<script src="js/recibo.js"></script>
+</body>
+</html>

@@ -56,23 +56,28 @@ function github(token, repo, path, { ref, ...options } = {}) {
 }
 
 // Make sure the backups branch exists; create it from the repo's default branch the first time.
+// Returns '' when ready, or which step failed and what GitHub answered (shown in the app).
 // Remembered per Worker instance so most backups skip this check.
 let readyBranch = '';
 async function ensureBranch(token, repo, branch) {
-    if (readyBranch === `${repo}#${branch}`) return true;
+    if (readyBranch === `${repo}#${branch}`) return '';
+    const hint = status => status === 403 ? ' (the token needs Contents: Read and write)'
+        : status === 404 ? ' (check BACKUP_REPO, and that the token has access to that repo)'
+        : status === 401 ? ' (the token is wrong or expired)' : '';
+    const failed = (step, res) => `${step}: GitHub answered ${res.status}${hint(res.status)}`;
     const found = await api(token, `${repo}/branches/${encodeURIComponent(branch)}`);
     if (found.status === 404) {
         const info = await api(token, repo);
-        if (!info.ok) return false;
+        if (!info.ok) return failed('reading the repo', info);
         const base = await api(token, `${repo}/git/ref/heads/${encodeURIComponent((await info.json()).default_branch)}`);
-        if (!base.ok) return false;
+        if (!base.ok) return failed('reading the default branch', base);
         const made = await api(token, `${repo}/git/refs`, { method: 'POST', body: { ref: `refs/heads/${branch}`, sha: (await base.json()).object.sha } });
-        if (!made.ok && made.status !== 422) return false; // 422: it was just created by another request
+        if (!made.ok && made.status !== 422) return failed(`creating the "${branch}" branch`, made); // 422: just created by another request
     } else if (!found.ok) {
-        return false;
+        return failed(`checking the "${branch}" branch`, found);
     }
     readyBranch = `${repo}#${branch}`;
-    return true;
+    return '';
 }
 
 export default {
@@ -118,7 +123,8 @@ export default {
                     try { body = JSON.parse(text); } catch { return reply('Backup is not valid JSON', 400); }
                     const name = `${body?.day}_${body?.device}.json`;
                     if (!BACKUP_FILE.test(name) || !body.data || typeof body.data !== 'object') return reply('Backup needs day, device and data', 400);
-                    if (!(await ensureBranch(token, env.BACKUP_REPO, branch))) return reply(`Could not prepare the "${branch}" branch (check the token can write)`, 502);
+                    const problem = await ensureBranch(token, env.BACKUP_REPO, branch);
+                    if (problem) return reply(`Could not prepare the "${branch}" branch, ${problem}`, 502);
                     // Updating a file needs its current sha; retry once if another save landed in between.
                     for (let attempt = 0; attempt < 2; attempt++) {
                         const meta = await call(`backups/${name}`, { ref: branch });
@@ -128,7 +134,7 @@ export default {
                             message: `Respaldo ${body.day} (${body.device})`, branch, content: toBase64(text), ...(sha ? { sha } : {}),
                         } });
                         if (put.ok) return json({ ok: true, name, bytes: text.length });
-                        if (put.status !== 409 && put.status !== 422) return reply(`GitHub answered ${put.status}`, 502);
+                        if (put.status !== 409 && put.status !== 422) return reply(`Saving the backup: GitHub answered ${put.status}${put.status === 403 ? ' (the token needs Contents: Read and write)' : ''}`, 502);
                     }
                     return reply('GitHub kept rejecting the update, try again', 502);
                 }
