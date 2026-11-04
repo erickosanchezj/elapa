@@ -1,10 +1,19 @@
 // /cloudflare/config-worker/worker.js
-// Cloudflare Worker that serves config.json from a PRIVATE GitHub repo to the El Apá app.
-// Keeps prices, promo and templates editable on github.com without making them public.
-// RELEVANT FILES: wrangler.toml, README.md, config.example.json, ../../js/remote-config.js
+// Cloudflare Worker for El Apá: serves config.json from a PRIVATE repo and saves/restores device backups
+// (by default on a separate "backups" branch of the same repo), so settings and sales stay private on GitHub.
+// RELEVANT FILES: wrangler.toml, README.md, ../../js/remote-config.js, ../../js/backup.js
 //
-// Settings (wrangler.toml [vars]): GITHUB_REPO, GITHUB_BRANCH, CONFIG_PATH, ALLOWED_ORIGINS.
-// Secrets (wrangler secret put): GITHUB_TOKEN (read-only, that repo only), DEVICE_KEY (shared with the app).
+// Routes (all need the X-Config-Key header = DEVICE_KEY):
+//   GET  /                      → config.json from GITHUB_REPO (read-only GITHUB_TOKEN)
+//   PUT  /backup                → writes backups/<day>_<device>.json to BACKUP_REPO on BACKUP_BRANCH
+//   GET  /backups               → lists saved backups (newest first)
+//   GET  /backups/<file>.json   → downloads one backup
+// Settings: GITHUB_REPO, GITHUB_BRANCH, CONFIG_PATH, ALLOWED_ORIGINS, BACKUP_REPO, BACKUP_BRANCH.
+// Secrets: GITHUB_TOKEN, DEVICE_KEY, and optionally GITHUB_BACKUP_TOKEN. Without it, backups use
+// GITHUB_TOKEN, which then needs Contents: Read and write. The Worker only ever writes backups/<day>_<device>.json.
+
+const MAX_BACKUP_BYTES = 6 * 1024 * 1024; // browser storage is ~5 MB, so a backup never needs more
+const BACKUP_FILE = /^\d{4}-\d{2}-\d{2}_d-[a-z0-9]{4,32}\.json$/; // e.g. 2026-11-04_d-ab12cd34.json
 
 // Compare two strings in constant time, so the key can't be guessed from response timing.
 function sameKey(given, expected) {
@@ -16,6 +25,56 @@ function sameKey(given, expected) {
     return diff === 0;
 }
 
+// GitHub's contents API wants base64; convert in chunks so multi-MB backups don't overflow the stack.
+function toBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return btoa(binary);
+}
+
+// Any GitHub repo API call: path starts with "owner/name", e.g. "owner/name/branches/main".
+function api(token, path, { method = 'GET', raw = false, body } = {}) {
+    return fetch(`https://api.github.com/repos/${path}`, {
+        method,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'User-Agent': 'elapa-config-worker',
+            ...(body ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+    });
+}
+
+// A file in a repo through the contents API; ref is the branch.
+function github(token, repo, path, { ref, ...options } = {}) {
+    const safePath = path.split('/').map(encodeURIComponent).join('/');
+    const query = ref ? `?ref=${encodeURIComponent(ref)}` : '';
+    return api(token, `${repo}/contents/${safePath}${query}`, options);
+}
+
+// Make sure the backups branch exists; create it from the repo's default branch the first time.
+// Remembered per Worker instance so most backups skip this check.
+let readyBranch = '';
+async function ensureBranch(token, repo, branch) {
+    if (readyBranch === `${repo}#${branch}`) return true;
+    const found = await api(token, `${repo}/branches/${encodeURIComponent(branch)}`);
+    if (found.status === 404) {
+        const info = await api(token, repo);
+        if (!info.ok) return false;
+        const base = await api(token, `${repo}/git/ref/heads/${encodeURIComponent((await info.json()).default_branch)}`);
+        if (!base.ok) return false;
+        const made = await api(token, `${repo}/git/refs`, { method: 'POST', body: { ref: `refs/heads/${branch}`, sha: (await base.json()).object.sha } });
+        if (!made.ok && made.status !== 422) return false; // 422: it was just created by another request
+    } else if (!found.ok) {
+        return false;
+    }
+    readyBranch = `${repo}#${branch}`;
+    return true;
+}
+
 export default {
     async fetch(request, env) {
         // CORS: only the app's own site(s) may read the answer.
@@ -23,37 +82,76 @@ export default {
         const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
         const cors = {
             'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : allowed[0] || 'null',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'X-Config-Key',
+            'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+            'Access-Control-Allow-Headers': 'X-Config-Key, Content-Type',
             'Vary': 'Origin',
         };
         const reply = (body, status, extra = {}) => new Response(body, { status, headers: { ...cors, 'Cache-Control': 'no-store', ...extra } });
+        const json = (value, status = 200) => reply(JSON.stringify(value), status, { 'Content-Type': 'application/json; charset=utf-8' });
 
         if (request.method === 'OPTIONS') return reply(null, 204);
-        if (request.method !== 'GET') return reply('Method not allowed', 405);
         if (!sameKey(request.headers.get('X-Config-Key') || '', env.DEVICE_KEY)) return reply('Unauthorized', 401);
 
-        // Read the raw file through the GitHub API with the read-only token.
-        const path = (env.CONFIG_PATH || 'config.json').split('/').map(encodeURIComponent).join('/');
-        const url = `https://api.github.com/repos/${env.GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(env.GITHUB_BRANCH || 'main')}`;
-        let github;
+        const path = new URL(request.url).pathname.replace(/\/+$/, '') || '/';
         try {
-            github = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.raw+json',
-                    'X-GitHub-Api-Version': '2022-11-28',
-                    'User-Agent': 'elapa-config-worker',
-                },
-            });
+            // --- Config (read-only) ---
+            if (path === '/' && request.method === 'GET') {
+                const res = await github(env.GITHUB_TOKEN, env.GITHUB_REPO, env.CONFIG_PATH || 'config.json', { ref: env.GITHUB_BRANCH || 'main', raw: true });
+                if (!res.ok) return reply(`GitHub answered ${res.status}`, 502);
+                const text = await res.text();
+                try { JSON.parse(text); } catch { return reply('config.json is not valid JSON', 502); } // app keeps its last good copy
+                return reply(text, 200, { 'Content-Type': 'application/json; charset=utf-8' });
+            }
+
+            // --- Backups (read-write; own branch, and optionally own repo and token) ---
+            if (path.startsWith('/backup')) {
+                const token = env.GITHUB_BACKUP_TOKEN || env.GITHUB_TOKEN;
+                if (!env.BACKUP_REPO || !token) return reply('Backups are not configured', 501);
+                const branch = env.BACKUP_BRANCH || 'backups';
+                const call = (file, opts = {}) => github(token, env.BACKUP_REPO, file, opts);
+
+                if (path === '/backup' && request.method === 'PUT') {
+                    if (Number(request.headers.get('Content-Length') || 0) > MAX_BACKUP_BYTES) return reply('Backup too large', 413);
+                    const text = await request.text();
+                    if (text.length > MAX_BACKUP_BYTES) return reply('Backup too large', 413);
+                    let body;
+                    try { body = JSON.parse(text); } catch { return reply('Backup is not valid JSON', 400); }
+                    const name = `${body?.day}_${body?.device}.json`;
+                    if (!BACKUP_FILE.test(name) || !body.data || typeof body.data !== 'object') return reply('Backup needs day, device and data', 400);
+                    if (!(await ensureBranch(token, env.BACKUP_REPO, branch))) return reply(`Could not prepare the "${branch}" branch (check the token can write)`, 502);
+                    // Updating a file needs its current sha; retry once if another save landed in between.
+                    for (let attempt = 0; attempt < 2; attempt++) {
+                        const meta = await call(`backups/${name}`, { ref: branch });
+                        if (!meta.ok && meta.status !== 404) return reply(`GitHub answered ${meta.status}`, 502);
+                        const sha = meta.ok ? (await meta.json()).sha : undefined;
+                        const put = await call(`backups/${name}`, { method: 'PUT', body: {
+                            message: `Respaldo ${body.day} (${body.device})`, branch, content: toBase64(text), ...(sha ? { sha } : {}),
+                        } });
+                        if (put.ok) return json({ ok: true, name, bytes: text.length });
+                        if (put.status !== 409 && put.status !== 422) return reply(`GitHub answered ${put.status}`, 502);
+                    }
+                    return reply('GitHub kept rejecting the update, try again', 502);
+                }
+
+                if (path === '/backups' && request.method === 'GET') {
+                    const res = await call('backups', { ref: branch });
+                    if (res.status === 404) return json([]); // no backups yet
+                    if (!res.ok) return reply(`GitHub answered ${res.status}`, 502);
+                    const files = (await res.json()).filter(f => f.type === 'file' && BACKUP_FILE.test(f.name));
+                    return json(files.map(f => ({ name: f.name, size: f.size })).sort((a, b) => b.name.localeCompare(a.name)).slice(0, 90));
+                }
+
+                const file = path.slice('/backups/'.length);
+                if (path.startsWith('/backups/') && request.method === 'GET') {
+                    if (!BACKUP_FILE.test(file)) return reply('Unknown backup name', 400); // no other files, no "../"
+                    const res = await call(`backups/${file}`, { ref: branch, raw: true });
+                    if (!res.ok) return reply(`GitHub answered ${res.status}`, res.status === 404 ? 404 : 502);
+                    return reply(await res.text(), 200, { 'Content-Type': 'application/json; charset=utf-8' });
+                }
+            }
+            return reply('Not found', 404);
         } catch {
             return reply('GitHub unreachable', 502);
         }
-        if (!github.ok) return reply(`GitHub answered ${github.status}`, 502);
-
-        // Never pass on a broken file: the app keeps its last good copy instead.
-        const text = await github.text();
-        try { JSON.parse(text); } catch { return reply('config.json is not valid JSON', 502); }
-        return reply(text, 200, { 'Content-Type': 'application/json; charset=utf-8' });
     },
 };

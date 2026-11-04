@@ -39,10 +39,10 @@ Then open http://localhost:8000.
 
 `tacos_tables`, `tacos_items`, `tacos_prices`, `tacos_stock`, `tacos_promo_on`, `tacos_late_minutes`, `tacos_quick_presets`, `tacos_table_templates`, `theme`.
 
-With central config connected, also `tacos_config_source` (Worker address and device key) and `tacos_remote_config` (last good copy of the file).
+With central config connected, also `tacos_config_source` (Worker address and device key) and `tacos_remote_config` (last good copy of the file). Backups add `tacos_device_id` and `tacos_backup_state`.
 
 ## Central config (optional)
 
-Prices, products, the promo, the late-table time, shortcuts and frequent tables can come from a private `config.json` on GitHub, served by a Cloudflare Worker. `js/remote-config.js` applies it on every device. Setup steps are in `cloudflare/config-worker/README.md`.
+Prices, products, the promo, the late-table time, shortcuts and frequent tables can come from a private `config.json` on GitHub, served by a Cloudflare Worker. `js/remote-config.js` applies it on every device. The same Worker can save automatic backups to a `backups` branch of that private repo (`js/backup.js`). Setup steps are in `cloudflare/config-worker/README.md`.
 
 See `AGENTS.MD` for coding rules (file headers, the 300-line limit, keeping things simple).

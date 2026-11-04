@@ -6,6 +6,8 @@
 
 Edit prices, products, the 2x1 promo, the late-table time, quick shortcuts and frequent tables in **one private file on GitHub**. Every device with the app picks up the changes.
 
+The same Worker can also save **automatic backups** of each device's tables, sales and settings to a `backups` branch of the same private repo. See [Backups](#backups-optional).
+
 ```
 config.json (private repo) ──read-only token──▶ Cloudflare Worker ──device key──▶ El Apá app
 ```
@@ -97,6 +99,10 @@ To stop using it, tap **Desconectar**. The current values stay on the device and
 
 Edit `config.json` on github.com and commit. Each device downloads it the next time a screen opens. It then applies on the following screen change, so an order in progress is never interrupted.
 
+To get it right away, open Precios → **Configuración central** → **Actualizar ahora**.
+
+**How updates reach the device:** the Worker doesn't run on a schedule and never pushes anything. It only wakes up when the app asks: each time a screen opens, or when you tap "Actualizar ahora". Each request reads the file from GitHub at that moment.
+
 Every key is optional. **A key that is not in the file stays editable on each device.**
 
 | Key | What it controls | Rules |
@@ -110,6 +116,39 @@ Every key is optional. **A key that is not in the file stays editable on each de
 
 If anything is invalid, the whole file is rejected and devices keep the previous copy. Precios shows the reason, for example `"promoOn" debe ser true o false`.
 
+## Backups (optional)
+
+Every table and sale lives only in the device's browser. Backups copy them to your private `elapa-config` repo, on a separate **`backups`** branch, so a lost or reset phone doesn't lose the history. Your `config.json` on `main` keeps a clean history and is never touched by backups.
+
+- **When:** automatically, at most every 20 minutes and only when something changed. Precios also has a **Respaldar ahora** button.
+- **Where:** branch `backups`, one file per day and device, for example `backups/2026-11-04_d-ab12cd34.json`. Each file is a full snapshot and is overwritten during the day; GitHub's history keeps the earlier versions. To look at them on github.com, switch the branch selector from `main` to `backups`.
+- **Never included:** the device key and the cached central config.
+- **Restore:** Precios → **Respaldo en la nube** → choose a backup → **Restaurar este respaldo**. The app first downloads the chosen backup, then backs up the current data, then replaces it.
+
+### Setup (about 5 minutes)
+
+1. **Give your existing token write access.** GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → open your `elapa-config` token → **Edit** → Repository permissions → **Contents: Read and write** → Update. The token value doesn't change, so the Worker secret stays the same.
+2. **Add two Text variables to the Worker** (Settings → Variables and Secrets), then deploy:
+   - `BACKUP_REPO` = `erickosanchezj/elapa-config`
+   - `BACKUP_BRANCH` = `backups`
+
+   With wrangler, they are already in `wrangler.toml`.
+3. **Deploy the new `worker.js`.** In the dashboard, open **Edit code**, paste the new file and deploy. With wrangler:
+
+   ```bash
+   npx wrangler deploy
+   ```
+
+4. **Check it.** This should print `[]` before the first backup:
+
+   ```bash
+   curl -H "X-Config-Key: YOUR-DEVICE-KEY" https://elapa-config.your-name.workers.dev/backups
+   ```
+
+5. Open the app on the device. The first backup runs a few seconds after any screen opens and **creates the `backups` branch automatically** from `main`. Precios → **Respaldo en la nube** shows "Último respaldo: …".
+
+**Prefer a separate repo?** Set `BACKUP_REPO` to another private repo and add a `GITHUB_BACKUP_TOKEN` secret with write access to that repo only. Your main token can then stay read-only.
+
 ## Status messages on Precios
 
 | Message | Meaning |
@@ -119,9 +158,14 @@ If anything is invalid, the whole file is rejected and devices keep the previous
 | el Worker respondió 502: GitHub answered 401 | The GitHub token is wrong or expired |
 | el Worker respondió 502: config.json is not valid JSON | A typo in the file (a missing comma or quote) |
 | no se pudo contactar al Worker | No internet, or a wrong address |
+| el Worker no tiene respaldos configurados | `BACKUP_REPO` is missing in the Worker |
+| No se pudo respaldar (… Could not prepare the "backups" branch …) | The token is still read-only: give it **Contents: Read and write** |
+| No se pudo respaldar (el Worker respondió 502: GitHub answered 403) | Same: the token can't write |
+| No se pudo respaldar (el Worker respondió 502: GitHub answered 404) | Wrong `BACKUP_REPO` |
 
 ## Security notes
 
 - **The token** can only read this one repo. It never reaches the app or the browser.
-- **The device key** is saved in the app's storage on each device. Anyone who has it can read the config, but nothing else. To change it, update the `DEVICE_KEY` secret and re-enter it on each device.
+- **The device key** is saved in the app's storage on each device. Anyone who has it can read the config and, if backups are on, read and write backups (your sales history). Keep it private. To change it, update the `DEVICE_KEY` secret and re-enter it on each device.
+- **With backups on, the token can write to `elapa-config`.** The Worker only ever writes files named like `backups/2026-11-04_d-xxxx.json` on the `backups` branch; it never writes to `main` or to `config.json`. For stricter separation, use a separate repo and `GITHUB_BACKUP_TOKEN` (see above).
 - **`ALLOWED_ORIGINS`** stops other websites from reading the config in a browser. Requests outside a browser still need the key.
