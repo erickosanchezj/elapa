@@ -52,6 +52,23 @@
 <label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
 <div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button">Abrir y volver</button><button type="submit" name="destination" value="ticket" class="button button-primary">Tomar orden</button></div>
 </form></dialog>
+<dialog id="checkout-sheet" class="table-sheet" aria-labelledby="checkout-title">
+<form id="checkout-form" class="form-stack">
+<div class="dialog-heading"><h2 id="checkout-title">Cobrar mesa</h2><button type="button" id="checkout-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<fieldset class="tip-fieldset"><legend class="field-label">Propina</legend><div class="tip-options">
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0" checked><span>Sin propina</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.10"><span>10%</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.15"><span>15%</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.20"><span>20%</span></label>
+</div></fieldset>
+<label for="tip-custom"><span class="field-label">Otro monto ($)</span><input id="tip-custom" name="tipCustom" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off" enterkeyhint="done"></label>
+<div class="closed-order"><dl>
+<div><dt>Subtotal</dt><dd id="checkout-subtotal">$0.00</dd></div>
+<div><dt>Propina</dt><dd id="checkout-tip">$0.00</dd></div>
+<div class="closed-total"><dt>Total</dt><dd id="checkout-total">$0.00</dd></div>
+</dl></div>
+<div class="table-sheet-actions"><button type="button" id="checkout-back" class="button">Cancelar</button><button type="submit" class="button button-primary">Cobrar <span id="checkout-submit-total">$0.00</span></button></div>
+</form></dialog>
 <dialog id="report-sheet" class="table-sheet" aria-labelledby="report-title">
 <div class="dialog-heading"><h2 id="report-title">Reporte del día</h2><button type="button" id="report-close" class="icon-button" aria-label="Cerrar">×</button></div>
 <div id="report-body"></div>
@@ -61,6 +78,7 @@
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/table-sheet.js"></script>
+<script src="js/checkout.js"></script>
 <script src="js/floor.js"></script>
 <script src="js/report.js"></script>
 </body>

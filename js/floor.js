@@ -208,12 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Opens the checkout sheet (checkout.js); the table closes only after "Cobrar" is confirmed.
     function closeOrder(tableId) {
         const table = App.AppState.tables.find(t => t.id === tableId && !t.charged);
-        if (!table || !confirm(`¿Cerrar y cobrar ${table.name}?`)) return;
-        App.closeTable(table);
-        orderView = 'closed';
-        render();
+        if (!table) return;
+        App.openCheckout(table, tip => {
+            if (table.charged) return;
+            table.tip = tip; // App.closeTable() saves it together with the checkout.
+            App.closeTable(table);
+            orderView = 'closed';
+            render();
+            App.toast(`${table.name} cobrada`, 'success');
+        });
     }
 
     // Paid -> open again. Clears the frozen checkout so the total uses current prices.
