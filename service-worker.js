@@ -2,7 +2,7 @@
 // Caches the application files and serves them when the network is unavailable.
 // This file exists so restaurant staff can keep using the PWA offline.
 // RELEVANT FILES: index.html, js/app.js, js/floor.js
-const CACHE_VERSION = 'v1.5.17'; // ⬅️ Versión actualizada por los cambios
+const CACHE_VERSION = 'v1.5.19'; // ⬅️ Versión actualizada por los cambios
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   './reporte.html',
   './js/app.js', // <-- AÑADIDO
   './js/remote-config.js',
+  './js/backup.js',
   './js/floor.js',
   './js/menu.js',
   './js/precios.js',

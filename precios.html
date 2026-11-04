@@ -36,7 +36,12 @@
 <form id="central-form" class="form-stack central-form"><label for="central-url"><span class="field-label">Dirección del Worker</span><input id="central-url" name="centralUrl" type="url" required placeholder="https://elapa-config.tu-cuenta.workers.dev" autocomplete="off" inputmode="url"></label>
 <label for="central-key"><span class="field-label">Clave del dispositivo</span><input id="central-key" name="centralKey" type="password" autocomplete="off"></label>
 <div class="inline-actions"><button type="submit" class="button button-primary">Conectar</button><button type="button" id="central-disconnect" class="button" hidden>Desconectar</button></div></form>
-<p id="central-status" aria-live="polite"></p></section></div>
+<p id="central-status" aria-live="polite"></p></section>
+<section class="settings-panel promo-panel" aria-labelledby="backup-title"><h2 id="backup-title">Respaldo en la nube</h2><p>Copia automática de mesas, ventas y ajustes en tu repositorio privado de GitHub: cada 20 minutos si hubo cambios.</p>
+<p id="backup-status" class="backup-status" aria-live="polite"></p>
+<button type="button" id="backup-now" class="button">Respaldar ahora</button>
+<div class="form-stack backup-restore"><label for="backup-list"><span class="field-label">Restaurar un respaldo</span><select id="backup-list"><option value="">Conecta para ver respaldos</option></select></label>
+<button type="button" id="backup-restore" class="button button-danger">Restaurar este respaldo</button></div></section></div>
 <section aria-labelledby="products-title"><h2 id="products-title">Productos en el menú</h2><div id="items-list" class="list-surface"></div></section>
 </div>
 <div class="price-layout editor-layout">
@@ -48,6 +53,7 @@
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
 <script src="js/remote-config.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/precios.js"></script>

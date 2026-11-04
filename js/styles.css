@@ -269,6 +269,10 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
 .catalog-screen.managed-menu #btn-add-item, .catalog-screen.managed-menu .edit-btn { display: none; }
 .central-form { margin-top: var(--space-md); }
 #central-status:empty { display: none; }
+/* Cloud backup panel on precios.html (backup.js). */
+.backup-status { margin: var(--space-md) 0 var(--space-sm) !important; color: var(--color-ink) !important; }
+.backup-restore { margin-top: var(--space-lg); }
+.backup-restore .button-danger { align-self: flex-start; }
 /* "Abrir mesa" sheet: template buttons (templates.js). */
 #template-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 /* Checkout sheet: tip choices are native radios styled as pill buttons. */

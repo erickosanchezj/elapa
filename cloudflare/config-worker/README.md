@@ -6,6 +6,8 @@
 
 Edit prices, products, the 2x1 promo, the late-table time, quick shortcuts and frequent tables in **one private file on GitHub**. Every device with the app picks up the changes.
 
+The same Worker can also save **automatic backups** of each device's tables, sales and settings to a second private repo. See [Backups](#backups-optional).
+
 ```
 config.json (private repo) ──read-only token──▶ Cloudflare Worker ──device key──▶ El Apá app
 ```
@@ -110,6 +112,41 @@ Every key is optional. **A key that is not in the file stays editable on each de
 
 If anything is invalid, the whole file is rejected and devices keep the previous copy. Precios shows the reason, for example `"promoOn" debe ser true o false`.
 
+## Backups (optional)
+
+Every table and sale lives only in the device's browser. Backups copy them to a **second private repo**, so a lost or reset phone doesn't lose the history.
+
+- **When:** automatically, at most every 20 minutes and only when something changed. Precios also has a **Respaldar ahora** button.
+- **Where:** one file per day and device in `backups/`, for example `backups/2026-11-04_d-ab12cd34.json`. Each file is a full snapshot and is overwritten during the day; GitHub's history keeps the earlier versions.
+- **Never included:** the device key and the cached central config.
+- **Restore:** Precios → **Respaldo en la nube** → choose a backup → **Restaurar este respaldo**. The app first downloads the chosen backup, then backs up the current data, then replaces it.
+
+### Setup (about 5 minutes)
+
+1. **Create a second private repo** named `elapa-backups`. Tick "Add a README" so it has a `main` branch.
+2. **Create a second fine-grained token:** Repository access → only `elapa-backups`; Permissions → **Contents: Read and write**. Keep the config token read-only; only this token can write.
+3. **Add the settings to the Worker.**
+   - In the dashboard: Settings → Variables and Secrets. Add Text variables `BACKUP_REPO` = `erickosanchezj/elapa-backups` and `BACKUP_BRANCH` = `main`, and a **Secret** `GITHUB_BACKUP_TOKEN` with the new token.
+   - With wrangler: they are already in `wrangler.toml`; add the secret:
+
+     ```bash
+     npx wrangler secret put GITHUB_BACKUP_TOKEN
+     ```
+
+4. **Deploy the new `worker.js`.** In the dashboard, open **Edit code**, paste the new file and deploy. With wrangler:
+
+   ```bash
+   npx wrangler deploy
+   ```
+
+5. **Check it.** This should print `[]` before the first backup:
+
+   ```bash
+   curl -H "X-Config-Key: YOUR-DEVICE-KEY" https://elapa-config.your-name.workers.dev/backups
+   ```
+
+6. Open the app on the device. The first backup runs a few seconds after any screen opens. Precios → **Respaldo en la nube** shows "Último respaldo: …".
+
 ## Status messages on Precios
 
 | Message | Meaning |
@@ -119,9 +156,13 @@ If anything is invalid, the whole file is rejected and devices keep the previous
 | el Worker respondió 502: GitHub answered 401 | The GitHub token is wrong or expired |
 | el Worker respondió 502: config.json is not valid JSON | A typo in the file (a missing comma or quote) |
 | no se pudo contactar al Worker | No internet, or a wrong address |
+| el Worker no tiene respaldos configurados | `BACKUP_REPO` or `GITHUB_BACKUP_TOKEN` is missing in the Worker |
+| No se pudo respaldar (el Worker respondió 502: GitHub answered 403) | The backup token is missing **Contents: Read and write** |
+| No se pudo respaldar (el Worker respondió 502: GitHub answered 404) | Wrong `BACKUP_REPO`, or the repo has no `main` branch yet (add a README) |
 
 ## Security notes
 
 - **The token** can only read this one repo. It never reaches the app or the browser.
-- **The device key** is saved in the app's storage on each device. Anyone who has it can read the config, but nothing else. To change it, update the `DEVICE_KEY` secret and re-enter it on each device.
+- **The device key** is saved in the app's storage on each device. Anyone who has it can read the config and, if backups are on, read and write backups (your sales history). Keep it private. To change it, update the `DEVICE_KEY` secret and re-enter it on each device.
+- **Only the backup token can write**, and only to the backup repo. The config repo stays read-only.
 - **`ALLOWED_ORIGINS`** stops other websites from reading the config in a browser. Requests outside a browser still need the key.

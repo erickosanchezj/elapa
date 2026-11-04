@@ -1,6 +1,6 @@
 # /cloudflare/config-worker/wrangler.toml
 # Deploy settings for the El Apá config Worker (see README.md in this folder).
-# Secrets are NOT stored here: set GITHUB_TOKEN and DEVICE_KEY with `wrangler secret put`.
+# Secrets are NOT stored here: set GITHUB_TOKEN, DEVICE_KEY and GITHUB_BACKUP_TOKEN with `wrangler secret put`.
 # RELEVANT FILES: worker.js, README.md, config.example.json
 name = "elapa-config"
 main = "worker.js"
@@ -12,3 +12,7 @@ GITHUB_BRANCH = "main"
 CONFIG_PATH = "config.json"
 # Sites allowed to read the config (comma-separated). Add http://localhost:8000 to test locally.
 ALLOWED_ORIGINS = "https://apa.chinito.cc"
+
+# Backups (optional): a second PRIVATE repo; its token is the only one with write access.
+BACKUP_REPO = "erickosanchezj/elapa-backups"
+BACKUP_BRANCH = "main"
