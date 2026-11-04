@@ -26,7 +26,8 @@
 <button id="commit-btn" class="button button-primary" type="button"><span>Guardar orden</span><span id="commit-total">$0.00</span></button>
 </div></header>
 <main class="app-container ticket-workspace" id="main">
-<section aria-label="Productos del menú"><nav id="category-nav" class="category-tabs" aria-label="Categorías de productos"></nav><div id="product-grid"></div></section>
+<section aria-label="Productos del menú"><nav id="category-nav" class="category-tabs" aria-label="Categorías de productos"></nav>
+<div id="quick-shortcuts" class="quick-shortcuts" role="group" aria-labelledby="quick-shortcuts-label" hidden><span id="quick-shortcuts-label" class="subtle">Accesos rápidos</span><div id="quick-shortcut-list"></div></div><div id="product-grid"></div></section>
 <footer class="order-tray" aria-label="Resumen de la orden">
 <button id="tray-handle" type="button" aria-expanded="false" aria-controls="tray-list"><span><span class="material-symbols-outlined" aria-hidden="true">expand_less</span>Tu orden</span><span id="tray-count">0 productos</span></button>
 <div id="tray-list" class="hidden"></div>
@@ -35,9 +36,13 @@
 </main>
 <div id="modifier-modal" class="modal-overlay hidden"><section class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
 <div class="dialog-heading"><h2 id="modal-title">Editar producto</h2><button id="modal-close" type="button" class="icon-button" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
-<div id="modal-options"></div>
-<div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
-<button id="modal-update-btn" type="button" class="button button-primary">Actualizar cantidad</button>
+<div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val" aria-live="polite">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
+<p id="modal-no-options" class="subtle" hidden>No hay opciones adicionales para este producto.</p>
+<fieldset id="modal-options-set" class="options-set"><legend class="field-label">Opciones</legend><div id="modal-options"></div>
+<div class="apply-row"><span>Aplicar a</span><div class="quantity-buttons"><button id="apply-minus" type="button" class="icon-button" aria-label="Aplicar a menos">−</button><span id="apply-val" aria-live="polite">1</span><button id="apply-plus" type="button" class="icon-button" aria-label="Aplicar a más">+</button></div><span id="apply-of" class="subtle"></span><button id="apply-btn" type="button" class="button">Agregar grupo</button></div>
+</fieldset>
+<div id="modal-groups" class="option-groups" aria-live="polite"></div>
+<button id="modal-update-btn" type="button" class="button button-primary">Guardar cambios</button>
 </section></div>
 <dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
 <form id="table-form" class="form-stack">
@@ -48,9 +53,11 @@
 </form></dialog>
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
+<script src="js/remote-config.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/table-sheet.js"></script>
+<script src="js/options-dialog.js"></script>
 <script src="js/ticket.js"></script>
 </body>
 </html>

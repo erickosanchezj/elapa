@@ -1,0 +1,52 @@
+<!-- /reporte.html -->
+<!-- Reporte de ventas: periodo, ventas por hora, productos, promo 2x1, últimos 6 meses y exportación CSV. -->
+<!-- Gives the owner one place to review sales from this device beyond today. -->
+<!-- RELEVANT FILES: js/report-page.js, js/report-charts.js, js/app.js, js/report-layout.css -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Ventas por periodo, por hora y por producto.">
+<title>Reporte de ventas | Taquería El Apá</title>
+<script src="js/theme.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
+<link rel="stylesheet" href="js/styles.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#f6f6f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Apá">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
+</head>
+<body class="report-screen">
+<header class="app-header"><div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><a href="index.html" class="link"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Volver al panel</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div></header>
+<main class="app-container page-content" id="main">
+<div class="page-heading"><div><h1>Reporte de ventas</h1><p id="report-period-label">Hoy</p></div><button id="report-export" class="button" type="button">Exportar CSV</button></div>
+<div class="report-filters" role="group" aria-label="Periodo del reporte">
+<button type="button" class="button" data-period="hoy">Hoy</button><button type="button" class="button" data-period="ayer">Ayer</button><button type="button" class="button" data-period="semana">Esta semana</button><button type="button" class="button" data-period="mes">Este mes</button>
+<label class="report-day"><span class="sr-only">Elegir un día</span><input id="report-day" type="date"></label>
+</div>
+<dl id="report-kpis" class="report-kpis" aria-label="Resumen del periodo"></dl>
+<section class="report-section" aria-labelledby="hours-title"><h2 id="hours-title">Ventas por hora</h2><div id="report-hours"></div></section>
+<div class="report-columns">
+<section class="report-section" aria-labelledby="products-title"><h2 id="products-title">Productos vendidos</h2><div id="report-products"></div></section>
+<div>
+<section class="report-section" aria-labelledby="promo-title"><h2 id="promo-title">Promo 2x1 en pastor</h2><div id="report-promo"></div></section>
+<section class="report-section" aria-labelledby="unpaid-title"><h2 id="unpaid-title">Mesas sin cobrar</h2><div id="report-unpaid"></div></section>
+</div>
+</div>
+<section class="report-section report-history" aria-labelledby="months-title"><h2 id="months-title">Últimos 6 meses</h2><p class="subtle">Ventas por mes. No depende del periodo elegido.</p><div id="report-months"></div></section>
+<section class="report-section" aria-labelledby="storage-title"><h2 id="storage-title">Espacio en este dispositivo</h2><div id="report-storage"></div></section>
+</main>
+<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
+<div id="toast-wrap" aria-live="polite"></div>
+<script src="js/app.js"></script>
+<script src="js/remote-config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/report-charts.js"></script>
+<script src="js/report-page.js"></script>
+</body>
+</html>

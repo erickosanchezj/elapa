@@ -18,6 +18,9 @@ img, video { max-width: 100%; height: auto; display: block; }
 svg { display: block; }
 [hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; }
+/* Hide number-field arrows: they steal width from prices and quantities (moved from the old legacy.css). */
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); box-sizing: border-box; }
 .num, .figure, td.num { font-variant-numeric: tabular-nums; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

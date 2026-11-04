@@ -2,7 +2,7 @@
 // Caches the application files and serves them when the network is unavailable.
 // This file exists so restaurant staff can keep using the PWA offline.
 // RELEVANT FILES: index.html, js/app.js, js/floor.js
-const CACHE_VERSION = 'v1.5.2'; // ⬅️ Versión actualizada por los cambios
+const CACHE_VERSION = 'v1.5.17'; // ⬅️ Versión actualizada por los cambios
 const CACHE_NAME = `taqueria-admin-${CACHE_VERSION}`;
 const ASSETS = [
   './',
@@ -10,7 +10,9 @@ const ASSETS = [
   './precios.html', // <-- AÑADIDO
   './menu.html',
   './ticket.html',
+  './reporte.html',
   './js/app.js', // <-- AÑADIDO
+  './js/remote-config.js',
   './js/floor.js',
   './js/menu.js',
   './js/precios.js',
@@ -20,12 +22,20 @@ const ASSETS = [
   './js/tokens.css',
   './js/base.css',
   './js/fonts.css',
-  './js/legacy.css',
   './js/receipt.css',
   './js/ticket-layout.css',
   './js/ui.js',
   './js/pwa.js',
   './js/table-sheet.js',
+  './js/report.js',
+  './js/checkout.js',
+  './js/receipt.js',
+  './js/templates.js',
+  './js/presets-editor.js',
+  './js/options-dialog.js',
+  './js/report-charts.js',
+  './js/report-page.js',
+  './js/report-layout.css',
   './js/ios.css',
   './fonts/inter-0.ttf',
   './fonts/inter-1.ttf',

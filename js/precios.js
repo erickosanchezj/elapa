@@ -51,10 +51,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Promo switch: saved per device. Open tables recalculate right away; paid tables keep their charged amounts.
     function renderPromoToggle() {
         if (!promoToggle) return;
-        promoToggle.checked = App.isPastorPromoActive();
-        promoToggle.disabled = true;
+        promoToggle.checked = App.AppState.promoEnabled;
+        App.$('#promo-note').textContent = !App.AppState.promoEnabled
+            ? 'Desactivada: no se aplica ningún día.'
+            : App.isMonOrWed() ? 'Activa: hoy se aplica el 2x1.' : 'Activa: se aplicará el próximo lunes o miércoles.';
+    }
+
+    function handlePromoToggle() {
+        App.AppState.promoEnabled = promoToggle.checked;
+        App.persist();
+        renderPromoToggle();
+        App.toast(promoToggle.checked ? 'Promo 2x1 activada' : 'Promo 2x1 desactivada', 'info');
+    }
+
+    // "Late table" time: open tables older than this turn red on the floor plan and count in its top KPI.
+    const lateInput = App.$('#late-minutes');
+    function renderLateMinutes() {
+        if (!lateInput) return;
+        lateInput.value = App.AppState.lateMinutes;
+        App.$('#late-note').textContent = `Las mesas abiertas más de ${App.formatLateTime(App.AppState.lateMinutes)} se marcan en rojo.`;
+    }
+
+    function handleLateMinutes() {
+        const minutes = Math.round(Number(lateInput.value));
+        if (!(minutes >= 5 && minutes <= 600)) {
+            renderLateMinutes(); // put the saved value back
+            return App.toast('Usa entre 5 y 600 minutos', 'error');
+        }
+        App.AppState.lateMinutes = minutes;
+        App.persist();
+        renderLateMinutes();
+        App.toast('Tiempo guardado', 'success');
     }
 
     function handleAddItem(e) {
@@ -76,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         App.toast('Producto agregado con éxito', 'success');
         addItemForm.reset();
         renderItems();
+        App.renderPresetEditors?.(); // keep shortcut/template product lists current
     }
 
     function handleUpdatePrice(itemId, newPrice) {
@@ -98,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             App.persist();
             App.toast('Producto eliminado', 'info');
             renderItems();
+            App.renderPresetEditors?.();
         }
     }
 
@@ -105,6 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addItemForm) {
             addItemForm.addEventListener('submit', handleAddItem);
         }
+        promoToggle?.addEventListener('change', handlePromoToggle);
+        lateInput?.addEventListener('change', handleLateMinutes);
 
         if (itemsList) {
             itemsList.addEventListener('change', (e) => {
@@ -130,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         App.applyUiPrefs();
         renderItems();
         renderPromoToggle();
+        renderLateMinutes();
         wireEvents();
     }
 

@@ -26,17 +26,19 @@
 </header>
 <div class="app-container">
 <dl class="service-summary" aria-label="Resumen del servicio">
-<div class="service-stat"><dt>Mesas con más de 1 h</dt><dd id="kpi-incidents">0</dd></div>
+<div class="service-stat"><dt id="kpi-incidents-label">Mesas con más de 1 h</dt><dd id="kpi-incidents">0</dd></div>
 <div class="service-stat"><dt>Tiempo promedio</dt><dd id="kpi-sla">00:00</dd></div>
 <div class="service-stat"><dt>Ventas de hoy</dt><dd id="kpi-sales">$0.00</dd></div>
+<div class="service-stat"><dt>Propinas de hoy</dt><dd id="kpi-tips">$0.00</dd></div>
 </dl>
 </div>
 <main class="app-container page-content" id="main">
-<div class="page-heading"><div><h1>Las mesas, al día.</h1><p>Abre una mesa para tomar su orden.</p></div><a class="link" href="precios.html">Precios <span class="material-symbols-outlined" aria-hidden="true">settings</span></a></div>
+<div class="page-heading"><div><h1>Las mesas, al día.</h1><p>Abre una mesa para tomar su orden.</p></div><div class="inline-actions"><button id="open-report" class="link" type="button" aria-haspopup="dialog">Reporte del día <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></button><a class="link" href="precios.html">Precios <span class="material-symbols-outlined" aria-hidden="true">settings</span></a></div></div>
 <div class="order-toolbar">
 <div class="order-tabs" role="tablist" aria-label="Estado de las órdenes">
 <button id="show-open-orders" class="order-view-tab active" type="button" role="tab" aria-selected="true" aria-controls="floor-grid">Abiertas <span id="open-orders-count" class="tab-count">0</span></button>
 <button id="show-closed-orders" class="order-view-tab" type="button" role="tab" aria-selected="false" aria-controls="floor-grid">Cobradas <span id="closed-orders-count" class="tab-count">0</span></button>
+<button id="show-archived-orders" class="order-view-tab" type="button" role="tab" aria-selected="false" aria-controls="floor-grid">Archivadas <span id="archived-orders-count" class="tab-count">0</span></button>
 </div>
 <div><button id="fab-add-table" class="button button-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">add</span><span>Abrir mesa</span></button></div>
 </div>
@@ -47,15 +49,43 @@
 <dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
 <form id="table-form" class="form-stack">
 <div class="dialog-heading"><h2 id="table-sheet-title">Abrir mesa</h2><button type="button" id="table-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<div id="template-section" class="template-section" hidden><span id="template-label" class="field-label">Mesas frecuentes</span><div id="template-list" role="group" aria-labelledby="template-label"></div></div>
 <label for="table-label"><span class="field-label">Nombre de la mesa (obligatorio)</span><input id="table-label" name="tableName" type="text" placeholder="Mesa 5" required maxlength="100" autocomplete="off" enterkeyhint="next"></label>
 <label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
 <div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button">Abrir y volver</button><button type="submit" name="destination" value="ticket" class="button button-primary">Tomar orden</button></div>
 </form></dialog>
+<dialog id="checkout-sheet" class="table-sheet" aria-labelledby="checkout-title">
+<form id="checkout-form" class="form-stack">
+<div class="dialog-heading"><h2 id="checkout-title">Cobrar mesa</h2><button type="button" id="checkout-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<fieldset class="tip-fieldset"><legend class="field-label">Propina</legend><div class="tip-options">
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0" checked><span>Sin propina</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.10"><span>10%</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.15"><span>15%</span></label>
+<label class="tip-option"><input class="sr-only" type="radio" name="tipChoice" value="0.20"><span>20%</span></label>
+</div></fieldset>
+<label for="tip-custom"><span class="field-label">Otro monto ($)</span><input id="tip-custom" name="tipCustom" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off" enterkeyhint="done"></label>
+<div class="closed-order"><dl>
+<div><dt>Subtotal</dt><dd id="checkout-subtotal">$0.00</dd></div>
+<div><dt>Propina</dt><dd id="checkout-tip">$0.00</dd></div>
+<div class="closed-total"><dt>Total</dt><dd id="checkout-total">$0.00</dd></div>
+</dl></div>
+<div class="table-sheet-actions"><button type="button" id="checkout-back" class="button">Cancelar</button><button type="submit" class="button button-primary">Cobrar <span id="checkout-submit-total">$0.00</span></button></div>
+</form></dialog>
+<dialog id="report-sheet" class="table-sheet" aria-labelledby="report-title">
+<div class="dialog-heading"><h2 id="report-title">Reporte del día</h2><button type="button" id="report-close" class="icon-button" aria-label="Cerrar">×</button></div>
+<div id="report-body"></div>
+<a class="link report-full-link" href="reporte.html">Ver reporte completo →</a>
+</dialog>
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
+<script src="js/remote-config.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/table-sheet.js"></script>
+<script src="js/checkout.js"></script>
+<script src="js/receipt.js"></script>
 <script src="js/floor.js"></script>
+<script src="js/report.js"></script>
+<script src="js/templates.js"></script>
 </body>
 </html>

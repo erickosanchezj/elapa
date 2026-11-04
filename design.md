@@ -41,7 +41,7 @@ Honor reduced motion. Never animate layout dimensions.
 ## Exports
 
 `js/tokens.css`, `js/base.css`, `js/styles.css`.
-Legacy and receipt rules remain available in separate stylesheets.
+Receipt print rules live in `js/receipt.css`; the ticket layout in `js/ticket-layout.css`.
 
 ## iOS and offline behavior
 

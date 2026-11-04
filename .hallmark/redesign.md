@@ -42,8 +42,8 @@ Neutral surfaces are not additional primary-button styles. Icon-grid warnings co
 
 ## Existing limitations
 
-KDS, Trompo, Personal and Ajustes still have no configured destinations.
-Ticket modifier checkboxes are still visual only; the existing order model does not save modifiers.
+KDS, Trompo, Personal and Ajustes still have no configured destinations. (Update, Nov 2026: removed; the nav now has only the four working screens.)
+Ticket modifier checkboxes are still visual only; the existing order model does not save modifiers. (Update, Nov 2026: fixed; modifiers are saved per item in `table.modifiers`.)
 Synchronous local data has no asynchronous loading or recovery interface; none was invented by this redesign.
 The automatic promotion and existing stored prices are carried over as found.
 

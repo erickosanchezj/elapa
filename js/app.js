@@ -7,14 +7,16 @@
     window.TaqueriaApp = {};
     const App = window.TaqueriaApp;
 
-    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
+    App.AppState = { items: [], prices: {}, stock: {}, promoEnabled: null, lateMinutes: 60, tables: [], pricesCollapsed: null, currentTableId: null, quickPresets: [], uiDense: false, uiHighContrast: false, menuSearch: '', menuCategory: 'all', tableTemplates: [] };
     App.$ = sel => document.querySelector(sel);
     App.$$ = sel => document.querySelectorAll(sel);
-    App.money = n => '$' + (n || 0).toFixed(2);
+    // "$1,026.00": es-MX grouping for display only. Inputs and CSV keep plain numbers (toFixed).
+    const MONEY = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    App.money = n => '$' + MONEY.format(n || 0);
     App.uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
     App.isMonOrWed = () => { const d = new Date().getDay(); return d === 1 || d === 3; };
-    App.formatElapsedTime = ms => { const m = Math.floor(ms / 60000); if (m < 1) return 'hace un momento'; if (m === 1) return 'hace 1 min'; return `hace ${m} min`; };
-    App.formatDuration = ms => { if (!ms && ms !== 0) return ''; const m = Math.round(ms / 60000); if (m < 1) return 'Abierta por < 1 min'; return `Abierta por ${m} min`; };
+    // "Late table" threshold label for the floor plan and precios.html: 45 → "45 min", 60 → "1 h", 90 → "1 h 30 min".
+    App.formatLateTime = m => m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`;
     const BASE_ITEMS = [
         { id: 'taco_pastor', label: 'Pastor', base: true },
         { id: 'taco_suadero', label: 'Suadero', base: true },
@@ -56,13 +58,14 @@
     App.loadState = function() {
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
         App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
-        App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
-        if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
+        // Promo switch (precios.html). New key, ON unless staff turned it off: the old 'tacos_promoEnabled' was always saved as false.
+        App.AppState.promoEnabled = localStorage.getItem('tacos_promo_on') !== 'false';
+        App.AppState.lateMinutes = Number(localStorage.getItem('tacos_late_minutes')) || 60; // set on precios.html
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
-        App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
+        App.AppState.quickPresets = Array.isArray(storedPresets) ? storedPresets : DEFAULT_QUICK_PRESETS.slice(); // [] = staff deleted all
         const storedTemplates = JSON.parse(localStorage.getItem('tacos_table_templates') || 'null');
-        App.AppState.tableTemplates = Array.isArray(storedTemplates) && storedTemplates.length ? storedTemplates : DEFAULT_TABLE_TEMPLATES.slice();
+        App.AppState.tableTemplates = Array.isArray(storedTemplates) ? storedTemplates : DEFAULT_TABLE_TEMPLATES.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         App.AppState.items = App.AppState.items
             .filter(it => !REMOVED_ITEMS.includes(it.id))
@@ -73,16 +76,18 @@
         App.AppState.stock = JSON.parse(localStorage.getItem('tacos_stock') || '{}');
         App.AppState.uiDense = Boolean(JSON.parse(localStorage.getItem('tacos_ui_dense') || 'false'));
         App.AppState.uiHighContrast = Boolean(JSON.parse(localStorage.getItem('tacos_ui_high_contrast') || 'false'));
+        App.applyRemoteConfig?.(); // central config from GitHub wins for the settings it lists (remote-config.js)
     };
 
     App.isPastorPromoActive = function() {
-        return App.isMonOrWed();
+        return App.AppState.promoEnabled && App.isMonOrWed(); // 2x1 pastor: switch on AND Monday/Wednesday
     };
 
     App.persist = function() {
         localStorage.setItem('tacos_items', JSON.stringify(App.AppState.items));
         localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
-        localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_promo_on', String(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_late_minutes', String(App.AppState.lateMinutes));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
         localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));
@@ -135,52 +140,105 @@
         if (table.charged && Number.isFinite(table.checkoutSubtotal)) return table.checkoutSubtotal;
         return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
     };
+    // Option groups for one order line, e.g. [{ qty: 2, mods: ['Sin Cebolla'] }] (ticket.html, option C).
+    // Tacos outside every group are "normales". Old saves stored one list for the whole line: read it as one group.
+    App.modGroups = function(modifiers, itemId, qty) {
+        const raw = (modifiers || {})[itemId];
+        if (!Array.isArray(raw) || !raw.length) return [];
+        if (typeof raw[0] === 'string') return [{ qty, mods: raw }];
+        return raw.filter(g => g && g.qty > 0 && Array.isArray(g.mods) && g.mods.length);
+    };
+    // Short text for those groups: "Sin Cebolla" when it covers the whole line,
+    // otherwise "2 Sin Cebolla · 1 Sin Piña · 1 normal".
+    App.describeMods = function(groups, qty) {
+        if (!groups.length) return '';
+        if (groups.length === 1 && groups[0].qty >= qty) return groups[0].mods.join(', ');
+        const rest = qty - groups.reduce((sum, g) => sum + g.qty, 0);
+        const parts = groups.map(g => `${g.qty} ${g.mods.join(', ')}`);
+        if (rest > 0) parts.push(`${rest} ${rest === 1 ? 'normal' : 'normales'}`);
+        return parts.join(' · ');
+    };
+    // Amount per product for one table. Paid tables use what checkout saved (checkoutLines).
+    // Older paid tables (before checkoutLines) split their frozen subtotal in proportion to today's
+    // prices, so the parts still add up to what was charged; `estimated` marks that case.
+    App.lineAmounts = function(table) {
+        const entries = Object.entries(table.order || {}).filter(([, qty]) => qty > 0);
+        const saved = table.charged && table.checkoutLines;
+        const amounts = Object.fromEntries(entries.map(([id, qty]) =>
+            [id, saved && Number.isFinite(saved[id]) ? saved[id] : App.computeLine(id, qty).total]));
+        if (!table.charged || saved) return { amounts, estimated: false };
+        const sum = Object.values(amounts).reduce((a, b) => a + b, 0);
+        const scale = sum ? App.computeTableTotal(table) / sum : 0;
+        Object.keys(amounts).forEach(id => { amounts[id] *= scale; });
+        return { amounts, estimated: true };
+    };
     App.closeTable = function(table) {
         if (!table || table.charged) return false;
         const paidAt = Date.now();
         table.checkoutSubtotal = App.computeTableTotal(table);
+        // Freeze what each line cost and the 2x1 savings, so receipts and reports never use later prices.
+        table.checkoutLines = Object.fromEntries(Object.entries(table.order || {})
+            .map(([itemId, qty]) => [itemId, App.computeLine(itemId, qty).total]));
+        const pastorQty = (table.order || {}).taco_pastor || 0;
+        const pastor = App.computeLine('taco_pastor', pastorQty);
+        table.checkoutPromo = { qty: pastorQty - pastor.chargedQty, value: (pastorQty - pastor.chargedQty) * pastor.unit };
         table.charged = true;
         table.paidAt = paidAt;
         table.openDurationMs = paidAt - (table.createdAt || paidAt);
         App.persist();
         return true;
     };
-    App.computeGrandTotalActive = function() {
-        return App.AppState.tables.filter(t => !t.charged).reduce((a, t) => a + App.computeTableTotal(t), 0);
+    // 2x1 savings saved at checkout: { qty: free pastor tacos, value: pesos }. Tables paid before
+    // checkoutPromo existed used the old always-on Monday/Wednesday rule, so it is rebuilt from the paid day.
+    App.promoSaved = function(t, lines = App.lineAmounts(t)) {
+        if (t.checkoutPromo) return t.checkoutPromo;
+        const qty = (t.order || {}).taco_pastor || 0;
+        const day = new Date(t.paidAt).getDay();
+        if (!qty || (day !== 1 && day !== 3)) return { qty: 0, value: 0 };
+        const charged = Math.ceil(qty / 2);
+        return { qty: qty - charged, value: (qty - charged) * (lines.amounts.taco_pastor / charged) };
     };
-    App.computeDailyReport = function(){
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayStartMs = todayStart.getTime();
-        const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStartMs);
-        const unpaidTablesToday = App.AppState.tables
-            .filter(t => !t.charged && (t.createdAt || 0) >= todayStartMs)
-            .map(t => ({
-                id: t.id,
-                name: t.name,
-                note: t.note,
-                createdAt: t.createdAt,
-                total: App.computeTableTotal(t),
-            }));
-        const totalSubtotals = todaysTables.reduce((sum, t) => sum + App.computeTableTotal(t), 0);
-        const totalTips = todaysTables.reduce((sum, t) => sum + (t.tip || 0), 0);
 
-        const itemCounts = {};
-        const itemRevenue = {};
-        todaysTables.forEach(t => {
-            for (const [id, qty] of Object.entries(t.order)) {
-                itemCounts[id] = (itemCounts[id] || 0) + qty;
-                const line = App.computeLine(id, qty);
-                itemRevenue[id] = (itemRevenue[id] || 0) + line.total;
+    // Sales report for tables paid in [startMs, endMs); archived tables are left out.
+    // Used by the floor KPIs, the "Reporte del día" dialog (report.js) and reporte.html.
+    App.computeReport = function(startMs, endMs) {
+        const inRange = ms => ms >= startMs && ms < endMs;
+        const paid = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt && inRange(t.paidAt));
+        const report = { tables: paid, tablesCount: paid.length, totalSubtotals: 0, totalTips: 0, durationMs: 0,
+            itemCounts: {}, itemRevenue: {}, byHour: Array(24).fill(0), tablesByHour: Array(24).fill(0),
+            promo: { qty: 0, value: 0, days: new Set() }, estimated: false };
+        paid.forEach(t => {
+            const subtotal = App.computeTableTotal(t);
+            const hour = new Date(t.paidAt).getHours();
+            report.totalSubtotals += subtotal;
+            report.totalTips += t.tip || 0;
+            report.durationMs += t.openDurationMs || 0;
+            report.byHour[hour] += subtotal;
+            report.tablesByHour[hour] += 1;
+            const lines = App.lineAmounts(t); // charged amounts, not today's prices
+            report.estimated = report.estimated || lines.estimated;
+            for (const [id, amount] of Object.entries(lines.amounts)) {
+                report.itemCounts[id] = (report.itemCounts[id] || 0) + t.order[id];
+                report.itemRevenue[id] = (report.itemRevenue[id] || 0) + amount;
+            }
+            const promo = App.promoSaved(t, lines);
+            if (promo.qty > 0) {
+                report.promo.qty += promo.qty;
+                report.promo.value += promo.value;
+                report.promo.days.add(new Date(t.paidAt).toDateString());
             }
         });
-        return { totalSubtotals, totalTips, tablesCount: todaysTables.length, itemCounts, itemRevenue, unpaidTablesToday };
+        report.unpaidTables = App.AppState.tables.filter(t => !t.charged && inRange(t.createdAt || 0))
+            .map(t => ({ id: t.id, name: t.name, note: t.note, createdAt: t.createdAt, total: App.computeTableTotal(t) }));
+        report.unpaidTablesToday = report.unpaidTables; // name kept for report.js
+        return report;
     };
+    App.computeDailyReport = () => App.computeReport(new Date().setHours(0, 0, 0, 0), Infinity);
 
     App.computeMonthlyTimeline = function(monthsBack = 6) {
         const now = new Date();
         const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-        const chargedTables = App.AppState.tables.filter(t => t.charged && t.paidAt);
+        const chargedTables = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt);
         const timeline = [];
         for (let i = monthsBack - 1; i >= 0; i--) {
             const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -201,99 +259,18 @@
         return timeline;
     };
 
-    App.toast = function(message, type = 'success', timeout = 2000, opts = {}) {
+    App.toast = function(message, type = 'success', timeout = 2000) {
         const w = App.$('#toast-wrap');
         if (!w) return;
         const e = document.createElement('div');
         const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
         e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-[opacity,transform] duration-200`;
         e.textContent = message;
-        if (opts.confetti) e.classList.add('toast-with-confetti');
         w.appendChild(e);
-        if (opts.confetti) {
-            const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#a855f7'];
-            for (let i = 0; i < 8; i++) {
-                const dot = document.createElement('span');
-                dot.className = 'confetti-piece';
-                dot.style.backgroundColor = colors[i % colors.length];
-                dot.style.left = `${45 + Math.random() * 20}%`;
-                dot.style.setProperty('--confetti-x', `${Math.random() * 40 - 20}px`);
-                dot.style.animationDelay = `${i * 12}ms`;
-                e.appendChild(dot);
-                setTimeout(() => dot.remove(), 700);
-            }
-        }
         requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
         setTimeout(() => {
             e.classList.add('opacity-0', 'translate-y-2');
             setTimeout(() => e.remove(), 200);
         }, timeout);
-    };
-
-    App.handleSW = function() {
-        const versionEl = App.$('#app-version');
-        const statusEl = App.$('#net-status');
-
-        const updateNetStatus = () => {
-            if (!statusEl) return;
-            statusEl.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
-            statusEl.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
-        };
-
-        async function requestSwVersion(config = { timeoutMs: 2000 }) {
-            if (!("serviceWorker" in navigator)) throw new Error("SW not supported");
-            const reg = await navigator.serviceWorker.ready;
-            const sw = reg.active || reg.waiting || reg.installing;
-            if (!sw) throw new Error("No active SW");
-            const channel = new MessageChannel();
-            const promise = new Promise((resolve, reject) => {
-                const timer = setTimeout(() => reject(new Error("SW version timeout")), config.timeoutMs);
-                channel.port1.onmessage = event => {
-                    clearTimeout(timer);
-                    if (event.data && event.data.type === "VERSION") {
-                        resolve(event.data.version);
-                    } else {
-                        reject(new Error("Bad SW version response"));
-                    }
-                };
-            });
-            sw.postMessage({ type: "GET_VERSION" }, [channel.port2]);
-            return promise;
-        }
-
-        async function showVersion() {
-            if (!versionEl) return;
-            try {
-                const version = await requestSwVersion({ timeoutMs: 2500 });
-                versionEl.textContent = version;
-                localStorage.setItem("tacos_sw_version", version);
-            } catch {
-                const cachedVersion = localStorage.getItem("tacos_sw_version");
-                versionEl.textContent = cachedVersion ? `${cachedVersion} (cache)` : "desconocida";
-            }
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(() => navigator.serviceWorker.ready)
-                    .then(() => {
-                        updateNetStatus();
-                        return showVersion();
-                    }).catch(() => {
-                        if (versionEl) versionEl.textContent = 'sin SW';
-                        updateNetStatus();
-                    });
-            });
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                App.toast('Actualizando versión…', 'info', 1500);
-                setTimeout(showVersion, 400);
-            });
-        } else {
-            if (versionEl) versionEl.textContent = 'no compatible';
-            updateNetStatus();
-        }
-        window.addEventListener('online', updateNetStatus);
-        window.addEventListener('offline', updateNetStatus);
     };
 })();

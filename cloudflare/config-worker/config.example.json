@@ -1,0 +1,33 @@
+{
+  "prices": {
+    "taco_pastor": 17,
+    "taco_suadero": 17,
+    "taco_carbon": 40,
+    "taco_tripa": 18,
+    "taco_cabeza": 17,
+    "gringas": 80,
+    "refresco": 27,
+    "cerveza": 35
+  },
+  "items": [
+    { "id": "taco_pastor", "label": "Pastor", "category": "tacos" },
+    { "id": "taco_suadero", "label": "Suadero", "category": "tacos" },
+    { "id": "taco_carbon", "label": "Al Carbón", "category": "tacos" },
+    { "id": "taco_tripa", "label": "Tripa", "category": "tacos" },
+    { "id": "taco_cabeza", "label": "Cabeza", "category": "tacos" },
+    { "id": "gringas", "label": "Gringas", "category": "tacos" },
+    { "id": "refresco", "label": "Refresco", "category": "bebidas" },
+    { "id": "cerveza", "label": "Cerveza", "category": "bebidas" }
+  ],
+  "promoOn": true,
+  "lateMinutes": 60,
+  "quickPresets": [
+    { "itemId": "taco_pastor", "qty": 2 },
+    { "itemId": "taco_pastor", "qty": 4 },
+    { "itemId": "taco_suadero", "qty": 4 }
+  ],
+  "tableTemplates": [
+    { "name": "Brendos", "note": "Pareja", "order": { "taco_pastor": 6, "refresco": 2 } },
+    { "name": "Jaricks", "note": "Pareja", "order": { "taco_suadero": 6, "cerveza": 2 } }
+  ]
+}
