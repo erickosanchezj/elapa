@@ -55,7 +55,7 @@ const at = (h, m = 0) => new Date(2026, 10, 4, h, m).getTime();
 const openTable = (id, name, order, extra = {}) => ({ id, name, note: '', order, charged: false, createdAt: at(14), tip: 0, ...extra });
 
 test('every screen loads without errors or sideways scrolling on a phone', { skip }, async () => {
-    for (const url of ['index.html', 'ticket.html', 'menu.html', 'precios.html', 'reporte.html']) {
+    for (const url of ['index.html', 'ticket.html', 'menu.html', 'precios.html', 'reporte.html', 'trompo.html']) {
         const { page, context, errors } = await open(url, { width: 320 });
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${url} scrolls sideways`);
         assert.deepEqual(errors, [], `${url} errors`);
@@ -213,4 +213,33 @@ test('"Liberar espacio" removes only old paid tables, and only with an earlier-d
         }
         await context.close();
     }
+});
+
+test('Trompo: pastor in open tables, the options mix, oldest table first, and it refreshes', { skip }, async () => {
+    const mins = m => new Date('2026-11-04T15:00:00').getTime() - m * 60000;
+    const tables = [
+        openTable('b', 'Mesa B', { taco_pastor: 2, cerveza: 1 }, { createdAt: mins(10) }),
+        openTable('a', 'Mesa A', { taco_pastor: 4 }, { createdAt: mins(70), modifiers: { taco_pastor: [{ qty: 2, mods: ['Sin Cebolla'] }] } }),
+        openTable('c', 'Sin pastor', { cerveza: 2 }, { createdAt: mins(5) }),
+        { ...openTable('d', 'Pagada', { taco_pastor: 6 }), charged: true, paidAt: mins(1) },
+    ];
+    const { page, context, errors } = await open('trompo.html', { tables });
+    assert.equal(await page.textContent('#trompo-count'), '6');
+    assert.equal(await page.textContent('#trompo-mix'), '4 normales · 2 Sin Cebolla');
+    const rows = await page.$$eval('#trompo-tables tbody tr', r => r.map(x => `${x.cells[0].textContent}|${x.cells[1].textContent}|${x.cells[2].textContent.trim()}|${x.className}`));
+    assert.deepEqual(rows, ['Mesa A|4|2 Sin Cebolla · 2 normales|is-late', 'Mesa B|2|Normales|']);
+    // A new order on another screen shows up when the Trompo screen comes back into view.
+    await page.evaluate(() => {
+        const t = JSON.parse(localStorage.getItem('tacos_tables'));
+        t.push({ id: 'e', name: 'Mesa E', note: '', order: { taco_pastor: 3 }, charged: false, createdAt: Date.now(), tip: 0 });
+        localStorage.setItem('tacos_tables', JSON.stringify(t));
+        document.dispatchEvent(new Event('visibilitychange'));
+    });
+    assert.equal(await page.textContent('#trompo-count'), '9');
+    assert.deepEqual(errors, []);
+    await context.close();
+    // The floor plan links to it.
+    const floor = await open('index.html');
+    assert.ok(await floor.page.$('a.link[href="trompo.html"]'));
+    await floor.context.close();
 });

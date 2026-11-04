@@ -25,6 +25,7 @@ Then open http://localhost:8000.
 | `ticket.html` (Tickets) | Add products and quick shortcuts to a table's order, with options like "Sin cebolla" |
 | `menu.html` (Menú) | Edit products and mark them sold out |
 | `precios.html` (Precios) | Prices, the 2x1 pastor promo switch, the late-table time, quick shortcuts, frequent tables, central config and cloud backups |
+| `trompo.html` (Trompo) | Pastor tacos pending in open tables, with their options, table by table (opened from "Trompo" on Mesas) |
 | `reporte.html` (Reporte) | Sales by period and hour, products, 2x1 promo cost, last 6 months, CSV export (opened from "Reporte del día") |
 
 ## Tests
