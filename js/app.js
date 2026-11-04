@@ -152,7 +152,7 @@
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         const todayStartMs = todayStart.getTime();
-        const todaysTables = App.AppState.tables.filter(t => t.charged && t.paidAt && t.paidAt >= todayStartMs);
+        const todaysTables = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt && t.paidAt >= todayStartMs); // Archived = excluded from sales
         const unpaidTablesToday = App.AppState.tables
             .filter(t => !t.charged && (t.createdAt || 0) >= todayStartMs)
             .map(t => ({
@@ -180,7 +180,7 @@
     App.computeMonthlyTimeline = function(monthsBack = 6) {
         const now = new Date();
         const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-        const chargedTables = App.AppState.tables.filter(t => t.charged && t.paidAt);
+        const chargedTables = App.AppState.tables.filter(t => t.charged && !t.archived && t.paidAt);
         const timeline = [];
         for (let i = monthsBack - 1; i >= 0; i--) {
             const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);

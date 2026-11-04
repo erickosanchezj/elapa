@@ -234,6 +234,11 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
   #tray-list { max-height: 35dvh; }
   .modal-overlay { padding: var(--space-md); }
 }
+/* Smallest phones (320px): three order tabs share one full-width row. */
+@media (max-width: 360px) {
+  .order-tabs { flex: 1 1 100%; }
+  .order-view-tab { flex: 1; justify-content: center; padding-inline: var(--space-xs); font-size: var(--text-xs); }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
