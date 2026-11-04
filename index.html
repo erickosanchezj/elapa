@@ -71,6 +71,11 @@
 </dl></div>
 <div class="table-sheet-actions"><button type="button" id="checkout-back" class="button">Cancelar</button><button type="submit" class="button button-primary">Cobrar <span id="checkout-submit-total">$0.00</span></button></div>
 </form></dialog>
+<dialog id="receipt-sheet" class="table-sheet receipt-sheet" aria-labelledby="receipt-sheet-title">
+<div class="dialog-heading"><h2 id="receipt-sheet-title">Recibo</h2><button type="button" id="receipt-sheet-close" class="icon-button" aria-label="Cerrar">×</button></div>
+<img id="receipt-preview" class="receipt-preview" alt="">
+<div class="table-sheet-actions"><button type="button" id="receipt-print-now" class="button">Imprimir</button><button type="button" id="receipt-save" class="button button-primary">Guardar recibo como imagen</button></div>
+</dialog>
 <dialog id="report-sheet" class="table-sheet" aria-labelledby="report-title">
 <div class="dialog-heading"><h2 id="report-title">Reporte del día</h2><button type="button" id="report-close" class="icon-button" aria-label="Cerrar">×</button></div>
 <div id="report-body"></div>

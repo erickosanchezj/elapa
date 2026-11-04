@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="table-total">${App.money(total)}</span>
                 </a>
                 <div class="table-footer"><span class="table-time">Tiempo ${timeStr}</span>
-                    <span class="table-actions"><button type="button" data-print-order="${App.escapeHTML(table.id)}" class="table-close" aria-label="Imprimir cuenta de ${App.escapeHTML(table.name)}">Imprimir</button>
+                    <span class="table-actions"><button type="button" data-print-order="${App.escapeHTML(table.id)}" class="table-close" aria-label="Ver recibo de ${App.escapeHTML(table.name)}">Ver recibo</button>
                     <button type="button" data-close-order="${App.escapeHTML(table.id)}" class="table-close">Cobrar</button></span>
                 </div>`;
             grid.appendChild(card);
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<button type="button" class="table-close" data-order-action="restore" data-id="${id}">Restaurar</button>`
                 : `${paidToday(table) ? `<button type="button" class="table-close" data-order-action="reopen" data-id="${id}">Reabrir</button>` : ''}
                    <button type="button" class="table-close" data-order-action="archive" data-id="${id}">Archivar</button>
-                   <button type="button" class="table-close" data-print-order="${id}" aria-label="Imprimir ticket de ${App.escapeHTML(table.name)}">Imprimir</button>`;
+                   <button type="button" class="table-close" data-print-order="${id}" aria-label="Ver recibo de ${App.escapeHTML(table.name)}">Ver recibo</button>`;
 
             const card = document.createElement('article');
             card.className = 'table-card closed-order';

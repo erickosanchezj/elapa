@@ -1,14 +1,14 @@
 // /js/receipt.js
-// Builds a printable receipt for one table and prints it. Open tables print a pre-bill ("Cuenta");
-// paid tables print the final ticket with tip. iOS home-screen apps share an image of it instead.
-// RELEVANT FILES: receipt.css, floor.js, app.js, ../recibo.html
+// Receipt for one table: a preview image to save or share, and a paper version to print.
+// Open tables get a pre-bill ("Cuenta"); paid tables the final ticket with tip.
+// RELEVANT FILES: receipt-image.js, receipt.css, floor.js, ../index.html
 (function () {
     'use strict';
     const App = window.TaqueriaApp;
     const LOGO = 'icons/icon-192.png';
-    new Image().src = LOGO; // preload, so printing never has to wait for it (and stays inside the tap)
+    new Image().src = LOGO; // preload, so the receipt never has to wait for it (and stays inside the tap)
 
-    // Plain data for one receipt: everything recibo.html needs, with no access to this device's storage.
+    // Plain data for one receipt, shared by the image (receipt-image.js) and the paper version.
     function receiptData(table) {
         const lines = App.lineAmounts(table); // charged amounts; older paid orders may only have estimates
         const subtotal = App.computeTableTotal(table);
@@ -30,7 +30,7 @@
         };
     }
 
-    // Receipt markup from that data. Every value is escaped: recibo.html renders data taken from its URL.
+    // Paper receipt markup from that data. Every value is escaped.
     App.receiptHtml = function (d) {
         const esc = v => App.escapeHTML(String(v ?? ''));
         const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
@@ -64,22 +64,13 @@
             <p class="receipt-note">${d.charged ? '¡Gracias por su visita!' : 'Cuenta por pagar. Propina no incluida.'}</p>`;
     };
 
-    // Shared by the "Imprimir" buttons on open and paid table cards. Runs synchronously inside the tap:
-    // Safari ignores print requests that come after waiting for something.
-    App.printReceipt = table => {
-        const data = receiptData(table);
-        // iOS home-screen apps can't print at all. Share the receipt as an image instead: the share
-        // sheet offers Imprimir (AirPrint), printer apps, saving it, or sending it by message.
-        if (window.navigator.standalone === true) {
-            const file = App.receiptImageFile?.(data);
-            if (file && navigator.canShare?.({ files: [file] })) {
-                navigator.share({ files: [file], title: `Recibo ${data.mesa}` }).catch(() => {}); // cancelling is fine
-                return;
-            }
-            // No image sharing: show the receipt as a page (the data travels in the link).
-            window.open(`recibo.html#${encodeURIComponent(JSON.stringify(data))}`, '_blank');
-            return;
-        }
+    // "Imprimir" on table cards opens a preview of the receipt image with:
+    //  - "Guardar recibo como imagen": the share sheet (save, AirPrint, printer apps, send) or a download;
+    //  - "Imprimir": direct printing, only outside iOS home-screen apps (iOS blocks printing there).
+    let current = null; // { data, file, url } for the receipt shown in the preview
+
+    // Paper receipt from the data, printed right inside the tap.
+    function printPaper(data) {
         let area = document.getElementById('print-area');
         if (!area) {
             area = document.createElement('div');
@@ -88,5 +79,53 @@
         }
         area.innerHTML = App.receiptHtml(data);
         window.print();
+    }
+
+    // The image can fail to export when index.html is opened from disk (file://): the logo then counts
+    // as another origin. Try without the logo, and as a last resort print on paper as before.
+    function imageFile(data) {
+        try { return App.receiptImageFile(data); } catch { /* try without the logo */ }
+        try { return App.receiptImageFile(data, { withLogo: false }); } catch { return null; }
+    }
+
+    App.printReceipt = table => {
+        const sheet = document.getElementById('receipt-sheet');
+        if (current) URL.revokeObjectURL(current.url);
+        const data = receiptData(table);
+        const file = imageFile(data);
+        if (!file) { current = null; printPaper(data); return; }
+        current = { data, file, url: URL.createObjectURL(file) };
+        const img = document.getElementById('receipt-preview');
+        img.src = current.url;
+        img.alt = `Recibo de ${data.mesa}`;
+        document.getElementById('receipt-sheet-title').textContent = `Recibo · ${data.mesa}`;
+        document.getElementById('receipt-print-now').hidden = window.navigator.standalone === true;
+        sheet.showModal();
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const sheet = document.getElementById('receipt-sheet');
+        if (!sheet) return;
+        document.getElementById('receipt-sheet-close').addEventListener('click', () => sheet.close());
+        sheet.addEventListener('close', () => {
+            if (current) URL.revokeObjectURL(current.url);
+            current = null;
+        });
+
+        // A fresh tap, so iOS allows the share sheet. Without image sharing (most computers), download it.
+        document.getElementById('receipt-save').addEventListener('click', () => {
+            if (!current) return;
+            const { file, data } = current;
+            if (navigator.canShare?.({ files: [file] })) {
+                navigator.share({ files: [file], title: `Recibo ${data.mesa}` }).catch(() => {}); // cancelling is fine
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = current.url;
+            link.download = file.name;
+            link.click();
+        });
+
+        document.getElementById('receipt-print-now').addEventListener('click', () => { if (current) printPaper(current.data); });
+    });
 })();

@@ -2,7 +2,7 @@
 // Draws a receipt as a PNG image (576 px wide = an 80 mm thermal printer) from receipt.js's data.
 // iOS home-screen apps can't print, but they can share an image: the share sheet offers Print (AirPrint),
 // printer apps for Bluetooth thermal printers, saving it, or sending it by message.
-// RELEVANT FILES: receipt.js, ../index.html, app.js
+// RELEVANT FILES: receipt.js, receipt.css, ../index.html, app.js
 (function () {
     'use strict';
     const App = window.TaqueriaApp;
@@ -12,7 +12,7 @@
     logo.src = 'icons/icon-192.png'; // same file receipt.js preloads; drawn only once loaded
 
     // Lays the receipt out top to bottom. With draw=false it only measures the height.
-    function layout(ctx, d, draw) {
+    function layout(ctx, d, draw, withLogo) {
         let y = PAD;
         const font = (size, bold) => { ctx.font = `${bold ? '700 ' : ''}${size}px ${FONT}`; };
         const text = (s, x, align = 'left') => { if (draw) { ctx.textAlign = align; ctx.fillText(s, x, y); } };
@@ -30,7 +30,7 @@
         const money = v => App.money(typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
         ctx.textBaseline = 'top';
-        if (logo.complete && logo.naturalWidth) { if (draw) ctx.drawImage(logo, (W - 96) / 2, y, 96, 96); y += 104; }
+        if (withLogo && logo.complete && logo.naturalWidth) { if (draw) ctx.drawImage(logo, (W - 96) / 2, y, 96, 96); y += 104; }
         font(34, true); text('Taquería "El Apá"', W / 2, 'center'); y += 42;
         font(20); text('Sabor auténtico cada día', W / 2, 'center'); y += 34;
         rule(true);
@@ -60,17 +60,18 @@
     }
 
     // Synchronous on purpose: iOS only opens the share sheet if it's asked for right inside the tap.
-    App.receiptImageFile = function (d) {
+    // withLogo=false is for pages opened from disk (file://), where the logo blocks exporting the image.
+    App.receiptImageFile = function (d, { withLogo = true } = {}) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = W;
-        canvas.height = layout(ctx, d, false);
+        canvas.height = layout(ctx, d, false, withLogo);
         ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, W, canvas.height);
         ctx.fillStyle = '#000';
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
-        layout(ctx, d, true);
+        layout(ctx, d, true, withLogo);
         const bytes = atob(canvas.toDataURL('image/png').split(',')[1]);
         const data = new Uint8Array(bytes.length);
         for (let i = 0; i < bytes.length; i++) data[i] = bytes.charCodeAt(i);
