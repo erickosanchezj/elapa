@@ -67,7 +67,7 @@ button.link { border: 0; padding: 0; background: transparent; cursor: pointer; }
 .nav-link[aria-current='page'] { background: var(--color-accent-soft); color: var(--color-ink); font-weight: 600; }
 
 /* Floor: the table, its wait and its total form one scan. */
-.service-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
+.service-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); }
 .service-stat { display: flex; flex-direction: column; gap: var(--space-xs); padding-inline: var(--space-lg); border-left: 1px solid var(--color-rule); }
 .service-stat:first-child { padding-left: 0; border-left: 0; }
 .service-stat:last-child { padding-right: 0; }
@@ -195,7 +195,10 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
   .page-heading { align-items: flex-start; flex-wrap: wrap; }
   .page-heading h1 { font-size: var(--text-xl); }
   .page-heading p { max-width: 28ch; }
-  .service-summary { padding-block: var(--space-md); }
+  .service-summary { padding-block: var(--space-md); grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-md); }
+  /* Phones: four KPIs as a 2×2 grid; each row starts without a divider. */
+  .service-stat:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .service-stat:nth-child(even) { padding-right: 0; }
   .service-stat { padding-inline: var(--space-sm); gap: var(--space-xs); }
   .service-stat dt { font-size: var(--text-xs); }
   .service-stat dd { font-size: var(--text-lg); }

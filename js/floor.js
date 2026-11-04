@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     // A table open longer than this is "late" (red card, top KPI). Minutes are set on precios.html.
     const lateMs = () => App.AppState.lateMinutes * 60000;
+    // Only tables paid today can be reopened; older ones are closed history.
+    const paidToday = t => (t.paidAt || 0) >= new Date().setHours(0, 0, 0, 0);
     let orderView = 'open';
 
     function init() {
@@ -90,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const kpiSales = document.getElementById('kpi-sales');
         if (kpiSales) kpiSales.textContent = App.money(report.totalSubtotals);
+        document.getElementById('kpi-tips').textContent = App.money(report.totalTips); // tips kept separate from sales
     }
 
     function renderGrid() {
@@ -180,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = App.escapeHTML(table.id);
             const actions = archived
                 ? `<button type="button" class="table-close" data-order-action="restore" data-id="${id}">Restaurar</button>`
-                : `<button type="button" class="table-close" data-order-action="reopen" data-id="${id}">Reabrir</button>
+                : `${paidToday(table) ? `<button type="button" class="table-close" data-order-action="reopen" data-id="${id}">Reabrir</button>` : ''}
                    <button type="button" class="table-close" data-order-action="archive" data-id="${id}">Archivar</button>
                    <button type="button" class="table-close" data-print-order="${id}" aria-label="Imprimir ticket de ${App.escapeHTML(table.name)}">Imprimir</button>`;
 
@@ -258,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const table = App.AppState.tables.find(t => t.id === button.dataset.id && t.charged);
         if (!table) return;
         const action = button.dataset.orderAction;
-        if (action === 'reopen' && !table.archived) reopenOrder(table);
+        if (action === 'reopen' && !table.archived && paidToday(table)) reopenOrder(table);
         else if (action === 'archive') setArchived(table, true);
         else if (action === 'restore') setArchived(table, false);
     }
