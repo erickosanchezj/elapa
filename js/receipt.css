@@ -5,8 +5,13 @@
 
 /* The receipt is hidden on app screens; it shows on paper, and on screen only in recibo.html. */
 #print-area { display: none; }
-.receipt-page { padding: var(--space-md); }
+/* recibo.html can open full screen on iPhone: keep clear of the notch, status bar, home indicator and rounded corners. */
+.receipt-page {
+  padding: max(var(--space-md), calc(env(safe-area-inset-top, 0px) + var(--space-xs))) max(var(--space-md), env(safe-area-inset-right, 0px))
+           max(var(--space-md), calc(env(safe-area-inset-bottom, 0px) + var(--space-xs))) max(var(--space-md), env(safe-area-inset-left, 0px));
+}
 .receipt-actions { max-width: 360px; margin: 0 auto var(--space-md); display: flex; flex-direction: column; gap: var(--space-xs); }
+.receipt-buttons { display: grid; grid-template-columns: 1fr auto; gap: var(--space-xs); }
 .receipt-page #print-area { display: block; max-width: 360px; margin: 0 auto; padding: var(--space-md); border: 1px solid #d9dcd3; border-radius: 8px; background: #fff; }
 
 #print-area {

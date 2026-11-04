@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const App = window.TaqueriaApp;
     const area = document.getElementById('print-area');
     const button = document.getElementById('receipt-print');
+    // "Volver": close this window if the app opened it; if the phone keeps it open, go back to the app.
+    document.getElementById('receipt-back').addEventListener('click', () => {
+        window.close();
+        setTimeout(() => { location.href = 'index.html'; }, 300);
+    });
     let data = null;
     try { data = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch { data = null; }
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
