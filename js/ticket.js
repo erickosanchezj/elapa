@@ -10,10 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     let currentTableId = null;
     let draftOrder = {}; // { itemId: qty }
-    let draftMods = {}; // { itemId: ['Sin Cebolla', ...] } — options apply to the whole line
+    let draftMods = {}; // { itemId: [{ qty: 2, mods: ['Sin Cebolla'] }] } — option groups (options-dialog.js)
     let currentCategory = 'tacos'; // Default category
     let tableData = null; // The table object if editing existing
-    let modalItem = null; // ID of item currently in modal
     const els = {
         tableName: document.getElementById('table-name'),
         tableMeta: document.getElementById('table-meta'),
@@ -25,14 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         trayList: document.getElementById('tray-list'),
         trayCount: document.getElementById('tray-count'),
         trayTotal: document.getElementById('tray-total'),
-        modal: document.getElementById('modifier-modal'),
-        modalTitle: document.getElementById('modal-title'),
-        modalOptions: document.getElementById('modal-options'),
-        modalClose: document.getElementById('modal-close'),
-        modalUpdate: document.getElementById('modal-update-btn'),
-        modalQtyMinus: document.getElementById('modal-qty-minus'),
-        modalQtyPlus: document.getElementById('modal-qty-plus'),
-        modalQtyVal: document.getElementById('modal-qty-val'),
     };
     function init() {
         App.loadState();
@@ -42,7 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tableData = App.AppState.tables.find(t => t.id === currentTableId);
             if (tableData) {
                 draftOrder = { ...tableData.order };
-                draftMods = { ...(tableData.modifiers || {}) };
+                // Read old one-list saves as a single group (app.js modGroups).
+                Object.keys(draftOrder).forEach(id => {
+                    const groups = App.modGroups(tableData.modifiers, id, draftOrder[id]);
+                    if (groups.length) draftMods[id] = groups;
+                });
             } else {
                 currentTableId = null;
             }
@@ -159,8 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.type = 'button';
             row.className = 'tray-item';
             row.onclick = () => openModal(itemId);
-            const mods = draftMods[itemId] || [];
-            const help = mods.length ? mods.join(', ') : 'Editar cantidad u opciones';
+            const help = App.describeMods(draftMods[itemId] || [], qty) || 'Editar cantidad u opciones';
             row.innerHTML = `<span><span class="tray-item-name">${qty} × ${App.escapeHTML(item.label)}</span>
                 <span class="tray-item-help">${App.escapeHTML(help)}</span></span><span class="tray-item-price">${App.money(line.total)}</span>`;
             els.trayList.appendChild(row);
@@ -184,39 +178,15 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGrid();
         renderTray();
     }
+    // Opens options-dialog.js for one line; saves the new quantity and option groups.
     function openModal(itemId) {
         const item = App.AppState.items.find(i => i.id === itemId);
         if (!item) return;
-        modalItem = itemId;
-        const currentQty = draftOrder[itemId] || 1;
-        els.modalTitle.textContent = `Editar ${item.label}`;
-        els.modalQtyVal.textContent = currentQty;
-        els.modalOptions.innerHTML = '';
-        const category = item.category || 'otros';
-        const MODIFIERS = {
-            'tacos': ['Con Todo', 'Sin Cebolla', 'Sin Piña', 'Sin Verdura', 'Tortilla Harina'],
-            'bebidas': ['Con Hielo', 'Sin Hielo', 'Limón'],
-            'postres': [],
-            'otros': []
-        };
-        const options = MODIFIERS[category] || [];
-        if (options.length === 0) {
-             els.modalOptions.innerHTML = '<p class="subtle">No hay opciones adicionales para este producto.</p>';
-        } else {
-            const selected = draftMods[itemId] || [];
-            options.forEach(opt => {
-                const label = document.createElement('label');
-                label.className = "modifier-option";
-                label.innerHTML = `<input type="checkbox" value="${opt}"><span>${opt}</span>`;
-                label.querySelector('input').checked = selected.includes(opt);
-                els.modalOptions.appendChild(label);
-            });
-        }
-        els.modal.classList.remove('hidden');
-    }
-    function closeModal() {
-        els.modal.classList.add('hidden');
-        modalItem = null;
+        App.openOptionsDialog(item, draftOrder[itemId] || 1, draftMods[itemId] || [], (qty, groups) => {
+            if (groups.length) draftMods[itemId] = groups;
+            else delete draftMods[itemId];
+            updateQty(itemId, qty);
+        });
     }
     function commitTicket() {
         const entries = Object.entries(draftOrder);
@@ -260,26 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.textContent = 'expand_less';
             } else {
                 icon.textContent = 'expand_more';
-            }
-        };
-        els.modalClose.onclick = closeModal;
-        els.modalQtyMinus.onclick = () => {
-            const val = parseInt(els.modalQtyVal.textContent);
-            if (val > 0) els.modalQtyVal.textContent = val - 1;
-        };
-        els.modalQtyPlus.onclick = () => {
-            const val = parseInt(els.modalQtyVal.textContent);
-            els.modalQtyVal.textContent = val + 1;
-        };
-        els.modalUpdate.onclick = () => {
-            if (modalItem) {
-                const val = parseInt(els.modalQtyVal.textContent);
-                // Save the ticked options before updateQty() re-renders the tray.
-                const checked = [...els.modalOptions.querySelectorAll('input:checked')].map(c => c.value);
-                if (checked.length) draftMods[modalItem] = checked;
-                else delete draftMods[modalItem];
-                updateQty(modalItem, val);
-                closeModal();
             }
         };
         els.commitBtn.onclick = commitTicket;

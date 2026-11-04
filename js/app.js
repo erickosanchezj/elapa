@@ -137,6 +137,24 @@
         if (table.charged && Number.isFinite(table.checkoutSubtotal)) return table.checkoutSubtotal;
         return Object.entries(table.order).reduce((s, [i, q]) => s + App.computeLine(i, q).total, 0);
     };
+    // Option groups for one order line, e.g. [{ qty: 2, mods: ['Sin Cebolla'] }] (ticket.html, option C).
+    // Tacos outside every group are "normales". Old saves stored one list for the whole line: read it as one group.
+    App.modGroups = function(modifiers, itemId, qty) {
+        const raw = (modifiers || {})[itemId];
+        if (!Array.isArray(raw) || !raw.length) return [];
+        if (typeof raw[0] === 'string') return [{ qty, mods: raw }];
+        return raw.filter(g => g && g.qty > 0 && Array.isArray(g.mods) && g.mods.length);
+    };
+    // Short text for those groups: "Sin Cebolla" when it covers the whole line,
+    // otherwise "2 Sin Cebolla · 1 Sin Piña · 1 normal".
+    App.describeMods = function(groups, qty) {
+        if (!groups.length) return '';
+        if (groups.length === 1 && groups[0].qty >= qty) return groups[0].mods.join(', ');
+        const rest = qty - groups.reduce((sum, g) => sum + g.qty, 0);
+        const parts = groups.map(g => `${g.qty} ${g.mods.join(', ')}`);
+        if (rest > 0) parts.push(`${rest} ${rest === 1 ? 'normal' : 'normales'}`);
+        return parts.join(' · ');
+    };
     // Amount per product for one table. Paid tables use what checkout saved (checkoutLines).
     // Older paid tables (before checkoutLines) split their frozen subtotal in proportion to today's
     // prices, so the parts still add up to what was charged; `estimated` marks that case.

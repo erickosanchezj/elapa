@@ -36,8 +36,12 @@
 </main>
 <div id="modifier-modal" class="modal-overlay hidden"><section class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
 <div class="dialog-heading"><h2 id="modal-title">Editar producto</h2><button id="modal-close" type="button" class="icon-button" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
-<div id="modal-options"></div>
-<div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
+<div class="quantity-control"><span>Cantidad</span><div class="quantity-buttons"><button id="modal-qty-minus" type="button" class="icon-button" aria-label="Reducir cantidad">−</button><span id="modal-qty-val" aria-live="polite">1</span><button id="modal-qty-plus" type="button" class="icon-button" aria-label="Aumentar cantidad">+</button></div></div>
+<p id="modal-no-options" class="subtle" hidden>No hay opciones adicionales para este producto.</p>
+<fieldset id="modal-options-set" class="options-set"><legend class="field-label">Opciones</legend><div id="modal-options"></div>
+<div class="apply-row"><span>Aplicar a</span><div class="quantity-buttons"><button id="apply-minus" type="button" class="icon-button" aria-label="Aplicar a menos">−</button><span id="apply-val" aria-live="polite">1</span><button id="apply-plus" type="button" class="icon-button" aria-label="Aplicar a más">+</button></div><span id="apply-of" class="subtle"></span><button id="apply-btn" type="button" class="button">Agregar grupo</button></div>
+</fieldset>
+<div id="modal-groups" class="option-groups" aria-live="polite"></div>
 <button id="modal-update-btn" type="button" class="button button-primary">Guardar cambios</button>
 </section></div>
 <dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
@@ -52,6 +56,7 @@
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/table-sheet.js"></script>
+<script src="js/options-dialog.js"></script>
 <script src="js/ticket.js"></script>
 </body>
 </html>

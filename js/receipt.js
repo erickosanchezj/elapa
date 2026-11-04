@@ -14,8 +14,8 @@
         const lines = App.lineAmounts(table);
         const rows = entries.length ? entries.map(([itemId, qty]) => {
             const item = App.AppState.items.find(i => i.id === itemId);
-            const mods = table.modifiers?.[itemId] || [];
-            const modsHtml = mods.length ? `<span class="receipt-mods">${esc(mods.join(', '))}</span>` : '';
+            const mods = App.describeMods(App.modGroups(table.modifiers, itemId, qty), qty); // "2 Sin Cebolla · 2 normales"
+            const modsHtml = mods ? `<span class="receipt-mods">${esc(mods)}</span>` : '';
             return `<tr><td>${qty}x</td><td>${esc(item?.label || itemId)}${modsHtml}</td>
                 <td class="price">${lines.estimated ? '' : App.money(lines.amounts[itemId])}</td></tr>`;
         }).join('') : '<tr><td class="receipt-empty" colspan="3">Sin productos</td></tr>';
