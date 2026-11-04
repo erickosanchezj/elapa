@@ -18,7 +18,7 @@
 - Styling: Tailwind CSS (CDN), Inter font family  
 - Storage: localStorage for client-side persistence  
 - PWA: Service Worker, Web App Manifest  
-- Architecture: Single-page application with drawer/modal interfaces  
+- Architecture: four static pages (index, ticket, menu, precios) with native dialogs; shared logic in js/app.js  
   
 # DEPLOYED ENVIRONMENTS  
 - Production: Served as static files (PWA)  

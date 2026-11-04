@@ -200,99 +200,18 @@
         return timeline;
     };
 
-    App.toast = function(message, type = 'success', timeout = 2000, opts = {}) {
+    App.toast = function(message, type = 'success', timeout = 2000) {
         const w = App.$('#toast-wrap');
         if (!w) return;
         const e = document.createElement('div');
         const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800';
         e.className = `pointer-events-auto text-white ${bg} shadow-lg rounded-xl px-4 py-2 text-sm opacity-0 translate-y-2 transition-[opacity,transform] duration-200`;
         e.textContent = message;
-        if (opts.confetti) e.classList.add('toast-with-confetti');
         w.appendChild(e);
-        if (opts.confetti) {
-            const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#a855f7'];
-            for (let i = 0; i < 8; i++) {
-                const dot = document.createElement('span');
-                dot.className = 'confetti-piece';
-                dot.style.backgroundColor = colors[i % colors.length];
-                dot.style.left = `${45 + Math.random() * 20}%`;
-                dot.style.setProperty('--confetti-x', `${Math.random() * 40 - 20}px`);
-                dot.style.animationDelay = `${i * 12}ms`;
-                e.appendChild(dot);
-                setTimeout(() => dot.remove(), 700);
-            }
-        }
         requestAnimationFrame(() => e.classList.remove('opacity-0', 'translate-y-2'));
         setTimeout(() => {
             e.classList.add('opacity-0', 'translate-y-2');
             setTimeout(() => e.remove(), 200);
         }, timeout);
-    };
-
-    App.handleSW = function() {
-        const versionEl = App.$('#app-version');
-        const statusEl = App.$('#net-status');
-
-        const updateNetStatus = () => {
-            if (!statusEl) return;
-            statusEl.textContent = navigator.onLine ? '· en línea' : '· sin conexión';
-            statusEl.className = navigator.onLine ? 'ml-2 text-emerald-600' : 'ml-2 text-red-600';
-        };
-
-        async function requestSwVersion(config = { timeoutMs: 2000 }) {
-            if (!("serviceWorker" in navigator)) throw new Error("SW not supported");
-            const reg = await navigator.serviceWorker.ready;
-            const sw = reg.active || reg.waiting || reg.installing;
-            if (!sw) throw new Error("No active SW");
-            const channel = new MessageChannel();
-            const promise = new Promise((resolve, reject) => {
-                const timer = setTimeout(() => reject(new Error("SW version timeout")), config.timeoutMs);
-                channel.port1.onmessage = event => {
-                    clearTimeout(timer);
-                    if (event.data && event.data.type === "VERSION") {
-                        resolve(event.data.version);
-                    } else {
-                        reject(new Error("Bad SW version response"));
-                    }
-                };
-            });
-            sw.postMessage({ type: "GET_VERSION" }, [channel.port2]);
-            return promise;
-        }
-
-        async function showVersion() {
-            if (!versionEl) return;
-            try {
-                const version = await requestSwVersion({ timeoutMs: 2500 });
-                versionEl.textContent = version;
-                localStorage.setItem("tacos_sw_version", version);
-            } catch {
-                const cachedVersion = localStorage.getItem("tacos_sw_version");
-                versionEl.textContent = cachedVersion ? `${cachedVersion} (cache)` : "desconocida";
-            }
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(() => navigator.serviceWorker.ready)
-                    .then(() => {
-                        updateNetStatus();
-                        return showVersion();
-                    }).catch(() => {
-                        if (versionEl) versionEl.textContent = 'sin SW';
-                        updateNetStatus();
-                    });
-            });
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                App.toast('Actualizando versión…', 'info', 1500);
-                setTimeout(showVersion, 400);
-            });
-        } else {
-            if (versionEl) versionEl.textContent = 'no compatible';
-            updateNetStatus();
-        }
-        window.addEventListener('online', updateNetStatus);
-        window.addEventListener('offline', updateNetStatus);
     };
 })();
