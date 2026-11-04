@@ -1,18 +1,13 @@
 /* /js/receipt.css
-   Layout for the receipt built by receipt.js (pre-bill or paid ticket): on paper, and on screen in recibo.html.
+   Paper layout for the receipt built by receipt.js (pre-bill or paid ticket), plus its preview image.
    Keeps printed tickets independent of screen styling and of the light/dark theme.
-   RELEVANT FILES: receipt.js, recibo.js, ../recibo.html, styles.css */
+   RELEVANT FILES: receipt.js, receipt-image.js, styles.css, ../index.html */
 
-/* The receipt is hidden on app screens; it shows on paper, and on screen only in recibo.html. */
+/* The paper receipt only exists when printing. */
 #print-area { display: none; }
-/* recibo.html can open full screen on iPhone: keep clear of the notch, status bar, home indicator and rounded corners. */
-.receipt-page {
-  padding: max(var(--space-md), calc(env(safe-area-inset-top, 0px) + var(--space-xs))) max(var(--space-md), env(safe-area-inset-right, 0px))
-           max(var(--space-md), calc(env(safe-area-inset-bottom, 0px) + var(--space-xs))) max(var(--space-md), env(safe-area-inset-left, 0px));
-}
-.receipt-actions { max-width: 360px; margin: 0 auto var(--space-md); display: flex; flex-direction: column; gap: var(--space-xs); }
-.receipt-buttons { display: grid; grid-template-columns: 1fr auto; gap: var(--space-xs); }
-.receipt-page #print-area { display: block; max-width: 360px; margin: 0 auto; padding: var(--space-md); border: 1px solid #d9dcd3; border-radius: 8px; background: #fff; }
+
+/* Preview image in the "Recibo" sheet on the floor plan (receipt.js). */
+.receipt-preview { display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto var(--space-md); border: 1px solid var(--color-rule); border-radius: var(--radius-input); background: #fff; }
 
 #print-area {
   color: #000;
@@ -50,5 +45,5 @@
   body > *:not(#print-area) { display: none !important; }
   html, body { background: #fff !important; color: #000 !important; }
   body { padding: 0 !important; }
-  #print-area, .receipt-page #print-area { display: block; width: 100%; max-width: none; margin: 0; padding: var(--space-xs) 0; border: 0; border-radius: 0; }
+  #print-area { display: block; width: 100%; padding: var(--space-xs) 0; }
 }

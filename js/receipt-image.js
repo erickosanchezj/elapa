@@ -2,7 +2,7 @@
 // Draws a receipt as a PNG image (576 px wide = an 80 mm thermal printer) from receipt.js's data.
 // iOS home-screen apps can't print, but they can share an image: the share sheet offers Print (AirPrint),
 // printer apps for Bluetooth thermal printers, saving it, or sending it by message.
-// RELEVANT FILES: receipt.js, ../index.html, app.js
+// RELEVANT FILES: receipt.js, receipt.css, ../index.html, app.js
 (function () {
     'use strict';
     const App = window.TaqueriaApp;
