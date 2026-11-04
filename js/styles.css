@@ -58,6 +58,7 @@ button:active:not(:disabled), a:active { transform: translateY(1px); }
 .button-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink); }
 .button-danger { color: var(--color-error); border-color: var(--color-error); }
 .link { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 44px; font-size: var(--text-sm); color: var(--color-ink-2); white-space: nowrap; }
+button.link { border: 0; padding: 0; background: transparent; cursor: pointer; } /* Text-style button, e.g. "Reporte del día" */
 .page-content { padding-block: var(--space-xl) 120px; }
 .page-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); }
 .page-heading p { color: var(--color-muted); font-size: var(--text-sm); margin-top: var(--space-xs); }
@@ -192,7 +193,7 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
   .brand-mark { font-size: 24px; }
   .header-actions { gap: var(--space-xs); }
   .page-content { padding-top: var(--space-lg); }
-  .page-heading { align-items: flex-start; }
+  .page-heading { align-items: flex-start; flex-wrap: wrap; }
   .page-heading h1 { font-size: var(--text-xl); }
   .page-heading p { max-width: 28ch; }
   .service-summary { padding-block: var(--space-md); }
