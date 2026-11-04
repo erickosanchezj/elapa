@@ -239,6 +239,21 @@ label { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
   #tray-list { max-height: 35dvh; }
   .modal-overlay { padding: var(--space-md); }
 }
+/* Precios: shortcut and template editors (presets-editor.js). */
+.editor-help { margin: calc(var(--space-md) * -1) 0 var(--space-md); }
+.editor-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px 44px; gap: var(--space-xs); align-items: center; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-rule); }
+.editor-row:last-child, .template-editor-item:last-child { border-bottom: 0; }
+.editor-empty { padding: var(--space-md); }
+.editor-add { margin-top: var(--space-sm); }
+.template-editor-item { border-bottom: 1px solid var(--color-rule); }
+.template-editor-item > summary { min-height: 44px; display: flex; align-items: center; padding: var(--space-sm) var(--space-md); font-weight: 600; cursor: pointer; }
+.template-editor-body { display: flex; flex-direction: column; gap: var(--space-sm); padding: 0 var(--space-md) var(--space-md); }
+.template-qty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-xs) var(--space-md); }
+.template-qty-grid label { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); font-size: var(--text-sm); }
+.template-qty-grid label input[data-item] { width: 72px; flex-shrink: 0; } /* beats the global 100% input width */
+.template-editor-body .button-danger { align-self: flex-start; }
+/* "Abrir mesa" sheet: template buttons (templates.js). */
+#template-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 /* Checkout sheet: tip choices are native radios styled as pill buttons. */
 .tip-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .tip-fieldset legend { padding: 0; }

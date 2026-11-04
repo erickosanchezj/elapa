@@ -33,6 +33,10 @@
 <section class="settings-panel promo-panel" aria-labelledby="promo-title"><h2 id="promo-title">Promociones</h2><h3>Promo 2x1 en tacos de pastor</h3><p>Se aplica automáticamente los lunes y miércoles.</p><div class="promo-status"><label for="promo-toggle">Aplicación automática según el día</label><input type="checkbox" id="promo-toggle" aria-describedby="promo-note"></div><p id="promo-note">El estado se calcula automáticamente.</p></section></div>
 <section aria-labelledby="products-title"><h2 id="products-title">Productos en el menú</h2><div id="items-list" class="list-surface"></div></section>
 </div>
+<div class="price-layout editor-layout">
+<section class="settings-panel" aria-labelledby="shortcuts-title"><h2 id="shortcuts-title">Accesos rápidos</h2><p class="subtle editor-help">Botones en Tickets que agregan varias piezas de un toque.</p><div id="shortcut-editor" class="list-surface"></div><button id="add-shortcut" type="button" class="button editor-add"><span class="material-symbols-outlined" aria-hidden="true">add</span>Agregar acceso</button></section>
+<section class="settings-panel" aria-labelledby="templates-title"><h2 id="templates-title">Mesas frecuentes</h2><p class="subtle editor-help">Aparecen en “Abrir mesa” y abren la mesa con su nota y orden.</p><div id="template-editor" class="list-surface"></div><button id="add-template" type="button" class="button editor-add"><span class="material-symbols-outlined" aria-hidden="true">add</span>Agregar mesa frecuente</button></section>
+</div>
 </main>
 <nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
 <div id="toast-wrap" aria-live="polite"></div>
@@ -40,5 +44,6 @@
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/precios.js"></script>
+<script src="js/presets-editor.js"></script>
 </body>
 </html>

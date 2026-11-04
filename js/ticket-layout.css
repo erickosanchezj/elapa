@@ -33,3 +33,6 @@
 
 
 #product-grid { margin-top: var(--space-lg); }
+/* Quick-order shortcuts row (ticket.js renderShortcuts). */
+.quick-shortcuts { display: flex; flex-direction: column; gap: var(--space-xs); margin-top: var(--space-lg); }
+#quick-shortcut-list { display: flex; flex-wrap: wrap; gap: var(--space-xs); }

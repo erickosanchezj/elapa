@@ -60,9 +60,9 @@
         if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
-        App.AppState.quickPresets = Array.isArray(storedPresets) && storedPresets.length ? storedPresets : DEFAULT_QUICK_PRESETS.slice();
+        App.AppState.quickPresets = Array.isArray(storedPresets) ? storedPresets : DEFAULT_QUICK_PRESETS.slice(); // [] = staff deleted all
         const storedTemplates = JSON.parse(localStorage.getItem('tacos_table_templates') || 'null');
-        App.AppState.tableTemplates = Array.isArray(storedTemplates) && storedTemplates.length ? storedTemplates : DEFAULT_TABLE_TEMPLATES.slice();
+        App.AppState.tableTemplates = Array.isArray(storedTemplates) ? storedTemplates : DEFAULT_TABLE_TEMPLATES.slice();
         BASE_ITEMS.forEach(b => { if (!App.AppState.items.find(x => x.id === b.id)) App.AppState.items.unshift(b); if (!(b.id in App.AppState.prices)) App.AppState.prices[b.id] = DEFAULT_PRICES[b.id] || 0; });
         App.AppState.items = App.AppState.items
             .filter(it => !REMOVED_ITEMS.includes(it.id))

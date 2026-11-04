@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         App.loadState();
+        App.renderFloor = render; // templates.js re-renders after opening a table
         render();
         setInterval(() => {
             render();

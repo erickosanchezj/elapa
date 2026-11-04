@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderHeader();
         renderCategories();
+        renderShortcuts();
         renderGrid();
         renderTray();
         wireEvents();
@@ -88,6 +89,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             els.categoryNav.appendChild(btn);
         });
+    }
+    // Quick-order shortcuts ("4 × Pastor"), edited on precios.html. One tap adds that quantity.
+    function renderShortcuts() {
+        const list = document.getElementById('quick-shortcut-list');
+        const presets = App.AppState.quickPresets.filter(p => App.AppState.items.some(i => i.id === p.itemId));
+        document.getElementById('quick-shortcuts').hidden = presets.length === 0;
+        list.innerHTML = presets.map(p => {
+            const label = App.AppState.items.find(i => i.id === p.itemId).label;
+            const soldOut = !App.isInStock(p.itemId) ? ' disabled' : '';
+            return `<button type="button" class="button" data-item="${App.escapeHTML(p.itemId)}" data-qty="${p.qty}"${soldOut}>${p.qty} × ${App.escapeHTML(label)}</button>`;
+        }).join('');
+        list.onclick = e => {
+            const btn = e.target.closest('[data-item]');
+            if (btn) addItem(btn.dataset.item, Number(btn.dataset.qty));
+        };
     }
     function renderGrid() {
         els.productGrid.innerHTML = '';
@@ -132,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (entries.length === 0) {
             els.trayList.innerHTML = '<p class="tray-empty">Aún no hay productos en la orden.</p>';
             els.trayList.classList.add('hidden'); // Keep the existing empty state collapsed
-        } else {
         }
         entries.forEach(([itemId, qty]) => {
             const item = App.AppState.items.find(i => i.id === itemId);
@@ -154,9 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
         els.trayTotal.textContent = App.money(total);
         els.commitTotal.textContent = App.money(total);
     }
-    function addItem(itemId) {
-        if (!draftOrder[itemId]) draftOrder[itemId] = 0;
-        draftOrder[itemId]++;
+    function addItem(itemId, qty = 1) {
+        draftOrder[itemId] = (draftOrder[itemId] || 0) + qty;
         renderGrid();
         renderTray();
     }

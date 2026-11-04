@@ -48,6 +48,7 @@
 <dialog id="table-sheet" class="table-sheet" aria-labelledby="table-sheet-title">
 <form id="table-form" class="form-stack">
 <div class="dialog-heading"><h2 id="table-sheet-title">Abrir mesa</h2><button type="button" id="table-cancel" class="icon-button" aria-label="Cerrar">×</button></div>
+<div id="template-section" class="template-section" hidden><span id="template-label" class="field-label">Mesas frecuentes</span><div id="template-list" role="group" aria-labelledby="template-label"></div></div>
 <label for="table-label"><span class="field-label">Nombre de la mesa (obligatorio)</span><input id="table-label" name="tableName" type="text" placeholder="Mesa 5" required maxlength="100" autocomplete="off" enterkeyhint="next"></label>
 <label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
 <div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button">Abrir y volver</button><button type="submit" name="destination" value="ticket" class="button button-primary">Tomar orden</button></div>
@@ -82,5 +83,6 @@
 <script src="js/receipt.js"></script>
 <script src="js/floor.js"></script>
 <script src="js/report.js"></script>
+<script src="js/templates.js"></script>
 </body>
 </html>

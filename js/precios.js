@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         App.toast('Producto agregado con éxito', 'success');
         addItemForm.reset();
         renderItems();
+        App.renderPresetEditors?.(); // keep shortcut/template product lists current
     }
 
     function handleUpdatePrice(itemId, newPrice) {
@@ -98,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             App.persist();
             App.toast('Producto eliminado', 'info');
             renderItems();
+            App.renderPresetEditors?.();
         }
     }
 
