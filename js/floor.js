@@ -119,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="table-total">${App.money(total)}</span>
                 </a>
                 <div class="table-footer"><span class="table-time">Tiempo ${timeStr}</span>
-                    <button type="button" data-close-order="${App.escapeHTML(table.id)}" class="table-close">Cobrar</button>
+                    <span class="table-actions"><button type="button" data-print-order="${App.escapeHTML(table.id)}" class="table-close" aria-label="Imprimir cuenta de ${App.escapeHTML(table.name)}">Imprimir</button>
+                    <button type="button" data-close-order="${App.escapeHTML(table.id)}" class="table-close">Cobrar</button></span>
                 </div>`;
             grid.appendChild(card);
         });
@@ -177,7 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const actions = archived
                 ? `<button type="button" class="table-close" data-order-action="restore" data-id="${id}">Restaurar</button>`
                 : `<button type="button" class="table-close" data-order-action="reopen" data-id="${id}">Reabrir</button>
-                   <button type="button" class="table-close" data-order-action="archive" data-id="${id}">Archivar</button>`;
+                   <button type="button" class="table-close" data-order-action="archive" data-id="${id}">Archivar</button>
+                   <button type="button" class="table-close" data-print-order="${id}" aria-label="Imprimir ticket de ${App.escapeHTML(table.name)}">Imprimir</button>`;
 
             const card = document.createElement('article');
             card.className = 'table-card closed-order';
@@ -215,6 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
         App.openCheckout(table, tip => {
             if (table.charged) return;
             table.tip = tip; // App.closeTable() saves it together with the checkout.
+            // Freeze each line's amount so a reprinted ticket matches what was charged.
+            table.checkoutLines = Object.fromEntries(Object.entries(table.order)
+                .map(([itemId, qty]) => [itemId, App.computeLine(itemId, qty).total]));
             App.closeTable(table);
             orderView = 'closed';
             render();
@@ -230,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         table.openDurationMs = null;
         table.tip = 0;
         delete table.checkoutSubtotal;
+        delete table.checkoutLines;
         App.persist();
         orderView = 'open';
         render();
@@ -257,6 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleGridClick(e) {
         const closeButton = e.target.closest('[data-close-order]');
         if (closeButton) return closeOrder(closeButton.dataset.closeOrder);
+        const printButton = e.target.closest('[data-print-order]');
+        if (printButton) {
+            const table = App.AppState.tables.find(t => t.id === printButton.dataset.printOrder);
+            return table && App.printReceipt(table);
+        }
         const orderAction = e.target.closest('[data-order-action]');
         if (orderAction) return handleOrderAction(orderAction);
         const card = e.target.closest('button');
