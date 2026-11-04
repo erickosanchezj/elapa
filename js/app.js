@@ -56,8 +56,8 @@
     App.loadState = function() {
         App.AppState.items = JSON.parse(localStorage.getItem('tacos_items') || 'null') || BASE_ITEMS.slice();
         App.AppState.prices = JSON.parse(localStorage.getItem('tacos_prices') || 'null') || { ...DEFAULT_PRICES };
-        App.AppState.promoEnabled = JSON.parse(localStorage.getItem('tacos_promoEnabled') || 'null');
-        if (App.AppState.promoEnabled === null) App.AppState.promoEnabled = false;
+        // Promo switch (precios.html). New key, ON unless staff turned it off: the old 'tacos_promoEnabled' was always saved as false.
+        App.AppState.promoEnabled = localStorage.getItem('tacos_promo_on') !== 'false';
         App.AppState.tables = JSON.parse(localStorage.getItem('tacos_tables') || '[]');
         const storedPresets = JSON.parse(localStorage.getItem('tacos_quick_presets') || 'null');
         App.AppState.quickPresets = Array.isArray(storedPresets) ? storedPresets : DEFAULT_QUICK_PRESETS.slice(); // [] = staff deleted all
@@ -76,13 +76,13 @@
     };
 
     App.isPastorPromoActive = function() {
-        return App.isMonOrWed();
+        return App.AppState.promoEnabled && App.isMonOrWed(); // 2x1 pastor: switch on AND Monday/Wednesday
     };
 
     App.persist = function() {
         localStorage.setItem('tacos_items', JSON.stringify(App.AppState.items));
         localStorage.setItem('tacos_prices', JSON.stringify(App.AppState.prices));
-        localStorage.setItem('tacos_promoEnabled', JSON.stringify(App.AppState.promoEnabled));
+        localStorage.setItem('tacos_promo_on', String(App.AppState.promoEnabled));
         localStorage.setItem('tacos_tables', JSON.stringify(App.AppState.tables));
         localStorage.setItem('tacos_quick_presets', JSON.stringify(App.AppState.quickPresets));
         localStorage.setItem('tacos_table_templates', JSON.stringify(App.AppState.tableTemplates));

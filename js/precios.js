@@ -51,10 +51,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Promo switch: saved per device. Open tables recalculate right away; paid tables keep their charged amounts.
     function renderPromoToggle() {
         if (!promoToggle) return;
-        promoToggle.checked = App.isPastorPromoActive();
-        promoToggle.disabled = true;
+        promoToggle.checked = App.AppState.promoEnabled;
+        App.$('#promo-note').textContent = !App.AppState.promoEnabled
+            ? 'Desactivada: no se aplica ningún día.'
+            : App.isMonOrWed() ? 'Activa: hoy se aplica el 2x1.' : 'Activa: se aplicará el próximo lunes o miércoles.';
+    }
+
+    function handlePromoToggle() {
+        App.AppState.promoEnabled = promoToggle.checked;
+        App.persist();
+        renderPromoToggle();
+        App.toast(promoToggle.checked ? 'Promo 2x1 activada' : 'Promo 2x1 desactivada', 'info');
     }
 
     function handleAddItem(e) {
@@ -107,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addItemForm) {
             addItemForm.addEventListener('submit', handleAddItem);
         }
+        promoToggle?.addEventListener('change', handlePromoToggle);
 
         if (itemsList) {
             itemsList.addEventListener('change', (e) => {

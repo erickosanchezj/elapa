@@ -30,7 +30,7 @@
 <label for="item-name"><span class="field-label">Nombre (obligatorio)</span><input id="item-name" name="itemName" type="text" autocomplete="off" placeholder="Nombre del producto" required></label>
 <label for="item-price"><span class="field-label">Precio ($)</span><input id="item-price" name="itemPrice" type="number" autocomplete="off" placeholder="0.00" required min="0" step="0.50"></label>
 </div><button type="submit" class="button button-primary"><span class="material-symbols-outlined" aria-hidden="true">add</span>Agregar al menú</button></form></section>
-<section class="settings-panel promo-panel" aria-labelledby="promo-title"><h2 id="promo-title">Promociones</h2><h3>Promo 2x1 en tacos de pastor</h3><p>Se aplica automáticamente los lunes y miércoles.</p><div class="promo-status"><label for="promo-toggle">Aplicación automática según el día</label><input type="checkbox" id="promo-toggle" aria-describedby="promo-note"></div><p id="promo-note">El estado se calcula automáticamente.</p></section></div>
+<section class="settings-panel promo-panel" aria-labelledby="promo-title"><h2 id="promo-title">Promociones</h2><h3>Promo 2x1 en tacos de pastor</h3><p>Se aplica los lunes y miércoles mientras esté activa.</p><div class="promo-status"><label for="promo-toggle">Promo activa</label><input type="checkbox" role="switch" id="promo-toggle" aria-describedby="promo-note"></div><p id="promo-note" aria-live="polite"></p></section></div>
 <section aria-labelledby="products-title"><h2 id="products-title">Productos en el menú</h2><div id="items-list" class="list-surface"></div></section>
 </div>
 <div class="price-layout editor-layout">

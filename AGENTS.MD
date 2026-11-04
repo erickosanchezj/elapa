@@ -26,7 +26,7 @@
   
 # DATABASE  
 - Client-side only using localStorage  
-- Key storage items: tacos_tables, tacos_items, tacos_prices, tacos_promoEnabled  
+- Key storage items: tacos_tables, tacos_items, tacos_prices, tacos_promo_on (promo switch, ON when missing; the old tacos_promoEnabled is no longer read)  
 - No server-side database - everything persists locally in browser  
   
 # API  
