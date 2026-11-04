@@ -1,43 +1,54 @@
 // /js/receipt.js
-// Builds a printable receipt for one table and opens the browser's print dialog.
-// Open tables print a pre-bill ("Cuenta"); paid tables print the final ticket with tip.
-// RELEVANT FILES: receipt.css, floor.js, app.js, ../index.html
+// Builds a printable receipt for one table and prints it. Open tables print a pre-bill ("Cuenta");
+// paid tables print the final ticket with tip. On iOS home-screen apps, opens recibo.html instead.
+// RELEVANT FILES: receipt.css, floor.js, app.js, ../recibo.html
 (function () {
     'use strict';
     const App = window.TaqueriaApp;
+    const LOGO = 'icons/icon-192.png';
+    new Image().src = LOGO; // preload, so printing never has to wait for it (and stays inside the tap)
 
-    function receiptHtml(table) {
-        const esc = App.escapeHTML;
-        const entries = Object.entries(table.order || {}).filter(([, qty]) => qty > 0);
-        // Charged amounts per line (app.js). Older paid orders never saved them, so their lines
-        // print without amounts instead of showing today's prices as if they were charged.
-        const lines = App.lineAmounts(table);
-        const rows = entries.length ? entries.map(([itemId, qty]) => {
-            const item = App.AppState.items.find(i => i.id === itemId);
-            const mods = App.describeMods(App.modGroups(table.modifiers, itemId, qty), qty); // "2 Sin Cebolla · 2 normales"
-            const modsHtml = mods ? `<span class="receipt-mods">${esc(mods)}</span>` : '';
-            return `<tr><td>${qty}x</td><td>${esc(item?.label || itemId)}${modsHtml}</td>
-                <td class="price">${lines.estimated ? '' : App.money(lines.amounts[itemId])}</td></tr>`;
-        }).join('') : '<tr><td class="receipt-empty" colspan="3">Sin productos</td></tr>';
-
+    // Plain data for one receipt: everything recibo.html needs, with no access to this device's storage.
+    function receiptData(table) {
+        const lines = App.lineAmounts(table); // charged amounts; older paid orders may only have estimates
         const subtotal = App.computeTableTotal(table);
         const tip = table.charged ? (table.tip || 0) : 0;
-        const date = ms => new Date(ms).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-        const meta = (label, value) => `<div class="receipt-meta-row"><span class="receipt-meta-label">${label}</span><span>${esc(value)}</span></div>`;
-        const sum = (label, value, cls = '') => `<div class="receipt-summary-row ${cls}"><span>${label}</span><span>${App.money(value)}</span></div>`;
+        return {
+            mesa: table.name,
+            dateLabel: table.charged ? 'Pagada' : 'Fecha',
+            date: new Date(table.charged ? table.paidAt : Date.now()).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }),
+            orden: '#' + table.id.slice(-4).toUpperCase(),
+            rows: Object.entries(table.order || {}).filter(([, qty]) => qty > 0).map(([itemId, qty]) => ({
+                qty,
+                label: App.AppState.items.find(i => i.id === itemId)?.label || itemId,
+                mods: App.describeMods(App.modGroups(table.modifiers, itemId, qty), qty), // "2 Sin Cebolla · 2 normales"
+                amount: lines.estimated ? null : lines.amounts[itemId], // no amount rather than today's price
+            })),
+            subtotal, tip, total: subtotal + tip,
+            estimated: lines.estimated,
+            charged: Boolean(table.charged),
+        };
+    }
 
+    // Receipt markup from that data. Every value is escaped: recibo.html renders data taken from its URL.
+    App.receiptHtml = function (d) {
+        const esc = v => App.escapeHTML(String(v ?? ''));
+        const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+        const meta = (label, value) => `<div class="receipt-meta-row"><span class="receipt-meta-label">${esc(label)}</span><span>${esc(value)}</span></div>`;
+        const sum = (label, value, cls = '') => `<div class="receipt-summary-row ${cls}"><span>${label}</span><span>${App.money(num(value))}</span></div>`;
+        const list = Array.isArray(d.rows) ? d.rows.filter(r => r && typeof r === 'object') : [];
+        const rows = list.length ? list.map(r => `<tr><td>${num(r.qty)}x</td>
+                <td>${esc(r.label)}${r.mods ? `<span class="receipt-mods">${esc(r.mods)}</span>` : ''}</td>
+                <td class="price">${typeof r.amount === 'number' ? App.money(r.amount) : ''}</td></tr>`).join('')
+            : '<tr><td class="receipt-empty" colspan="3">Sin productos</td></tr>';
         return `
             <div class="receipt-brand">
-                <img src="icons/icon-192.png" alt="" class="receipt-brand-logo">
+                <img src="${LOGO}" alt="" class="receipt-brand-logo">
                 <h1 class="receipt-brand-name">Taquería "El Apá"</h1>
                 <p class="receipt-brand-tagline">Sabor auténtico cada día</p>
             </div>
             <hr>
-            <div class="receipt-meta">
-                ${meta('Mesa', table.name)}
-                ${meta(table.charged ? 'Pagada' : 'Fecha', date(table.charged ? table.paidAt : Date.now()))}
-                ${meta('Orden', '#' + table.id.slice(-4).toUpperCase())}
-            </div>
+            <div class="receipt-meta">${meta('Mesa', d.mesa)}${meta(d.dateLabel, d.date)}${meta('Orden', d.orden)}</div>
             <hr>
             <table class="receipt-table">
                 <colgroup><col><col><col></colgroup>
@@ -45,25 +56,31 @@
                 <tbody>${rows}</tbody>
             </table>
             <div class="receipt-summary">
-                ${sum('Subtotal', subtotal)}
-                ${tip ? sum('Propina', tip) : ''}
-                ${sum('Total', subtotal + tip, 'total')}
+                ${sum('Subtotal', d.subtotal)}
+                ${num(d.tip) ? sum('Propina', d.tip) : ''}
+                ${sum('Total', d.total, 'total')}
             </div>
-            ${lines.estimated ? '<p class="receipt-note">Importes por producto no disponibles para esta orden.</p>' : ''}
-            <p class="receipt-note">${table.charged ? '¡Gracias por su visita!' : 'Cuenta por pagar. Propina no incluida.'}</p>`;
-    }
+            ${d.estimated ? '<p class="receipt-note">Importes por producto no disponibles para esta orden.</p>' : ''}
+            <p class="receipt-note">${d.charged ? '¡Gracias por su visita!' : 'Cuenta por pagar. Propina no incluida.'}</p>`;
+    };
 
-    // Shared by the "Imprimir" buttons on open and paid table cards.
-    App.printReceipt = async table => {
+    // Shared by the "Imprimir" buttons on open and paid table cards. Runs synchronously inside the tap:
+    // Safari ignores print requests that come after waiting for something.
+    App.printReceipt = table => {
+        const data = receiptData(table);
+        // iOS home-screen apps can't print. Open the receipt as a normal page (it can't read this
+        // app's storage on iOS, so the data travels in the link) and print it from there.
+        if (window.navigator.standalone === true) {
+            window.open(`recibo.html#${encodeURIComponent(JSON.stringify(data))}`, '_blank');
+            return;
+        }
         let area = document.getElementById('print-area');
         if (!area) {
             area = document.createElement('div');
             area.id = 'print-area';
             document.body.appendChild(area);
         }
-        area.innerHTML = receiptHtml(table);
-        // Wait for the logo so it is not missing on paper; print anyway if it fails.
-        await area.querySelector('img').decode().catch(() => {});
+        area.innerHTML = App.receiptHtml(data);
         window.print();
     };
 })();
