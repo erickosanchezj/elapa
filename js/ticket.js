@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     let currentTableId = null;
     let draftOrder = {}; // { itemId: qty }
+    let draftMods = {}; // { itemId: ['Sin Cebolla', ...] } — options apply to the whole line
     let currentCategory = 'tacos'; // Default category
     let tableData = null; // The table object if editing existing
     let modalItem = null; // ID of item currently in modal
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableData = App.AppState.tables.find(t => t.id === currentTableId);
             if (tableData) {
                 draftOrder = { ...tableData.order };
+                draftMods = { ...(tableData.modifiers || {}) };
             } else {
                 currentTableId = null;
             }
@@ -67,20 +69,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     function renderCategories() {
-        const categories = ['tacos', 'bebidas', 'postres', 'extras']; // Fixed list from design or dynamic?
-        const dynCategories = [...new Set(App.AppState.items.map(i => i.category || 'otros'))];
-        const order = ['tacos', 'bebidas', 'postres', 'extras', 'otros'];
-        const sortedCats = Array.from(new Set([...order, ...dynCategories])).filter(c => dynCategories.includes(c) || order.includes(c));
+        // Same four categories as menu.html. Products are saved as 'otros' and shown as "Extras".
+        const fixed = ['tacos', 'bebidas', 'postres', 'otros'];
+        const stored = App.AppState.items.map(i => i.category || 'otros');
+        const sortedCats = [...new Set([...fixed, ...stored])];
         els.categoryNav.innerHTML = '';
         sortedCats.forEach(cat => {
             const btn = document.createElement('button');
             const isActive = cat === currentCategory;
-            const activeClasses = "border-primary bg-surface-light text-text-main";
-            const inactiveClasses = "border-transparent text-text-muted hover:bg-surface-light/50 hover:text-text-main";
             btn.className = isActive ? 'bg-primary' : '';
             btn.type = 'button';
             btn.setAttribute('aria-pressed', String(isActive));
-            btn.textContent = cat === 'extras' ? 'Extras' : App.describeCategory(cat);
+            btn.textContent = cat === 'otros' ? 'Extras' : App.describeCategory(cat);
             btn.onclick = () => {
                 currentCategory = cat;
                 renderCategories();
@@ -100,16 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const qty = draftOrder[item.id] || 0;
             const price = App.AppState.prices[item.id] || 0;
             const btn = document.createElement('button');
-            const inStock = true;
+            // Products marked "Agotado" in menu.html cannot be added.
+            const inStock = App.isInStock(item.id);
             btn.className = 'product-button';
             btn.type = 'button';
+            btn.disabled = !inStock;
             btn.setAttribute('aria-pressed', String(qty > 0));
-            btn.setAttribute('aria-label', `Agregar ${item.label}, ${App.money(price)}. Cantidad: ${qty}`);
-            btn.onclick = (e) => {
-                addItem(item.id);
-            };
+            btn.setAttribute('aria-label', inStock
+                ? `Agregar ${item.label}, ${App.money(price)}. Cantidad: ${qty}`
+                : `${item.label}, agotado`);
+            btn.onclick = () => addItem(item.id);
             let badgeHtml = '';
-            if (qty > 0) {
+            if (!inStock) {
+                badgeHtml = '<span class="product-quantity">Agotado</span>';
+            } else if (qty > 0) {
                 badgeHtml = `<span class="product-quantity">${qty} en la orden</span>`;
             }
             btn.innerHTML = `
@@ -140,8 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
             row.type = 'button';
             row.className = 'tray-item';
             row.onclick = () => openModal(itemId);
+            const mods = draftMods[itemId] || [];
+            const help = mods.length ? mods.join(', ') : 'Editar cantidad u opciones';
             row.innerHTML = `<span><span class="tray-item-name">${qty} × ${App.escapeHTML(item.label)}</span>
-                <span class="tray-item-help">Editar cantidad</span></span><span class="tray-item-price">${App.money(line.total)}</span>`;
+                <span class="tray-item-help">${App.escapeHTML(help)}</span></span><span class="tray-item-price">${App.money(line.total)}</span>`;
             els.trayList.appendChild(row);
         });
         els.trayCount.textContent = `${count} productos`;
@@ -157,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQty(itemId, newQty) {
         if (newQty <= 0) {
             delete draftOrder[itemId];
+            delete draftMods[itemId];
         } else {
             draftOrder[itemId] = newQty;
         }
@@ -176,19 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
             'tacos': ['Con Todo', 'Sin Cebolla', 'Sin Piña', 'Sin Verdura', 'Tortilla Harina'],
             'bebidas': ['Con Hielo', 'Sin Hielo', 'Limón'],
             'postres': [],
-            'extras': []
+            'otros': []
         };
         const options = MODIFIERS[category] || [];
         if (options.length === 0) {
              els.modalOptions.innerHTML = '<p class="subtle">No hay opciones adicionales para este producto.</p>';
         } else {
+            const selected = draftMods[itemId] || [];
             options.forEach(opt => {
                 const label = document.createElement('label');
                 label.className = "modifier-option";
-                label.innerHTML = `<input type="checkbox"><span>${opt}</span>`;
-                const checkbox = label.querySelector('input');
-                checkbox.onclick = (e) => {
-                };
+                label.innerHTML = `<input type="checkbox" value="${opt}"><span>${opt}</span>`;
+                label.querySelector('input').checked = selected.includes(opt);
                 els.modalOptions.appendChild(label);
             });
         }
@@ -205,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (tableData) {
             tableData.order = { ...draftOrder };
+            tableData.modifiers = { ...draftMods };
         } else {
             App.openTableSheet(({ name, note }) => {
                 const newTable = {
@@ -212,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: name,
                     note,
                     order: { ...draftOrder },
+                    modifiers: { ...draftMods },
                     charged: false,
                     paidAt: null,
                     createdAt: Date.now(),
@@ -252,6 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
         els.modalUpdate.onclick = () => {
             if (modalItem) {
                 const val = parseInt(els.modalQtyVal.textContent);
+                // Save the ticked options before updateQty() re-renders the tray.
+                const checked = [...els.modalOptions.querySelectorAll('input:checked')].map(c => c.value);
+                if (checked.length) draftMods[modalItem] = checked;
+                else delete draftMods[modalItem];
                 updateQty(modalItem, val);
                 closeModal();
             }

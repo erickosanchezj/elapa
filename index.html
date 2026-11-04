@@ -51,11 +51,16 @@
 <label for="table-note"><span class="field-label">Nota (opcional)</span><input id="table-note" name="tableNote" type="text" maxlength="250" autocomplete="off" enterkeyhint="done"></label>
 <div class="table-sheet-actions"><button type="submit" name="destination" value="floor" class="button">Abrir y volver</button><button type="submit" name="destination" value="ticket" class="button button-primary">Tomar orden</button></div>
 </form></dialog>
+<dialog id="report-sheet" class="table-sheet" aria-labelledby="report-title">
+<div class="dialog-heading"><h2 id="report-title">Reporte del día</h2><button type="button" id="report-close" class="icon-button" aria-label="Cerrar">×</button></div>
+<div id="report-body"></div>
+</dialog>
 <div id="toast-wrap" aria-live="polite"></div>
 <script src="js/app.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/table-sheet.js"></script>
 <script src="js/floor.js"></script>
+<script src="js/report.js"></script>
 </body>
 </html>

@@ -164,7 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter(([, qty]) => qty > 0)
                 .map(([itemId, qty]) => {
                     const item = App.AppState.items.find(candidate => candidate.id === itemId);
-                    return `${qty}× ${item?.label || itemId}`;
+                    const mods = table.modifiers?.[itemId] || []; // Options saved from ticket.html
+                    return `${qty}× ${item?.label || itemId}${mods.length ? ` (${mods.join(', ')})` : ''}`;
                 })
                 .join(', ');
 

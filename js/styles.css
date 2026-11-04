@@ -96,6 +96,7 @@ button:active:not(:disabled), a:active { transform: translateY(1px); }
 .table-free .free-label { font-size: var(--text-md); font-weight: 600; }
 .table-free .free-meta { display: flex; gap: var(--space-sm); font-size: var(--text-sm); }
 .closed-order { gap: var(--space-md); }
+#report-body .closed-order { display: flex; flex-direction: column; } /* Report dialog reuses the paid-order rows */
 .closed-order .table-topline { align-items: center; }
 .closed-order dl { margin: auto 0 0; padding-top: var(--space-md); border-top: 1px solid var(--color-rule); font-size: var(--text-sm); }
 .closed-order dl div { display: flex; justify-content: space-between; gap: var(--space-xs); }
