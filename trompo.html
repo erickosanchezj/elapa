@@ -1,0 +1,39 @@
+<!-- /trompo.html -->
+<!-- Pantalla del trompo: cuántos tacos de pastor hay en mesas abiertas, con sus opciones, mesa por mesa. -->
+<!-- Lets whoever slices the pastor see what's pending at a glance; refreshes itself. -->
+<!-- RELEVANT FILES: js/trompo.js, js/app.js, index.html, js/report-layout.css -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Tacos de pastor pendientes en mesas abiertas.">
+<title>Trompo | Taquería El Apá</title>
+<script src="js/theme.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>if (window.tailwind) tailwind.config = { darkMode: "class" };</script>
+<link rel="stylesheet" href="js/styles.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#f6f6f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Apá">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" sizes="180x180">
+</head>
+<body class="trompo-screen">
+<header class="app-header"><div class="app-container header-row"><a class="brand" href="index.html"><span class="material-symbols-outlined brand-mark" aria-hidden="true">restaurant</span><span>Taquería El Apá</span></a><div class="header-actions"><a href="index.html" class="link"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Volver al panel</a><button id="theme-toggle" class="icon-button" type="button" aria-label="Cambiar tema"><span id="theme-icon" class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div></header>
+<main class="app-container page-content" id="main">
+<div class="page-heading"><div><h1>Trompo</h1><p id="trompo-updated">Tacos de pastor en mesas abiertas.</p></div></div>
+<section class="trompo-total" aria-labelledby="trompo-total-label"><p id="trompo-total-label" class="subtle">Pastor pendiente</p><p id="trompo-count" class="trompo-count" aria-live="polite">0</p><p id="trompo-mix" class="trompo-mix"></p></section>
+<section class="report-section" aria-labelledby="trompo-tables-title"><h2 id="trompo-tables-title">Por mesa</h2><div id="trompo-tables"></div></section>
+</main>
+<nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
+<div id="toast-wrap" aria-live="polite"></div>
+<script src="js/app.js"></script>
+<script src="js/remote-config.js"></script>
+<script src="js/backup.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/trompo.js"></script>
+</body>
+</html>

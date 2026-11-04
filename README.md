@@ -21,17 +21,31 @@ Then open http://localhost:8000.
 
 | Page | What staff do there |
 |---|---|
-| `index.html` (Mesas) | Open tables (or tap a frequent table), charge with tip, print, reopen or archive paid tables, see today's report |
+| `index.html` (Mesas) | Open tables (or tap a frequent table), charge with tip, **Ver recibo** (preview, then save it as an image or print it), reopen or archive paid tables, see today's report |
 | `ticket.html` (Tickets) | Add products and quick shortcuts to a table's order, with options like "Sin cebolla" |
 | `menu.html` (Menú) | Edit products and mark them sold out |
-| `precios.html` (Precios) | Prices, the 2x1 pastor promo switch, the late-table time, quick shortcuts and frequent tables |
+| `precios.html` (Precios) | Prices, the 2x1 pastor promo switch, the late-table time, quick shortcuts, frequent tables, central config and cloud backups |
+| `trompo.html` (Trompo) | Pastor tacos pending in open tables, with their options, table by table (opened from "Trompo" on Mesas) |
 | `reporte.html` (Reporte) | Sales by period and hour, products, 2x1 promo cost, last 6 months, CSV export (opened from "Reporte del día") |
+
+## Tests
+
+```bash
+node --test tests/*.test.mjs
+```
+
+- `tests/app.test.mjs`: prices, the 2x1 promo and its switch, checkout, reports, archive, taco options, saved settings.
+- `tests/config.test.mjs`: central config (valid, invalid and partial files).
+- `tests/worker.test.mjs`: the Cloudflare Worker against a simulated GitHub.
+- `tests/browser.test.mjs`: real screens in Chromium. It needs Playwright and skips itself when it isn't installed.
+
+No build step and no dependencies for the app. GitHub runs all of them on every pull request (`.github/workflows/tests.yml`).
 
 ## Where things live
 
 - `js/app.js`: shared data, prices, promo rule, sales report and saving to `localStorage`.
 - `js/remote-config.js`: optional central config; loaded right after `app.js` on every page.
-- One script per screen: `floor.js`, `ticket.js`, `menu.js`, `precios.js`. Each dialog or feature has its own small file, such as `checkout.js`, `receipt.js`, `report.js`, `report-page.js`, `options-dialog.js`, `templates.js` and `presets-editor.js`.
+- One script per screen: `floor.js`, `ticket.js`, `menu.js`, `precios.js`. Each dialog or feature has its own small file, such as `checkout.js`, `receipt.js` + `receipt-image.js` (receipt preview, image and paper version), `report.js`, `report-page.js`, `options-dialog.js`, `templates.js`, `presets-editor.js` and `backup.js`.
 - `js/styles.css` imports the design tokens and the other stylesheets. See `design.md` for the visual rules.
 - `service-worker.js` caches every file for offline use. **Bump `CACHE_VERSION` and add new files to `ASSETS` whenever you change or add a file.**
 

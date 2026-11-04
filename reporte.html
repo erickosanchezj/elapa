@@ -38,7 +38,12 @@
 </div>
 </div>
 <section class="report-section report-history" aria-labelledby="months-title"><h2 id="months-title">Últimos 6 meses</h2><p class="subtle">Ventas por mes. No depende del periodo elegido.</p><div id="report-months"></div></section>
-<section class="report-section" aria-labelledby="storage-title"><h2 id="storage-title">Espacio en este dispositivo</h2><div id="report-storage"></div></section>
+<section class="report-section" aria-labelledby="storage-title"><h2 id="storage-title">Espacio en este dispositivo</h2><div id="report-storage"></div>
+<div class="cleanup form-stack"><h3>Liberar espacio</h3><p class="subtle">Quita de este dispositivo las mesas cobradas antiguas. Siguen guardadas en tus respaldos de GitHub. Las mesas abiertas nunca se quitan.</p>
+<label for="cleanup-age"><span class="field-label">Quitar mesas cobradas de hace más de</span><select id="cleanup-age"><option value="12">12 meses</option><option value="6">6 meses</option></select></label>
+<p id="cleanup-count" class="subtle" aria-live="polite"></p>
+<button id="cleanup-run" type="button" class="button button-danger">Respaldar y liberar espacio</button>
+<p id="cleanup-status" aria-live="polite"></p></div></section>
 </main>
 <nav class="bottom-nav" aria-label="Navegación principal"><div class="bottom-nav-inner"><a class="nav-link" href="index.html"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Mesas</span></a><a class="nav-link" href="ticket.html"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span>Tickets</span></a><a class="nav-link" href="precios.html"><span class="material-symbols-outlined" aria-hidden="true">settings</span><span>Precios</span></a><a class="nav-link" href="menu.html"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span>Menú</span></a></div></nav>
 <div id="toast-wrap" aria-live="polite"></div>
@@ -49,5 +54,6 @@
 <script src="js/pwa.js"></script>
 <script src="js/report-charts.js"></script>
 <script src="js/report-page.js"></script>
+<script src="js/cleanup.js"></script>
 </body>
 </html>

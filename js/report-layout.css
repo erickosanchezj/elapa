@@ -22,6 +22,18 @@
 .report-meter { height: 8px; border-radius: var(--radius-pill); background: var(--color-paper-3); overflow: hidden; margin-top: var(--space-xs); }
 .report-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--color-chart); }
 .report-warning { margin-top: var(--space-xs); color: var(--color-error); font-size: var(--text-sm); }
+/* Trompo screen (trompo.js): one big number, the options mix, then each table. */
+.trompo-total { margin-bottom: var(--space-xl); padding: var(--space-lg); border-radius: var(--radius-card); background: var(--color-surface); }
+.trompo-count { font-size: 4rem; font-weight: 600; line-height: 1.1; color: var(--color-ink); }
+.trompo-mix { color: var(--color-ink-2); }
+.trompo-mix:empty { display: none; }
+.report-table tr.is-late td { color: var(--color-error); }
+/* "Liberar espacio" (cleanup.js) */
+.cleanup { margin-top: var(--space-lg); padding: var(--space-lg); border-radius: var(--radius-card); background: var(--color-paper-2); }
+.cleanup h3 { font-size: var(--text-md); }
+.cleanup label { max-width: 320px; }
+.cleanup .button-danger { align-self: flex-start; }
+#cleanup-status:empty { display: none; }
 
 /* Column chart (report-charts.js): thin bars, hairline grid, muted axis text, tooltip on hover/focus. */
 .chart-plot { position: relative; padding: var(--space-sm) 0; background: var(--color-surface); border-radius: var(--radius-card); }

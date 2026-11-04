@@ -1,0 +1,27 @@
+# /.github/workflows/tests.yml
+# Runs the test suite (tests/*.test.mjs) on every pull request and every push to master.
+# Catches broken prices, promo, reports, receipts, config or backups before they reach the restaurant.
+# RELEVANT FILES: ../../tests/app.test.mjs, ../../tests/browser.test.mjs, ../../tests/worker.test.mjs, ../../README.md
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Only for the browser tests; the app itself has no dependencies and no build step.
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Run tests
+        run: node --test tests/*.test.mjs
